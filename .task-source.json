@@ -1,0 +1,5298 @@
+{
+  "task_source_schema_version": 1,
+  "cc_feedback_profile": "cc-feedback-2611",
+  "project_domain": "游戏、图形与多媒体",
+  "project_subdirection": "音视频处理",
+  "supported_task_types": [
+    "功能开发",
+    "功能优化",
+    "代码重构",
+    "依赖升级与迁移",
+    "质量保障",
+    "项目维护",
+    "技术讨论",
+    "问题排查与诊断",
+    "部署运维",
+    "泛Agent需求"
+  ],
+  "type_coverage": {
+    "功能开发": {
+      "status": "supported",
+      "reason": "量测解码、来源映射和证据出版提供新的审片职责接口",
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/evidence.py",
+        "slatewatch/seal.py"
+      ]
+    },
+    "功能优化": {
+      "status": "supported",
+      "reason": "既有画面/声音量测、意图合并、版本比较和封包都有可独立迭代的行为",
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/sound.py",
+        "slatewatch/review.py",
+        "slatewatch/compare.py",
+        "slatewatch/seal.py"
+      ]
+    },
+    "代码重构": {
+      "status": "supported",
+      "reason": "扫描和摘片对解码、时标、展示跨度及命令协调存在可按职责整理的边界",
+      "source_anchors": [
+        "slatewatch/scan.py",
+        "slatewatch/evidence.py",
+        "slatewatch/picture.py",
+        "slatewatch/service.py"
+      ]
+    },
+    "依赖升级与迁移": {
+      "status": "supported",
+      "reason": "真实样片确认 FFmpeg 可处理基线素材及 H.264/AAC，灰阶证据有显式格式映射与完整索引可验证兼容",
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/evidence.py",
+        "slatewatch/seal.py"
+      ]
+    },
+    "质量保障": {
+      "status": "supported",
+      "reason": "可设计独立观测去核对容器时基、意图投影和证据源样本",
+      "source_anchors": [
+        "slatewatch/clock.py",
+        "slatewatch/review.py",
+        "slatewatch/evidence.py"
+      ]
+    },
+    "项目维护": {
+      "status": "supported",
+      "reason": "交接需要说明可复现的母带诊读、规则版次和封件来源",
+      "source_anchors": [
+        "slatewatch/reels.py",
+        "slatewatch/rules.py",
+        "slatewatch/scan.py",
+        "slatewatch/seal.py"
+      ]
+    },
+    "技术讨论": {
+      "status": "supported",
+      "reason": "覆盖时间、音频判定和证据的可解释取舍有真实材料和消费路径",
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/sound.py",
+        "slatewatch/evidence.py"
+      ]
+    },
+    "问题排查与诊断": {
+      "status": "supported",
+      "reason": "已观察无伴音、覆盖洞、分数帧率和转码后候选不同等现象可追到实测来源",
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/picture.py",
+        "slatewatch/sound.py",
+        "slatewatch/scan.py"
+      ]
+    },
+    "部署运维": {
+      "status": "supported",
+      "reason": "母带解码和封包分别有可测的编解码工具链、工位并行和磁盘边界",
+      "source_anchors": [
+        "slatewatch/http.py",
+        "slatewatch/media.py",
+        "slatewatch/store.py",
+        "slatewatch/seal.py"
+      ]
+    },
+    "泛Agent需求": {
+      "status": "supported",
+      "reason": "可用合成样片、版本、冻结件辅助审片工作准备可复核的外部工位材料",
+      "source_anchors": [
+        "slatewatch/reels.py",
+        "slatewatch/compare.py",
+        "slatewatch/evidence.py",
+        "slatewatch/seal.py"
+      ]
+    },
+    "Bugfix": {
+      "status": "no_verified_defect",
+      "reason": "冻结前验证未发现具备复现材料且违反承诺的已确认缺陷"
+    }
+  },
+  "prompt_contract": {
+    "schema_version": 1,
+    "mode": "integrated",
+    "baseline_tier": "deep-task-ready",
+    "generation_scope": {
+      "mode": "all_supported"
+    },
+    "minimum_active_prompts": {
+      "功能开发": 20,
+      "功能优化": 20,
+      "代码重构": 2,
+      "依赖升级与迁移": 2,
+      "质量保障": 2,
+      "项目维护": 2,
+      "技术讨论": 2,
+      "问题排查与诊断": 2,
+      "部署运维": 2,
+      "泛Agent需求": 10
+    },
+    "minimum_anchors": {
+      "功能开发": 25,
+      "功能优化": 25,
+      "代码重构": 15,
+      "依赖升级与迁移": 15,
+      "质量保障": 15,
+      "项目维护": 15,
+      "技术讨论": 15,
+      "问题排查与诊断": 15,
+      "部署运维": 15,
+      "泛Agent需求": 15
+    },
+    "capacity_floor": {
+      "modules": 8,
+      "workflows": 10,
+      "mechanisms": 8,
+      "entities": 8,
+      "state_machines": 5,
+      "extension_seams": 12,
+      "tension_points": 10
+    }
+  },
+  "entities": [
+    {
+      "id": "master",
+      "label": "母带",
+      "relations": [
+        "track.belongs_to.master",
+        "scan.references.master"
+      ],
+      "invariants": [
+        "媒体字节地址与选流记录均不可变"
+      ]
+    },
+    {
+      "id": "track",
+      "label": "选定流",
+      "relations": [
+        "track.belongs_to.master"
+      ],
+      "invariants": [
+        "采样率、声道数或画面时间基由登记结果提供"
+      ]
+    },
+    {
+      "id": "policy",
+      "label": "规则版",
+      "relations": [
+        "scan.references.policy"
+      ],
+      "invariants": [
+        "规则规范化后由内容形成身份"
+      ]
+    },
+    {
+      "id": "scan",
+      "label": "技术扫描",
+      "relations": [
+        "scan.references.master",
+        "scan.references.policy"
+      ],
+      "invariants": [
+        "同母带和规则及测量版本对应稳定身份"
+      ]
+    },
+    {
+      "id": "finding",
+      "label": "技术候选",
+      "relations": [
+        "finding.belongs_to.scan"
+      ],
+      "invariants": [
+        "指标、声道、媒体区间和扫描内身份固定"
+      ]
+    },
+    {
+      "id": "intent",
+      "label": "制作意图区间",
+      "relations": [
+        "intent.belongs_to.scan"
+      ],
+      "invariants": [
+        "限合法指标和该扫描真实范围"
+      ]
+    },
+    {
+      "id": "ruling",
+      "label": "人工裁决",
+      "relations": [
+        "ruling.references.finding"
+      ],
+      "invariants": [
+        "只追加所属扫描的已知候选"
+      ]
+    },
+    {
+      "id": "review",
+      "label": "当前审片视图",
+      "relations": [
+        "review.projects.intent",
+        "review.projects.ruling"
+      ],
+      "invariants": [
+        "任一候选扣留则整卷扣留"
+      ]
+    },
+    {
+      "id": "excerpt",
+      "label": "媒体证据",
+      "relations": [
+        "excerpt.references.finding",
+        "excerpt.references.track"
+      ],
+      "invariants": [
+        "每条素材映射可追溯到源时刻与补样"
+      ]
+    },
+    {
+      "id": "seal",
+      "label": "冻结包",
+      "relations": [
+        "seal.references.scan",
+        "seal.contains.excerpt"
+      ],
+      "invariants": [
+        "后续裁决不改旧包及索引"
+      ]
+    }
+  ],
+  "state_machines": [
+    {
+      "subject": "master",
+      "states": [
+        "staged",
+        "registered",
+        "rejected"
+      ],
+      "transitions": [
+        "staged->registered",
+        "staged->rejected"
+      ],
+      "invariants": [
+        "登记前完成容器和选流校验"
+      ]
+    },
+    {
+      "subject": "policy",
+      "states": [
+        "proposed",
+        "stored",
+        "rejected"
+      ],
+      "transitions": [
+        "proposed->stored",
+        "proposed->rejected"
+      ],
+      "invariants": [
+        "成功版固定默认和显式参数"
+      ]
+    },
+    {
+      "subject": "scan",
+      "states": [
+        "missing",
+        "measuring",
+        "stored",
+        "rejected"
+      ],
+      "transitions": [
+        "missing->measuring",
+        "measuring->stored",
+        "measuring->rejected"
+      ],
+      "invariants": [
+        "解码失败没有成功描述符"
+      ]
+    },
+    {
+      "subject": "finding",
+      "states": [
+        "pending",
+        "expected",
+        "accepted",
+        "held"
+      ],
+      "transitions": [
+        "pending->expected",
+        "pending->accepted",
+        "pending->held",
+        "expected->accepted",
+        "expected->held",
+        "accepted->held",
+        "held->accepted",
+        "accepted->pending",
+        "held->pending",
+        "accepted->expected",
+        "held->expected"
+      ],
+      "invariants": [
+        "人工接受或扣留优先；撤回按最新意图复判"
+      ]
+    },
+    {
+      "subject": "ruling",
+      "states": [
+        "appended",
+        "superseded"
+      ],
+      "transitions": [
+        "appended->superseded"
+      ],
+      "invariants": [
+        "新裁决替换投影，旧裁决仍可查"
+      ]
+    },
+    {
+      "subject": "seal",
+      "states": [
+        "assembled",
+        "published",
+        "verified",
+        "mismatch"
+      ],
+      "transitions": [
+        "assembled->published",
+        "published->verified",
+        "published->mismatch"
+      ],
+      "invariants": [
+        "核对结果只读；冻结字节就位后才登记"
+      ]
+    }
+  ],
+  "capability_families": [
+    {
+      "family": "母带保管",
+      "occupied_by": [
+        "master"
+      ],
+      "available": true
+    },
+    {
+      "family": "选流与时基",
+      "occupied_by": [
+        "track"
+      ],
+      "available": true
+    },
+    {
+      "family": "规则与扫描身份",
+      "occupied_by": [
+        "policy",
+        "scan"
+      ],
+      "available": true
+    },
+    {
+      "family": "空间量测",
+      "occupied_by": [
+        "finding",
+        "track"
+      ],
+      "available": true
+    },
+    {
+      "family": "画面连续性",
+      "occupied_by": [
+        "finding",
+        "scan",
+        "track"
+      ],
+      "available": true
+    },
+    {
+      "family": "声音时间与声道",
+      "occupied_by": [
+        "track"
+      ],
+      "available": true
+    },
+    {
+      "family": "声音量测与覆盖",
+      "occupied_by": [
+        "finding",
+        "scan"
+      ],
+      "available": true
+    },
+    {
+      "family": "制作放行",
+      "occupied_by": [
+        "finding",
+        "intent"
+      ],
+      "available": true
+    },
+    {
+      "family": "人工复核",
+      "occupied_by": [
+        "review",
+        "ruling"
+      ],
+      "available": true
+    },
+    {
+      "family": "扫描差异",
+      "occupied_by": [
+        "finding"
+      ],
+      "available": true
+    },
+    {
+      "family": "证据选取",
+      "occupied_by": [
+        "excerpt"
+      ],
+      "available": true
+    },
+    {
+      "family": "画格证据",
+      "occupied_by": [
+        "excerpt"
+      ],
+      "available": true
+    },
+    {
+      "family": "波形证据",
+      "occupied_by": [
+        "excerpt"
+      ],
+      "available": true
+    },
+    {
+      "family": "冻结交付",
+      "occupied_by": [
+        "seal"
+      ],
+      "available": true
+    },
+    {
+      "family": "交付校验",
+      "occupied_by": [
+        "seal"
+      ],
+      "available": true
+    }
+  ],
+  "extension_seams": [
+    {
+      "id": "codec",
+      "anchor": "media.validate_track http.upload",
+      "entry": "登记的受支持容器和解码轨道",
+      "distinct_outcome": "持有兼容性可观测输入",
+      "mechanism": "error_propagation"
+    },
+    {
+      "id": "selection",
+      "anchor": "media.pick_track service.master",
+      "entry": "母带流清单与扫描身份边界",
+      "distinct_outcome": "区分所检查的声画版本",
+      "mechanism": "lineage"
+    },
+    {
+      "id": "origin",
+      "anchor": "media.inspect clock.timestamp",
+      "entry": "公共原点和轨道时基",
+      "distinct_outcome": "关联独立的源时标表达",
+      "mechanism": "time_semantics"
+    },
+    {
+      "id": "raster",
+      "anchor": "media.thumbnail evidence.finish",
+      "entry": "缩小灰阶栅格量测入口",
+      "distinct_outcome": "携带像素级信号摘要",
+      "mechanism": "capacity"
+    },
+    {
+      "id": "frame-time",
+      "anchor": "media.decode picture.push",
+      "entry": "单调的显示时钟和帧事件",
+      "distinct_outcome": "追踪显示节奏",
+      "mechanism": "time_semantics"
+    },
+    {
+      "id": "texture",
+      "anchor": "picture.differences hits.candidates",
+      "entry": "相邻灰阶帧与边缘差量测",
+      "distinct_outcome": "描述可比较的画面状态转移",
+      "mechanism": "time_semantics"
+    },
+    {
+      "id": "pcm",
+      "anchor": "media.decode clock.sample_boundary",
+      "entry": "连续的原采样率 PCM 块",
+      "distinct_outcome": "提供样本域信号量测入口",
+      "mechanism": "time_semantics"
+    },
+    {
+      "id": "samples",
+      "anchor": "sound.push scan.measure",
+      "entry": "声道分别汇聚",
+      "distinct_outcome": "保留声道级信号出处",
+      "mechanism": "capacity"
+    },
+    {
+      "id": "extent",
+      "anchor": "scan.measure clock.uncovered",
+      "entry": "同节目时钟上的声画范围",
+      "distinct_outcome": "建立跨轨关联",
+      "mechanism": "time_semantics"
+    },
+    {
+      "id": "scan-version",
+      "anchor": "scan.scan_identity service.scan",
+      "entry": "扫描生成和既存查找",
+      "distinct_outcome": "用明确来源和规则读取技术观测",
+      "mechanism": "idempotency"
+    },
+    {
+      "id": "policy-defaults",
+      "anchor": "rules.new_policy store.put",
+      "entry": "规则有效值和版本",
+      "distinct_outcome": "复用已选技术刻度",
+      "mechanism": "policy_rules"
+    },
+    {
+      "id": "union",
+      "anchor": "review.applicable clock.coalesce",
+      "entry": "同指标、同声道裁决上下文",
+      "distinct_outcome": "区分制作意图与技术发现",
+      "mechanism": "policy_rules"
+    },
+    {
+      "id": "ruling",
+      "anchor": "review.ruling service.add_ruling",
+      "entry": "附带扫描身份的裁决事件",
+      "distinct_outcome": "保留审片判断来源",
+      "mechanism": "versioning_audit"
+    },
+    {
+      "id": "pairing",
+      "anchor": "compare.compare clock.intersect",
+      "entry": "可按区间走查的版本对照入口",
+      "distinct_outcome": "复用新旧候选对应关系",
+      "mechanism": "ranking_reorder"
+    },
+    {
+      "id": "resolved",
+      "anchor": "compare.pairs service.compare",
+      "entry": "已登记的前后差集",
+      "distinct_outcome": "用已知差异定位修订范围",
+      "mechanism": "lineage"
+    },
+    {
+      "id": "manifest",
+      "anchor": "seal.pack rules.identifier",
+      "entry": "索引、媒体成员与冻结清单",
+      "distinct_outcome": "提供可按摘要追溯的交付资料",
+      "mechanism": "export_freeze"
+    },
+    {
+      "id": "selection-check",
+      "anchor": "service._selection review.find_hit",
+      "entry": "按扫描和候选选取证据",
+      "distinct_outcome": "建立证据任务的可验证范围",
+      "mechanism": "error_propagation"
+    },
+    {
+      "id": "picture-target",
+      "anchor": "evidence._capture media.decode",
+      "entry": "时标到画格及空洞映射",
+      "distinct_outcome": "提供视觉证据技术标记",
+      "mechanism": "time_semantics"
+    },
+    {
+      "id": "fill",
+      "anchor": "evidence.sound clock.uncovered",
+      "entry": "伴音样本映射的实测与补样边界",
+      "distinct_outcome": "提供听审位置和覆盖的出处",
+      "mechanism": "lineage"
+    },
+    {
+      "id": "verify-file",
+      "anchor": "seal.verify store.digest_file",
+      "entry": "冻结包的成员身份",
+      "distinct_outcome": "允许对交付件作独立复核",
+      "mechanism": "snapshot_consistency"
+    }
+  ],
+  "tension_points": [
+    {
+      "workflow_id": "intake",
+      "description": "身份指向同一母带字节；选流则影响后续测量身份",
+      "observable_failure": "同一原件的不同伴音被错误折叠为一次审片"
+    },
+    {
+      "workflow_id": "policy",
+      "description": "简化输入依靠默认值；历史扫描需要完整的规则刻度",
+      "observable_failure": "旧规则静默被新的默认值重释"
+    },
+    {
+      "workflow_id": "scan",
+      "description": "采样量化与真实间歇同时出现在一条流",
+      "observable_failure": "把内声洞解释为静音或抹去真实断续"
+    },
+    {
+      "workflow_id": "intent",
+      "description": "制作注记可以相邻或只盖到一部分；自动放行要求覆盖全候选",
+      "observable_failure": "片头制作注记错误豁免相邻事故"
+    },
+    {
+      "workflow_id": "review",
+      "description": "撤回应保留操作史并回落到当前意图区间",
+      "observable_failure": "重置被误作人工接受"
+    },
+    {
+      "workflow_id": "compare",
+      "description": "共享时线可按几何重叠；不同指标和声道不能共用候选身份",
+      "observable_failure": "把另一个声道新发问题当作旧问题延续"
+    },
+    {
+      "workflow_id": "evidence",
+      "description": "监听需要连续波形；复核必须记住填零位置",
+      "observable_failure": "填补的孔洞被当作原件录到静音"
+    },
+    {
+      "workflow_id": "publish",
+      "description": "裁决继续追加；交付包必须保留当时的快照",
+      "observable_failure": "历史结论随现在的裁决漂移"
+    },
+    {
+      "workflow_id": "catalog",
+      "description": "没有选伴音和选了伴音而完全无覆盖有不同意义",
+      "observable_failure": "客户要求检查伴音时把未测误作已测无异常"
+    },
+    {
+      "workflow_id": "verify",
+      "description": "资料描述符存在并不能证明拷贝后的证据字节完整",
+      "observable_failure": "播放还能打开的修改包被标记为已验真"
+    }
+  ],
+  "prompt_anchors": [
+    {
+      "id": "功能开发-raster",
+      "task_type": "功能开发",
+      "capability_family": "空间量测",
+      "subject": "track",
+      "state": "decoded-供下游读取",
+      "invariant": "缩放前检查解码后的几何",
+      "observable": "量测和 PGM 使用统一灰度画格尺寸，可按 media.thumbnail 追到生成责任",
+      "primary_mechanism": "capacity",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/evidence.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/evidence.py"
+        ],
+        "functions": [
+          "thumbnail",
+          "finish"
+        ]
+      },
+      "extension_seam_id": "raster"
+    },
+    {
+      "id": "功能开发-frame-time",
+      "task_type": "功能开发",
+      "capability_family": "画面连续性",
+      "subject": "track",
+      "state": "presented-供下游读取",
+      "invariant": "帧按显示 PTS 严格递增",
+      "observable": "分数帧率跨度不会由整数 fps 建轴，可按 media.decode 追到生成责任",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/picture.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/picture.py"
+        ],
+        "functions": [
+          "decode",
+          "push"
+        ]
+      },
+      "extension_seam_id": "frame-time"
+    },
+    {
+      "id": "功能开发-texture",
+      "task_type": "功能开发",
+      "capability_family": "画面连续性",
+      "subject": "finding",
+      "state": "freeze-供下游读取",
+      "invariant": "画面差和水平边缘差同时达标且显示覆盖连续",
+      "observable": "停格成段，覆盖洞断开候选，可按 picture.differences 追到生成责任",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/hits.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/hits.py"
+        ],
+        "functions": [
+          "differences",
+          "candidates"
+        ]
+      },
+      "extension_seam_id": "texture"
+    },
+    {
+      "id": "功能开发-pcm",
+      "task_type": "功能开发",
+      "capability_family": "声音时间与声道",
+      "subject": "track",
+      "state": "normalized-供下游读取",
+      "invariant": "时间戳量化吸附以原采样格为准",
+      "observable": "44.1/48 kHz 等按实际采样率组织 PCM，可按 media.decode 追到生成责任",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "decode",
+          "sample_boundary"
+        ]
+      },
+      "extension_seam_id": "pcm"
+    },
+    {
+      "id": "功能开发-samples",
+      "task_type": "功能开发",
+      "capability_family": "声音时间与声道",
+      "subject": "track",
+      "state": "accumulated-供下游读取",
+      "invariant": "满幅代码统计和峰值按源声道分别累积",
+      "observable": "右路有满幅峰值可对应削顶候选，可按 sound.push 追到生成责任",
+      "primary_mechanism": "capacity",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/sound.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/sound.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "push",
+          "measure"
+        ]
+      },
+      "extension_seam_id": "samples"
+    },
+    {
+      "id": "功能开发-origin",
+      "task_type": "功能开发",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "inspected-供下游读取",
+      "invariant": "音画统一减去容器公共起点",
+      "observable": "流描述保留起始 PTS 和各自时间基，可按 media.inspect 追到生成责任",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "inspect",
+          "timestamp"
+        ]
+      },
+      "extension_seam_id": "origin"
+    },
+    {
+      "id": "功能开发-selection",
+      "task_type": "功能开发",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "selected-供下游读取",
+      "invariant": "签收记录的索引必须来自对应媒体类型",
+      "observable": "未选伴音时伴音描述为 null，可按 media.pick_track 追到生成责任",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "pick_track",
+          "master"
+        ]
+      },
+      "extension_seam_id": "selection"
+    },
+    {
+      "id": "功能开发-extent",
+      "task_type": "功能开发",
+      "capability_family": "声音量测与覆盖",
+      "subject": "scan",
+      "state": "measured-供下游读取",
+      "invariant": "扫描端点取选中声画轨的实际覆盖终点上界",
+      "observable": "音频早收留下尾部空洞，可按 scan.measure 追到生成责任",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/scan.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/scan.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "measure",
+          "uncovered"
+        ]
+      },
+      "extension_seam_id": "extent"
+    },
+    {
+      "id": "功能开发-scan-version",
+      "task_type": "功能开发",
+      "capability_family": "规则与扫描身份",
+      "subject": "scan",
+      "state": "stored-供下游读取",
+      "invariant": "扫描身份纳入分析版本",
+      "observable": "同源同规则复用描述符，可按 scan.scan_identity 追到生成责任",
+      "primary_mechanism": "idempotency",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/scan.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/scan.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "scan_identity",
+          "scan"
+        ]
+      },
+      "extension_seam_id": "scan-version"
+    },
+    {
+      "id": "功能开发-policy-defaults",
+      "task_type": "功能开发",
+      "capability_family": "规则与扫描身份",
+      "subject": "policy",
+      "state": "resolved-供下游读取",
+      "invariant": "省略的阈值持久化为实际值",
+      "observable": "无阈值请求能读回完整生效参数，可按 rules.new_policy 追到生成责任",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "policy"
+      ],
+      "source_anchors": [
+        "slatewatch/rules.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/rules.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "new_policy",
+          "put"
+        ]
+      },
+      "extension_seam_id": "policy-defaults"
+    },
+    {
+      "id": "功能开发-union",
+      "task_type": "功能开发",
+      "capability_family": "制作放行",
+      "subject": "intent",
+      "state": "covering-供下游读取",
+      "invariant": "相适用的相邻意图可共同盖满同一候选",
+      "observable": "相邻半开意图区间合并后候选 expected，可按 review.applicable 追到生成责任",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "intent"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "applicable",
+          "coalesce"
+        ]
+      },
+      "extension_seam_id": "union"
+    },
+    {
+      "id": "功能开发-ruling",
+      "task_type": "功能开发",
+      "capability_family": "人工复核",
+      "subject": "ruling",
+      "state": "appended-供下游读取",
+      "invariant": "只裁决本扫描候选，当前投影按追加顺序",
+      "observable": "异卷 ID 404 且不能进入当前裁决，可按 review.ruling 追到生成责任",
+      "primary_mechanism": "versioning_audit",
+      "workflow_ids": [
+        "review"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "ruling",
+          "add_ruling"
+        ]
+      },
+      "extension_seam_id": "ruling"
+    },
+    {
+      "id": "功能开发-pairing",
+      "task_type": "功能开发",
+      "capability_family": "扫描差异",
+      "subject": "finding",
+      "state": "paired-供下游读取",
+      "invariant": "同类同声道按精确交并比稳定一对一",
+      "observable": "修订版配对带起止位移，可按 compare.compare 追到生成责任",
+      "primary_mechanism": "ranking_reorder",
+      "workflow_ids": [
+        "compare"
+      ],
+      "source_anchors": [
+        "slatewatch/compare.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/compare.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "compare",
+          "intersect"
+        ]
+      },
+      "extension_seam_id": "pairing"
+    },
+    {
+      "id": "功能开发-resolved",
+      "task_type": "功能开发",
+      "capability_family": "扫描差异",
+      "subject": "finding",
+      "state": "unpaired-供下游读取",
+      "invariant": "未配对项按扫描侧分别归类",
+      "observable": "清除的右声道削顶列入 resolved，可按 compare.pairs 追到生成责任",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "compare"
+      ],
+      "source_anchors": [
+        "slatewatch/compare.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/compare.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "pairs",
+          "compare"
+        ]
+      },
+      "extension_seam_id": "resolved"
+    },
+    {
+      "id": "功能开发-manifest",
+      "task_type": "功能开发",
+      "capability_family": "冻结交付",
+      "subject": "seal",
+      "state": "published-供下游读取",
+      "invariant": "成员长度与摘要进入封包身份",
+      "observable": "输出 ZIP 含 index 和证据关系，可按 seal.pack 追到生成责任",
+      "primary_mechanism": "export_freeze",
+      "workflow_ids": [
+        "publish"
+      ],
+      "source_anchors": [
+        "slatewatch/seal.py",
+        "slatewatch/rules.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/seal.py",
+          "slatewatch/rules.py"
+        ],
+        "functions": [
+          "pack",
+          "identifier"
+        ]
+      },
+      "extension_seam_id": "manifest"
+    },
+    {
+      "id": "功能开发-selection-check",
+      "task_type": "功能开发",
+      "capability_family": "证据选取",
+      "subject": "excerpt",
+      "state": "selected-供下游读取",
+      "invariant": "取证候选属于所选扫描且不重复",
+      "observable": "越权于该扫描的 ID 不会生成证据，可按 service._selection 追到生成责任",
+      "primary_mechanism": "error_propagation",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/service.py",
+        "slatewatch/review.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/service.py",
+          "slatewatch/review.py"
+        ],
+        "functions": [
+          "_selection",
+          "find_hit"
+        ]
+      },
+      "extension_seam_id": "selection-check"
+    },
+    {
+      "id": "功能开发-picture-target",
+      "task_type": "功能开发",
+      "capability_family": "画格证据",
+      "subject": "excerpt",
+      "state": "sampled-供下游读取",
+      "invariant": "目标时刻若落入画面洞则无画格",
+      "observable": "画面缺失用 null 记录并无文件，可按 evidence._capture 追到生成责任",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/media.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/media.py"
+        ],
+        "functions": [
+          "_capture",
+          "decode"
+        ]
+      },
+      "extension_seam_id": "picture-target"
+    },
+    {
+      "id": "功能开发-fill",
+      "task_type": "功能开发",
+      "capability_family": "波形证据",
+      "subject": "excerpt",
+      "state": "annotated-供下游读取",
+      "invariant": "补零并独立记录真实未覆盖段",
+      "observable": "内声洞在波形映射列准确补样范围，可按 evidence.sound 追到生成责任",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "sound",
+          "uncovered"
+        ]
+      },
+      "extension_seam_id": "fill"
+    },
+    {
+      "id": "功能开发-verify-file",
+      "task_type": "功能开发",
+      "capability_family": "交付校验",
+      "subject": "seal",
+      "state": "verified-供下游读取",
+      "invariant": "包哈希、成员名集合与每个摘要都要匹配",
+      "observable": "读取可返回 verified；字节变化 409，可按 seal.verify 追到生成责任",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "verify"
+      ],
+      "source_anchors": [
+        "slatewatch/seal.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/seal.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "verify",
+          "digest_file"
+        ]
+      },
+      "extension_seam_id": "verify-file"
+    },
+    {
+      "id": "功能开发-codec",
+      "task_type": "功能开发",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "validated-供下游读取",
+      "invariant": "只有选中轨道进入允许范围判定",
+      "observable": "非法伴音选择被拒绝但可显式不选，可按 media.validate_track 追到生成责任",
+      "primary_mechanism": "error_propagation",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/http.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/http.py"
+        ],
+        "functions": [
+          "validate_track",
+          "upload"
+        ]
+      },
+      "extension_seam_id": "codec"
+    },
+    {
+      "id": "功能开发-upload",
+      "task_type": "功能开发",
+      "capability_family": "母带保管",
+      "subject": "master",
+      "state": "staged-供下游读取",
+      "invariant": "无效媒体不能进入已登记集合",
+      "observable": "坏容器返回 400 且没有母带描述符，可按 service.master 追到生成责任",
+      "primary_mechanism": "resource_lifecycle",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/service.py",
+        "slatewatch/media.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/service.py",
+          "slatewatch/media.py"
+        ],
+        "functions": [
+          "master",
+          "inspect"
+        ]
+      },
+      "extension_seam_id": "codec"
+    },
+    {
+      "id": "功能开发-identity",
+      "task_type": "功能开发",
+      "capability_family": "母带保管",
+      "subject": "master",
+      "state": "registered-供下游读取",
+      "invariant": "登记身份依赖源字节和实际流选择",
+      "observable": "重复登记相同字节选择得到同一 ID，可按 service.master 追到生成责任",
+      "primary_mechanism": "idempotency",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/service.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/service.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "master",
+          "put"
+        ]
+      },
+      "extension_seam_id": "selection"
+    },
+    {
+      "id": "功能开发-waveform",
+      "task_type": "功能开发",
+      "capability_family": "波形证据",
+      "subject": "excerpt",
+      "state": "assembled-供下游读取",
+      "invariant": "WAV 保留原生声道、采样率及绝对源样本",
+      "observable": "样本数量等于源采样半开区间长度，可按 evidence.write_wav 追到生成责任",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "write_wav",
+          "sample_boundary"
+        ]
+      },
+      "extension_seam_id": "fill"
+    },
+    {
+      "id": "功能开发-sound-null",
+      "task_type": "功能开发",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "omitted-供下游读取",
+      "invariant": "未选伴音不生成声音量测和声音缺口",
+      "observable": "无声样片可比较其画面而音频栏为 null，可按 media.inspect 追到生成责任",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "catalog"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "inspect",
+          "measure"
+        ]
+      },
+      "extension_seam_id": "selection"
+    },
+    {
+      "id": "功能开发-verify-download",
+      "task_type": "功能开发",
+      "capability_family": "交付校验",
+      "subject": "seal",
+      "state": "retrievable-供下游读取",
+      "invariant": "领取正式包先验证冻结字节",
+      "observable": "正常可下载，异常由校验阻断，可按 service.download 追到生成责任",
+      "primary_mechanism": "export_freeze",
+      "workflow_ids": [
+        "verify"
+      ],
+      "source_anchors": [
+        "slatewatch/service.py",
+        "slatewatch/seal.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/service.py",
+          "slatewatch/seal.py"
+        ],
+        "functions": [
+          "download",
+          "verify"
+        ]
+      },
+      "extension_seam_id": "verify-file"
+    },
+    {
+      "id": "功能优化-last-frame",
+      "task_type": "功能优化",
+      "capability_family": "画面连续性",
+      "subject": "track",
+      "state": "ended",
+      "invariant": "末帧有独立持续时间判断",
+      "observable": "扫描范围覆盖最后画格的显示段",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "nominal_duration",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-black",
+      "task_type": "功能优化",
+      "capability_family": "空间量测",
+      "subject": "finding",
+      "state": "black",
+      "invariant": "黑场由低灰像素比例和持续时间共同决定",
+      "observable": "Basalt 片头有黑候选",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/hits.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/hits.py"
+        ],
+        "functions": [
+          "black_ratio",
+          "candidates"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-silence",
+      "task_type": "功能优化",
+      "capability_family": "声音量测与覆盖",
+      "subject": "finding",
+      "state": "silence",
+      "invariant": "静音需要有实际样本覆盖的完整窗口",
+      "observable": "全左路数字静音与内声洞分别列出",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/sound.py",
+        "slatewatch/hits.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/sound.py",
+          "slatewatch/hits.py"
+        ],
+        "functions": [
+          "_bins",
+          "candidates"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-clip",
+      "task_type": "功能优化",
+      "capability_family": "声音量测与覆盖",
+      "subject": "finding",
+      "state": "clip",
+      "invariant": "严重度保留窗口满幅样本比例",
+      "observable": "修订版去掉右声道削顶",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/sound.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/sound.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "finish",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-picture-hole",
+      "task_type": "功能优化",
+      "capability_family": "画面连续性",
+      "subject": "scan",
+      "state": "picture-covered",
+      "invariant": "长时间戳步长可打开显示空洞",
+      "observable": "picture-hole 登记两段画面覆盖",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "catalog"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "_measure",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-sound-null",
+      "task_type": "功能优化",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "omitted",
+      "invariant": "未选伴音不生成声音量测和声音缺口",
+      "observable": "无声样片可比较其画面而音频栏为 null",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "catalog"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "inspect",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-policy-window",
+      "task_type": "功能优化",
+      "capability_family": "规则与扫描身份",
+      "subject": "policy",
+      "state": "validated",
+      "invariant": "声音候选下限须覆盖完整量测窗",
+      "observable": "拒绝过宽音窗而旧政策仍可读取",
+      "primary_mechanism": "versioning_audit",
+      "workflow_ids": [
+        "policy"
+      ],
+      "source_anchors": [
+        "slatewatch/rules.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/rules.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "from_request",
+          "policy"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-partial",
+      "task_type": "功能优化",
+      "capability_family": "制作放行",
+      "subject": "finding",
+      "state": "pending",
+      "invariant": "仅部分重叠保留已关联区间并继续待审",
+      "observable": "少一微秒仍 pending",
+      "primary_mechanism": "state_machine",
+      "workflow_ids": [
+        "intent"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "applicable",
+          "timeline"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-lanes",
+      "task_type": "功能优化",
+      "capability_family": "制作放行",
+      "subject": "intent",
+      "state": "validated",
+      "invariant": "伴音的指定声道只影响该声道",
+      "observable": "黑场不能带声道而静音可限定声道",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "intent"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "intent",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-reset",
+      "task_type": "功能优化",
+      "capability_family": "人工复核",
+      "subject": "review",
+      "state": "projected",
+      "invariant": "reset 回落到自动状态",
+      "observable": "撤回 hold 后待审或自动放行",
+      "primary_mechanism": "state_machine",
+      "workflow_ids": [
+        "review"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "adjudicate",
+          "timeline"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-rollup",
+      "task_type": "功能优化",
+      "capability_family": "人工复核",
+      "subject": "review",
+      "state": "held",
+      "invariant": "整卷状态由最严重的候选推动",
+      "observable": "仍有 held 时整卷不能 pass",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "review"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "adjudicate",
+          "review"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-pairing",
+      "task_type": "功能优化",
+      "capability_family": "扫描差异",
+      "subject": "finding",
+      "state": "paired",
+      "invariant": "同类同声道按精确交并比稳定一对一",
+      "observable": "修订版配对带起止位移",
+      "primary_mechanism": "ranking_reorder",
+      "workflow_ids": [
+        "compare"
+      ],
+      "source_anchors": [
+        "slatewatch/compare.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/compare.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "compare",
+          "intersect"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-resolved",
+      "task_type": "功能优化",
+      "capability_family": "扫描差异",
+      "subject": "finding",
+      "state": "unpaired",
+      "invariant": "未配对项按扫描侧分别归类",
+      "observable": "清除的右声道削顶列入 resolved",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "compare"
+      ],
+      "source_anchors": [
+        "slatewatch/compare.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/compare.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "pairs",
+          "compare"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-padding",
+      "task_type": "功能优化",
+      "capability_family": "证据选取",
+      "subject": "excerpt",
+      "state": "bounded",
+      "invariant": "摘片上下文不越过节目跨度",
+      "observable": "片头与片尾窗口在边界截止",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "extract",
+          "Span"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-picture-target",
+      "task_type": "功能优化",
+      "capability_family": "画格证据",
+      "subject": "excerpt",
+      "state": "sampled",
+      "invariant": "目标时刻若落入画面洞则无画格",
+      "observable": "画面缺失用 null 记录并无文件",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/media.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/media.py"
+        ],
+        "functions": [
+          "_capture",
+          "decode"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-fill",
+      "task_type": "功能优化",
+      "capability_family": "波形证据",
+      "subject": "excerpt",
+      "state": "annotated",
+      "invariant": "补零并独立记录真实未覆盖段",
+      "observable": "内声洞在波形映射列准确补样范围",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "sound",
+          "uncovered"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-ordered",
+      "task_type": "功能优化",
+      "capability_family": "证据选取",
+      "subject": "excerpt",
+      "state": "packed",
+      "invariant": "一批有限摘片共享一次解码",
+      "observable": "多候选定位结果同批按 ID 稳定排列",
+      "primary_mechanism": "capacity",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/service.py",
+        "slatewatch/evidence.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/service.py",
+          "slatewatch/evidence.py"
+        ],
+        "functions": [
+          "_selection",
+          "extract"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-snapshot",
+      "task_type": "功能优化",
+      "capability_family": "冻结交付",
+      "subject": "seal",
+      "state": "assembled",
+      "invariant": "冻结包保留生成当时的复核视图",
+      "observable": "后续 hold 产生新包而旧包仍 pending",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "publish"
+      ],
+      "source_anchors": [
+        "slatewatch/service.py",
+        "slatewatch/review.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/service.py",
+          "slatewatch/review.py"
+        ],
+        "functions": [
+          "seal",
+          "adjudicate"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-manifest",
+      "task_type": "功能优化",
+      "capability_family": "冻结交付",
+      "subject": "seal",
+      "state": "published",
+      "invariant": "成员长度与摘要进入封包身份",
+      "observable": "输出 ZIP 含 index 和证据关系",
+      "primary_mechanism": "export_freeze",
+      "workflow_ids": [
+        "publish"
+      ],
+      "source_anchors": [
+        "slatewatch/seal.py",
+        "slatewatch/rules.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/seal.py",
+          "slatewatch/rules.py"
+        ],
+        "functions": [
+          "pack",
+          "identifier"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-atomic",
+      "task_type": "功能优化",
+      "capability_family": "冻结交付",
+      "subject": "seal",
+      "state": "written",
+      "invariant": "先落完整字节再登记索引",
+      "observable": "已有同地址对象须通过摘要检查",
+      "primary_mechanism": "resource_lifecycle",
+      "workflow_ids": [
+        "publish"
+      ],
+      "source_anchors": [
+        "slatewatch/store.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/store.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "publish",
+          "seal"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-verify-file",
+      "task_type": "功能优化",
+      "capability_family": "交付校验",
+      "subject": "seal",
+      "state": "verified",
+      "invariant": "包哈希、成员名集合与每个摘要都要匹配",
+      "observable": "读取可返回 verified；字节变化 409",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "verify"
+      ],
+      "source_anchors": [
+        "slatewatch/seal.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/seal.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "verify",
+          "digest_file"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-samples",
+      "task_type": "功能优化",
+      "capability_family": "声音时间与声道",
+      "subject": "track",
+      "state": "accumulated",
+      "invariant": "满幅代码统计和峰值按源声道分别累积",
+      "observable": "右路有满幅峰值可对应削顶候选",
+      "primary_mechanism": "capacity",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/sound.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/sound.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "push",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-identity",
+      "task_type": "功能优化",
+      "capability_family": "母带保管",
+      "subject": "master",
+      "state": "registered",
+      "invariant": "登记身份依赖源字节和实际流选择",
+      "observable": "重复登记相同字节选择得到同一 ID",
+      "primary_mechanism": "idempotency",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/service.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/service.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "master",
+          "put"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-frame-time",
+      "task_type": "功能优化",
+      "capability_family": "画面连续性",
+      "subject": "track",
+      "state": "presented",
+      "invariant": "帧按显示 PTS 严格递增",
+      "observable": "分数帧率跨度不会由整数 fps 建轴",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/picture.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/picture.py"
+        ],
+        "functions": [
+          "decode",
+          "push"
+        ]
+      }
+    },
+    {
+      "id": "功能优化-extent",
+      "task_type": "功能优化",
+      "capability_family": "声音量测与覆盖",
+      "subject": "scan",
+      "state": "measured",
+      "invariant": "扫描端点取选中声画轨的实际覆盖终点上界",
+      "observable": "音频早收留下尾部空洞",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/scan.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/scan.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "measure",
+          "uncovered"
+        ]
+      }
+    },
+    {
+      "id": "代码重构-origin",
+      "task_type": "代码重构",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "inspected",
+      "invariant": "音画统一减去容器公共起点",
+      "observable": "流描述保留起始 PTS 和各自时间基",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "inspect",
+          "timestamp"
+        ]
+      }
+    },
+    {
+      "id": "代码重构-frame-time",
+      "task_type": "代码重构",
+      "capability_family": "画面连续性",
+      "subject": "track",
+      "state": "presented",
+      "invariant": "帧按显示 PTS 严格递增",
+      "observable": "分数帧率跨度不会由整数 fps 建轴",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/picture.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/picture.py"
+        ],
+        "functions": [
+          "decode",
+          "push"
+        ]
+      }
+    },
+    {
+      "id": "代码重构-last-frame",
+      "task_type": "代码重构",
+      "capability_family": "画面连续性",
+      "subject": "track",
+      "state": "ended",
+      "invariant": "末帧有独立持续时间判断",
+      "observable": "扫描范围覆盖最后画格的显示段",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "nominal_duration",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "代码重构-picture-hole",
+      "task_type": "代码重构",
+      "capability_family": "画面连续性",
+      "subject": "scan",
+      "state": "picture-covered",
+      "invariant": "长时间戳步长可打开显示空洞",
+      "observable": "picture-hole 登记两段画面覆盖",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "catalog"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "_measure",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "代码重构-pcm",
+      "task_type": "代码重构",
+      "capability_family": "声音时间与声道",
+      "subject": "track",
+      "state": "normalized",
+      "invariant": "时间戳量化吸附以原采样格为准",
+      "observable": "44.1/48 kHz 等按实际采样率组织 PCM",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "decode",
+          "sample_boundary"
+        ]
+      }
+    },
+    {
+      "id": "代码重构-silence",
+      "task_type": "代码重构",
+      "capability_family": "声音量测与覆盖",
+      "subject": "finding",
+      "state": "silence",
+      "invariant": "静音需要有实际样本覆盖的完整窗口",
+      "observable": "全左路数字静音与内声洞分别列出",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/sound.py",
+        "slatewatch/hits.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/sound.py",
+          "slatewatch/hits.py"
+        ],
+        "functions": [
+          "_bins",
+          "candidates"
+        ]
+      }
+    },
+    {
+      "id": "代码重构-extent",
+      "task_type": "代码重构",
+      "capability_family": "声音量测与覆盖",
+      "subject": "scan",
+      "state": "measured",
+      "invariant": "扫描端点取选中声画轨的实际覆盖终点上界",
+      "observable": "音频早收留下尾部空洞",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/scan.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/scan.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "measure",
+          "uncovered"
+        ]
+      }
+    },
+    {
+      "id": "代码重构-union",
+      "task_type": "代码重构",
+      "capability_family": "制作放行",
+      "subject": "intent",
+      "state": "covering",
+      "invariant": "相适用的相邻意图可共同盖满同一候选",
+      "observable": "相邻半开意图区间合并后候选 expected",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "intent"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "applicable",
+          "coalesce"
+        ]
+      }
+    },
+    {
+      "id": "代码重构-lanes",
+      "task_type": "代码重构",
+      "capability_family": "制作放行",
+      "subject": "intent",
+      "state": "validated",
+      "invariant": "伴音的指定声道只影响该声道",
+      "observable": "黑场不能带声道而静音可限定声道",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "intent"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "intent",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "代码重构-ruling",
+      "task_type": "代码重构",
+      "capability_family": "人工复核",
+      "subject": "ruling",
+      "state": "appended",
+      "invariant": "只裁决本扫描候选，当前投影按追加顺序",
+      "observable": "异卷 ID 404 且不能进入当前裁决",
+      "primary_mechanism": "versioning_audit",
+      "workflow_ids": [
+        "review"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "ruling",
+          "add_ruling"
+        ]
+      }
+    },
+    {
+      "id": "代码重构-reset",
+      "task_type": "代码重构",
+      "capability_family": "人工复核",
+      "subject": "review",
+      "state": "projected",
+      "invariant": "reset 回落到自动状态",
+      "observable": "撤回 hold 后待审或自动放行",
+      "primary_mechanism": "state_machine",
+      "workflow_ids": [
+        "review"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "adjudicate",
+          "timeline"
+        ]
+      }
+    },
+    {
+      "id": "代码重构-pairing",
+      "task_type": "代码重构",
+      "capability_family": "扫描差异",
+      "subject": "finding",
+      "state": "paired",
+      "invariant": "同类同声道按精确交并比稳定一对一",
+      "observable": "修订版配对带起止位移",
+      "primary_mechanism": "ranking_reorder",
+      "workflow_ids": [
+        "compare"
+      ],
+      "source_anchors": [
+        "slatewatch/compare.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/compare.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "compare",
+          "intersect"
+        ]
+      }
+    },
+    {
+      "id": "代码重构-padding",
+      "task_type": "代码重构",
+      "capability_family": "证据选取",
+      "subject": "excerpt",
+      "state": "bounded",
+      "invariant": "摘片上下文不越过节目跨度",
+      "observable": "片头与片尾窗口在边界截止",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "extract",
+          "Span"
+        ]
+      }
+    },
+    {
+      "id": "代码重构-snapshot",
+      "task_type": "代码重构",
+      "capability_family": "冻结交付",
+      "subject": "seal",
+      "state": "assembled",
+      "invariant": "冻结包保留生成当时的复核视图",
+      "observable": "后续 hold 产生新包而旧包仍 pending",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "publish"
+      ],
+      "source_anchors": [
+        "slatewatch/service.py",
+        "slatewatch/review.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/service.py",
+          "slatewatch/review.py"
+        ],
+        "functions": [
+          "seal",
+          "adjudicate"
+        ]
+      }
+    },
+    {
+      "id": "代码重构-verify-file",
+      "task_type": "代码重构",
+      "capability_family": "交付校验",
+      "subject": "seal",
+      "state": "verified",
+      "invariant": "包哈希、成员名集合与每个摘要都要匹配",
+      "observable": "读取可返回 verified；字节变化 409",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "verify"
+      ],
+      "source_anchors": [
+        "slatewatch/seal.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/seal.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "verify",
+          "digest_file"
+        ]
+      }
+    },
+    {
+      "id": "依赖升级与迁移-codec",
+      "task_type": "依赖升级与迁移",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "validated",
+      "invariant": "只有选中轨道进入允许范围判定",
+      "observable": "非法伴音选择被拒绝但可显式不选",
+      "primary_mechanism": "error_propagation",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/http.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/http.py"
+        ],
+        "functions": [
+          "validate_track",
+          "upload"
+        ]
+      }
+    },
+    {
+      "id": "依赖升级与迁移-selection",
+      "task_type": "依赖升级与迁移",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "selected",
+      "invariant": "签收记录的索引必须来自对应媒体类型",
+      "observable": "未选伴音时伴音描述为 null",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "pick_track",
+          "master"
+        ]
+      }
+    },
+    {
+      "id": "依赖升级与迁移-origin",
+      "task_type": "依赖升级与迁移",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "inspected",
+      "invariant": "音画统一减去容器公共起点",
+      "observable": "流描述保留起始 PTS 和各自时间基",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "inspect",
+          "timestamp"
+        ]
+      }
+    },
+    {
+      "id": "依赖升级与迁移-raster",
+      "task_type": "依赖升级与迁移",
+      "capability_family": "空间量测",
+      "subject": "track",
+      "state": "decoded",
+      "invariant": "缩放前检查解码后的几何",
+      "observable": "量测和 PGM 使用统一灰度画格尺寸",
+      "primary_mechanism": "capacity",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/evidence.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/evidence.py"
+        ],
+        "functions": [
+          "thumbnail",
+          "finish"
+        ]
+      }
+    },
+    {
+      "id": "依赖升级与迁移-frame-time",
+      "task_type": "依赖升级与迁移",
+      "capability_family": "画面连续性",
+      "subject": "track",
+      "state": "presented",
+      "invariant": "帧按显示 PTS 严格递增",
+      "observable": "分数帧率跨度不会由整数 fps 建轴",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/picture.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/picture.py"
+        ],
+        "functions": [
+          "decode",
+          "push"
+        ]
+      }
+    },
+    {
+      "id": "依赖升级与迁移-last-frame",
+      "task_type": "依赖升级与迁移",
+      "capability_family": "画面连续性",
+      "subject": "track",
+      "state": "ended",
+      "invariant": "末帧有独立持续时间判断",
+      "observable": "扫描范围覆盖最后画格的显示段",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "nominal_duration",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "依赖升级与迁移-texture",
+      "task_type": "依赖升级与迁移",
+      "capability_family": "画面连续性",
+      "subject": "finding",
+      "state": "freeze",
+      "invariant": "画面差和水平边缘差同时达标且显示覆盖连续",
+      "observable": "停格成段，覆盖洞断开候选",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/hits.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/hits.py"
+        ],
+        "functions": [
+          "differences",
+          "candidates"
+        ]
+      }
+    },
+    {
+      "id": "依赖升级与迁移-pcm",
+      "task_type": "依赖升级与迁移",
+      "capability_family": "声音时间与声道",
+      "subject": "track",
+      "state": "normalized",
+      "invariant": "时间戳量化吸附以原采样格为准",
+      "observable": "44.1/48 kHz 等按实际采样率组织 PCM",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "decode",
+          "sample_boundary"
+        ]
+      }
+    },
+    {
+      "id": "依赖升级与迁移-samples",
+      "task_type": "依赖升级与迁移",
+      "capability_family": "声音时间与声道",
+      "subject": "track",
+      "state": "accumulated",
+      "invariant": "满幅代码统计和峰值按源声道分别累积",
+      "observable": "右路有满幅峰值可对应削顶候选",
+      "primary_mechanism": "capacity",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/sound.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/sound.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "push",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "依赖升级与迁移-sound-null",
+      "task_type": "依赖升级与迁移",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "omitted",
+      "invariant": "未选伴音不生成声音量测和声音缺口",
+      "observable": "无声样片可比较其画面而音频栏为 null",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "catalog"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "inspect",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "依赖升级与迁移-picture-target",
+      "task_type": "依赖升级与迁移",
+      "capability_family": "画格证据",
+      "subject": "excerpt",
+      "state": "sampled",
+      "invariant": "目标时刻若落入画面洞则无画格",
+      "observable": "画面缺失用 null 记录并无文件",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/media.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/media.py"
+        ],
+        "functions": [
+          "_capture",
+          "decode"
+        ]
+      }
+    },
+    {
+      "id": "依赖升级与迁移-waveform",
+      "task_type": "依赖升级与迁移",
+      "capability_family": "波形证据",
+      "subject": "excerpt",
+      "state": "assembled",
+      "invariant": "WAV 保留原生声道、采样率及绝对源样本",
+      "observable": "样本数量等于源采样半开区间长度",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "write_wav",
+          "sample_boundary"
+        ]
+      }
+    },
+    {
+      "id": "依赖升级与迁移-fill",
+      "task_type": "依赖升级与迁移",
+      "capability_family": "波形证据",
+      "subject": "excerpt",
+      "state": "annotated",
+      "invariant": "补零并独立记录真实未覆盖段",
+      "observable": "内声洞在波形映射列准确补样范围",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "sound",
+          "uncovered"
+        ]
+      }
+    },
+    {
+      "id": "依赖升级与迁移-manifest",
+      "task_type": "依赖升级与迁移",
+      "capability_family": "冻结交付",
+      "subject": "seal",
+      "state": "published",
+      "invariant": "成员长度与摘要进入封包身份",
+      "observable": "输出 ZIP 含 index 和证据关系",
+      "primary_mechanism": "export_freeze",
+      "workflow_ids": [
+        "publish"
+      ],
+      "source_anchors": [
+        "slatewatch/seal.py",
+        "slatewatch/rules.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/seal.py",
+          "slatewatch/rules.py"
+        ],
+        "functions": [
+          "pack",
+          "identifier"
+        ]
+      }
+    },
+    {
+      "id": "依赖升级与迁移-verify-file",
+      "task_type": "依赖升级与迁移",
+      "capability_family": "交付校验",
+      "subject": "seal",
+      "state": "verified",
+      "invariant": "包哈希、成员名集合与每个摘要都要匹配",
+      "observable": "读取可返回 verified；字节变化 409",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "verify"
+      ],
+      "source_anchors": [
+        "slatewatch/seal.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/seal.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "verify",
+          "digest_file"
+        ]
+      }
+    },
+    {
+      "id": "质量保障-origin",
+      "task_type": "质量保障",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "inspected",
+      "invariant": "音画统一减去容器公共起点",
+      "observable": "流描述保留起始 PTS 和各自时间基",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "inspect",
+          "timestamp"
+        ]
+      }
+    },
+    {
+      "id": "质量保障-last-frame",
+      "task_type": "质量保障",
+      "capability_family": "画面连续性",
+      "subject": "track",
+      "state": "ended",
+      "invariant": "末帧有独立持续时间判断",
+      "observable": "扫描范围覆盖最后画格的显示段",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "nominal_duration",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "质量保障-black",
+      "task_type": "质量保障",
+      "capability_family": "空间量测",
+      "subject": "finding",
+      "state": "black",
+      "invariant": "黑场由低灰像素比例和持续时间共同决定",
+      "observable": "Basalt 片头有黑候选",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/hits.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/hits.py"
+        ],
+        "functions": [
+          "black_ratio",
+          "candidates"
+        ]
+      }
+    },
+    {
+      "id": "质量保障-texture",
+      "task_type": "质量保障",
+      "capability_family": "画面连续性",
+      "subject": "finding",
+      "state": "freeze",
+      "invariant": "画面差和水平边缘差同时达标且显示覆盖连续",
+      "observable": "停格成段，覆盖洞断开候选",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/hits.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/hits.py"
+        ],
+        "functions": [
+          "differences",
+          "candidates"
+        ]
+      }
+    },
+    {
+      "id": "质量保障-pcm",
+      "task_type": "质量保障",
+      "capability_family": "声音时间与声道",
+      "subject": "track",
+      "state": "normalized",
+      "invariant": "时间戳量化吸附以原采样格为准",
+      "observable": "44.1/48 kHz 等按实际采样率组织 PCM",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "decode",
+          "sample_boundary"
+        ]
+      }
+    },
+    {
+      "id": "质量保障-samples",
+      "task_type": "质量保障",
+      "capability_family": "声音时间与声道",
+      "subject": "track",
+      "state": "accumulated",
+      "invariant": "满幅代码统计和峰值按源声道分别累积",
+      "observable": "右路有满幅峰值可对应削顶候选",
+      "primary_mechanism": "capacity",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/sound.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/sound.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "push",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "质量保障-silence",
+      "task_type": "质量保障",
+      "capability_family": "声音量测与覆盖",
+      "subject": "finding",
+      "state": "silence",
+      "invariant": "静音需要有实际样本覆盖的完整窗口",
+      "observable": "全左路数字静音与内声洞分别列出",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/sound.py",
+        "slatewatch/hits.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/sound.py",
+          "slatewatch/hits.py"
+        ],
+        "functions": [
+          "_bins",
+          "candidates"
+        ]
+      }
+    },
+    {
+      "id": "质量保障-picture-hole",
+      "task_type": "质量保障",
+      "capability_family": "画面连续性",
+      "subject": "scan",
+      "state": "picture-covered",
+      "invariant": "长时间戳步长可打开显示空洞",
+      "observable": "picture-hole 登记两段画面覆盖",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "catalog"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "_measure",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "质量保障-union",
+      "task_type": "质量保障",
+      "capability_family": "制作放行",
+      "subject": "intent",
+      "state": "covering",
+      "invariant": "相适用的相邻意图可共同盖满同一候选",
+      "observable": "相邻半开意图区间合并后候选 expected",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "intent"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "applicable",
+          "coalesce"
+        ]
+      }
+    },
+    {
+      "id": "质量保障-partial",
+      "task_type": "质量保障",
+      "capability_family": "制作放行",
+      "subject": "finding",
+      "state": "pending",
+      "invariant": "仅部分重叠保留已关联区间并继续待审",
+      "observable": "少一微秒仍 pending",
+      "primary_mechanism": "state_machine",
+      "workflow_ids": [
+        "intent"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "applicable",
+          "timeline"
+        ]
+      }
+    },
+    {
+      "id": "质量保障-reset",
+      "task_type": "质量保障",
+      "capability_family": "人工复核",
+      "subject": "review",
+      "state": "projected",
+      "invariant": "reset 回落到自动状态",
+      "observable": "撤回 hold 后待审或自动放行",
+      "primary_mechanism": "state_machine",
+      "workflow_ids": [
+        "review"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "adjudicate",
+          "timeline"
+        ]
+      }
+    },
+    {
+      "id": "质量保障-pairing",
+      "task_type": "质量保障",
+      "capability_family": "扫描差异",
+      "subject": "finding",
+      "state": "paired",
+      "invariant": "同类同声道按精确交并比稳定一对一",
+      "observable": "修订版配对带起止位移",
+      "primary_mechanism": "ranking_reorder",
+      "workflow_ids": [
+        "compare"
+      ],
+      "source_anchors": [
+        "slatewatch/compare.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/compare.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "compare",
+          "intersect"
+        ]
+      }
+    },
+    {
+      "id": "质量保障-picture-target",
+      "task_type": "质量保障",
+      "capability_family": "画格证据",
+      "subject": "excerpt",
+      "state": "sampled",
+      "invariant": "目标时刻若落入画面洞则无画格",
+      "observable": "画面缺失用 null 记录并无文件",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/media.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/media.py"
+        ],
+        "functions": [
+          "_capture",
+          "decode"
+        ]
+      }
+    },
+    {
+      "id": "质量保障-fill",
+      "task_type": "质量保障",
+      "capability_family": "波形证据",
+      "subject": "excerpt",
+      "state": "annotated",
+      "invariant": "补零并独立记录真实未覆盖段",
+      "observable": "内声洞在波形映射列准确补样范围",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "sound",
+          "uncovered"
+        ]
+      }
+    },
+    {
+      "id": "质量保障-snapshot",
+      "task_type": "质量保障",
+      "capability_family": "冻结交付",
+      "subject": "seal",
+      "state": "assembled",
+      "invariant": "冻结包保留生成当时的复核视图",
+      "observable": "后续 hold 产生新包而旧包仍 pending",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "publish"
+      ],
+      "source_anchors": [
+        "slatewatch/service.py",
+        "slatewatch/review.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/service.py",
+          "slatewatch/review.py"
+        ],
+        "functions": [
+          "seal",
+          "adjudicate"
+        ]
+      }
+    },
+    {
+      "id": "项目维护-codec",
+      "task_type": "项目维护",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "validated",
+      "invariant": "只有选中轨道进入允许范围判定",
+      "observable": "非法伴音选择被拒绝但可显式不选",
+      "primary_mechanism": "error_propagation",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/http.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/http.py"
+        ],
+        "functions": [
+          "validate_track",
+          "upload"
+        ]
+      }
+    },
+    {
+      "id": "项目维护-selection",
+      "task_type": "项目维护",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "selected",
+      "invariant": "签收记录的索引必须来自对应媒体类型",
+      "observable": "未选伴音时伴音描述为 null",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "pick_track",
+          "master"
+        ]
+      }
+    },
+    {
+      "id": "项目维护-policy-defaults",
+      "task_type": "项目维护",
+      "capability_family": "规则与扫描身份",
+      "subject": "policy",
+      "state": "resolved",
+      "invariant": "省略的阈值持久化为实际值",
+      "observable": "无阈值请求能读回完整生效参数",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "policy"
+      ],
+      "source_anchors": [
+        "slatewatch/rules.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/rules.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "new_policy",
+          "put"
+        ]
+      }
+    },
+    {
+      "id": "项目维护-policy-window",
+      "task_type": "项目维护",
+      "capability_family": "规则与扫描身份",
+      "subject": "policy",
+      "state": "validated",
+      "invariant": "声音候选下限须覆盖完整量测窗",
+      "observable": "拒绝过宽音窗而旧政策仍可读取",
+      "primary_mechanism": "versioning_audit",
+      "workflow_ids": [
+        "policy"
+      ],
+      "source_anchors": [
+        "slatewatch/rules.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/rules.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "from_request",
+          "policy"
+        ]
+      }
+    },
+    {
+      "id": "项目维护-scan-version",
+      "task_type": "项目维护",
+      "capability_family": "规则与扫描身份",
+      "subject": "scan",
+      "state": "stored",
+      "invariant": "扫描身份纳入分析版本",
+      "observable": "同源同规则复用描述符",
+      "primary_mechanism": "idempotency",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/scan.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/scan.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "scan_identity",
+          "scan"
+        ]
+      }
+    },
+    {
+      "id": "项目维护-extent",
+      "task_type": "项目维护",
+      "capability_family": "声音量测与覆盖",
+      "subject": "scan",
+      "state": "measured",
+      "invariant": "扫描端点取选中声画轨的实际覆盖终点上界",
+      "observable": "音频早收留下尾部空洞",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/scan.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/scan.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "measure",
+          "uncovered"
+        ]
+      }
+    },
+    {
+      "id": "项目维护-picture-hole",
+      "task_type": "项目维护",
+      "capability_family": "画面连续性",
+      "subject": "scan",
+      "state": "picture-covered",
+      "invariant": "长时间戳步长可打开显示空洞",
+      "observable": "picture-hole 登记两段画面覆盖",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "catalog"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "_measure",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "项目维护-sound-null",
+      "task_type": "项目维护",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "omitted",
+      "invariant": "未选伴音不生成声音量测和声音缺口",
+      "observable": "无声样片可比较其画面而音频栏为 null",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "catalog"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "inspect",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "项目维护-lanes",
+      "task_type": "项目维护",
+      "capability_family": "制作放行",
+      "subject": "intent",
+      "state": "validated",
+      "invariant": "伴音的指定声道只影响该声道",
+      "observable": "黑场不能带声道而静音可限定声道",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "intent"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "intent",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "项目维护-rollup",
+      "task_type": "项目维护",
+      "capability_family": "人工复核",
+      "subject": "review",
+      "state": "held",
+      "invariant": "整卷状态由最严重的候选推动",
+      "observable": "仍有 held 时整卷不能 pass",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "review"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "adjudicate",
+          "review"
+        ]
+      }
+    },
+    {
+      "id": "项目维护-resolved",
+      "task_type": "项目维护",
+      "capability_family": "扫描差异",
+      "subject": "finding",
+      "state": "unpaired",
+      "invariant": "未配对项按扫描侧分别归类",
+      "observable": "清除的右声道削顶列入 resolved",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "compare"
+      ],
+      "source_anchors": [
+        "slatewatch/compare.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/compare.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "pairs",
+          "compare"
+        ]
+      }
+    },
+    {
+      "id": "项目维护-waveform",
+      "task_type": "项目维护",
+      "capability_family": "波形证据",
+      "subject": "excerpt",
+      "state": "assembled",
+      "invariant": "WAV 保留原生声道、采样率及绝对源样本",
+      "observable": "样本数量等于源采样半开区间长度",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "write_wav",
+          "sample_boundary"
+        ]
+      }
+    },
+    {
+      "id": "项目维护-fill",
+      "task_type": "项目维护",
+      "capability_family": "波形证据",
+      "subject": "excerpt",
+      "state": "annotated",
+      "invariant": "补零并独立记录真实未覆盖段",
+      "observable": "内声洞在波形映射列准确补样范围",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "sound",
+          "uncovered"
+        ]
+      }
+    },
+    {
+      "id": "项目维护-manifest",
+      "task_type": "项目维护",
+      "capability_family": "冻结交付",
+      "subject": "seal",
+      "state": "published",
+      "invariant": "成员长度与摘要进入封包身份",
+      "observable": "输出 ZIP 含 index 和证据关系",
+      "primary_mechanism": "export_freeze",
+      "workflow_ids": [
+        "publish"
+      ],
+      "source_anchors": [
+        "slatewatch/seal.py",
+        "slatewatch/rules.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/seal.py",
+          "slatewatch/rules.py"
+        ],
+        "functions": [
+          "pack",
+          "identifier"
+        ]
+      }
+    },
+    {
+      "id": "项目维护-verify-file",
+      "task_type": "项目维护",
+      "capability_family": "交付校验",
+      "subject": "seal",
+      "state": "verified",
+      "invariant": "包哈希、成员名集合与每个摘要都要匹配",
+      "observable": "读取可返回 verified；字节变化 409",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "verify"
+      ],
+      "source_anchors": [
+        "slatewatch/seal.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/seal.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "verify",
+          "digest_file"
+        ]
+      }
+    },
+    {
+      "id": "技术讨论-raster",
+      "task_type": "技术讨论",
+      "capability_family": "空间量测",
+      "subject": "track",
+      "state": "decoded",
+      "invariant": "缩放前检查解码后的几何",
+      "observable": "量测和 PGM 使用统一灰度画格尺寸",
+      "primary_mechanism": "capacity",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/evidence.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/evidence.py"
+        ],
+        "functions": [
+          "thumbnail",
+          "finish"
+        ]
+      }
+    },
+    {
+      "id": "技术讨论-frame-time",
+      "task_type": "技术讨论",
+      "capability_family": "画面连续性",
+      "subject": "track",
+      "state": "presented",
+      "invariant": "帧按显示 PTS 严格递增",
+      "observable": "分数帧率跨度不会由整数 fps 建轴",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/picture.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/picture.py"
+        ],
+        "functions": [
+          "decode",
+          "push"
+        ]
+      }
+    },
+    {
+      "id": "技术讨论-black",
+      "task_type": "技术讨论",
+      "capability_family": "空间量测",
+      "subject": "finding",
+      "state": "black",
+      "invariant": "黑场由低灰像素比例和持续时间共同决定",
+      "observable": "Basalt 片头有黑候选",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/hits.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/hits.py"
+        ],
+        "functions": [
+          "black_ratio",
+          "candidates"
+        ]
+      }
+    },
+    {
+      "id": "技术讨论-texture",
+      "task_type": "技术讨论",
+      "capability_family": "画面连续性",
+      "subject": "finding",
+      "state": "freeze",
+      "invariant": "画面差和水平边缘差同时达标且显示覆盖连续",
+      "observable": "停格成段，覆盖洞断开候选",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/hits.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/hits.py"
+        ],
+        "functions": [
+          "differences",
+          "candidates"
+        ]
+      }
+    },
+    {
+      "id": "技术讨论-pcm",
+      "task_type": "技术讨论",
+      "capability_family": "声音时间与声道",
+      "subject": "track",
+      "state": "normalized",
+      "invariant": "时间戳量化吸附以原采样格为准",
+      "observable": "44.1/48 kHz 等按实际采样率组织 PCM",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "decode",
+          "sample_boundary"
+        ]
+      }
+    },
+    {
+      "id": "技术讨论-silence",
+      "task_type": "技术讨论",
+      "capability_family": "声音量测与覆盖",
+      "subject": "finding",
+      "state": "silence",
+      "invariant": "静音需要有实际样本覆盖的完整窗口",
+      "observable": "全左路数字静音与内声洞分别列出",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/sound.py",
+        "slatewatch/hits.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/sound.py",
+          "slatewatch/hits.py"
+        ],
+        "functions": [
+          "_bins",
+          "candidates"
+        ]
+      }
+    },
+    {
+      "id": "技术讨论-extent",
+      "task_type": "技术讨论",
+      "capability_family": "声音量测与覆盖",
+      "subject": "scan",
+      "state": "measured",
+      "invariant": "扫描端点取选中声画轨的实际覆盖终点上界",
+      "observable": "音频早收留下尾部空洞",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/scan.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/scan.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "measure",
+          "uncovered"
+        ]
+      }
+    },
+    {
+      "id": "技术讨论-partial",
+      "task_type": "技术讨论",
+      "capability_family": "制作放行",
+      "subject": "finding",
+      "state": "pending",
+      "invariant": "仅部分重叠保留已关联区间并继续待审",
+      "observable": "少一微秒仍 pending",
+      "primary_mechanism": "state_machine",
+      "workflow_ids": [
+        "intent"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "applicable",
+          "timeline"
+        ]
+      }
+    },
+    {
+      "id": "技术讨论-rollup",
+      "task_type": "技术讨论",
+      "capability_family": "人工复核",
+      "subject": "review",
+      "state": "held",
+      "invariant": "整卷状态由最严重的候选推动",
+      "observable": "仍有 held 时整卷不能 pass",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "review"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "adjudicate",
+          "review"
+        ]
+      }
+    },
+    {
+      "id": "技术讨论-pairing",
+      "task_type": "技术讨论",
+      "capability_family": "扫描差异",
+      "subject": "finding",
+      "state": "paired",
+      "invariant": "同类同声道按精确交并比稳定一对一",
+      "observable": "修订版配对带起止位移",
+      "primary_mechanism": "ranking_reorder",
+      "workflow_ids": [
+        "compare"
+      ],
+      "source_anchors": [
+        "slatewatch/compare.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/compare.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "compare",
+          "intersect"
+        ]
+      }
+    },
+    {
+      "id": "技术讨论-padding",
+      "task_type": "技术讨论",
+      "capability_family": "证据选取",
+      "subject": "excerpt",
+      "state": "bounded",
+      "invariant": "摘片上下文不越过节目跨度",
+      "observable": "片头与片尾窗口在边界截止",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "extract",
+          "Span"
+        ]
+      }
+    },
+    {
+      "id": "技术讨论-picture-target",
+      "task_type": "技术讨论",
+      "capability_family": "画格证据",
+      "subject": "excerpt",
+      "state": "sampled",
+      "invariant": "目标时刻若落入画面洞则无画格",
+      "observable": "画面缺失用 null 记录并无文件",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/media.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/media.py"
+        ],
+        "functions": [
+          "_capture",
+          "decode"
+        ]
+      }
+    },
+    {
+      "id": "技术讨论-fill",
+      "task_type": "技术讨论",
+      "capability_family": "波形证据",
+      "subject": "excerpt",
+      "state": "annotated",
+      "invariant": "补零并独立记录真实未覆盖段",
+      "observable": "内声洞在波形映射列准确补样范围",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "sound",
+          "uncovered"
+        ]
+      }
+    },
+    {
+      "id": "技术讨论-snapshot",
+      "task_type": "技术讨论",
+      "capability_family": "冻结交付",
+      "subject": "seal",
+      "state": "assembled",
+      "invariant": "冻结包保留生成当时的复核视图",
+      "observable": "后续 hold 产生新包而旧包仍 pending",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "publish"
+      ],
+      "source_anchors": [
+        "slatewatch/service.py",
+        "slatewatch/review.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/service.py",
+          "slatewatch/review.py"
+        ],
+        "functions": [
+          "seal",
+          "adjudicate"
+        ]
+      }
+    },
+    {
+      "id": "技术讨论-manifest",
+      "task_type": "技术讨论",
+      "capability_family": "冻结交付",
+      "subject": "seal",
+      "state": "published",
+      "invariant": "成员长度与摘要进入封包身份",
+      "observable": "输出 ZIP 含 index 和证据关系",
+      "primary_mechanism": "export_freeze",
+      "workflow_ids": [
+        "publish"
+      ],
+      "source_anchors": [
+        "slatewatch/seal.py",
+        "slatewatch/rules.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/seal.py",
+          "slatewatch/rules.py"
+        ],
+        "functions": [
+          "pack",
+          "identifier"
+        ]
+      }
+    },
+    {
+      "id": "问题排查与诊断-selection",
+      "task_type": "问题排查与诊断",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "selected",
+      "invariant": "签收记录的索引必须来自对应媒体类型",
+      "observable": "未选伴音时伴音描述为 null",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "pick_track",
+          "master"
+        ]
+      }
+    },
+    {
+      "id": "问题排查与诊断-origin",
+      "task_type": "问题排查与诊断",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "inspected",
+      "invariant": "音画统一减去容器公共起点",
+      "observable": "流描述保留起始 PTS 和各自时间基",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "inspect",
+          "timestamp"
+        ]
+      }
+    },
+    {
+      "id": "问题排查与诊断-codec",
+      "task_type": "问题排查与诊断",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "validated",
+      "invariant": "只有选中轨道进入允许范围判定",
+      "observable": "非法伴音选择被拒绝但可显式不选",
+      "primary_mechanism": "error_propagation",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/http.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/http.py"
+        ],
+        "functions": [
+          "validate_track",
+          "upload"
+        ]
+      }
+    },
+    {
+      "id": "问题排查与诊断-frame-time",
+      "task_type": "问题排查与诊断",
+      "capability_family": "画面连续性",
+      "subject": "track",
+      "state": "presented",
+      "invariant": "帧按显示 PTS 严格递增",
+      "observable": "分数帧率跨度不会由整数 fps 建轴",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/picture.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/picture.py"
+        ],
+        "functions": [
+          "decode",
+          "push"
+        ]
+      }
+    },
+    {
+      "id": "问题排查与诊断-last-frame",
+      "task_type": "问题排查与诊断",
+      "capability_family": "画面连续性",
+      "subject": "track",
+      "state": "ended",
+      "invariant": "末帧有独立持续时间判断",
+      "observable": "扫描范围覆盖最后画格的显示段",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "nominal_duration",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "问题排查与诊断-raster",
+      "task_type": "问题排查与诊断",
+      "capability_family": "空间量测",
+      "subject": "track",
+      "state": "decoded",
+      "invariant": "缩放前检查解码后的几何",
+      "observable": "量测和 PGM 使用统一灰度画格尺寸",
+      "primary_mechanism": "capacity",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/evidence.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/evidence.py"
+        ],
+        "functions": [
+          "thumbnail",
+          "finish"
+        ]
+      }
+    },
+    {
+      "id": "问题排查与诊断-pcm",
+      "task_type": "问题排查与诊断",
+      "capability_family": "声音时间与声道",
+      "subject": "track",
+      "state": "normalized",
+      "invariant": "时间戳量化吸附以原采样格为准",
+      "observable": "44.1/48 kHz 等按实际采样率组织 PCM",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "decode",
+          "sample_boundary"
+        ]
+      }
+    },
+    {
+      "id": "问题排查与诊断-samples",
+      "task_type": "问题排查与诊断",
+      "capability_family": "声音时间与声道",
+      "subject": "track",
+      "state": "accumulated",
+      "invariant": "满幅代码统计和峰值按源声道分别累积",
+      "observable": "右路有满幅峰值可对应削顶候选",
+      "primary_mechanism": "capacity",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/sound.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/sound.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "push",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "问题排查与诊断-silence",
+      "task_type": "问题排查与诊断",
+      "capability_family": "声音量测与覆盖",
+      "subject": "finding",
+      "state": "silence",
+      "invariant": "静音需要有实际样本覆盖的完整窗口",
+      "observable": "全左路数字静音与内声洞分别列出",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/sound.py",
+        "slatewatch/hits.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/sound.py",
+          "slatewatch/hits.py"
+        ],
+        "functions": [
+          "_bins",
+          "candidates"
+        ]
+      }
+    },
+    {
+      "id": "问题排查与诊断-clip",
+      "task_type": "问题排查与诊断",
+      "capability_family": "声音量测与覆盖",
+      "subject": "finding",
+      "state": "clip",
+      "invariant": "严重度保留窗口满幅样本比例",
+      "observable": "修订版去掉右声道削顶",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/sound.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/sound.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "finish",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "问题排查与诊断-extent",
+      "task_type": "问题排查与诊断",
+      "capability_family": "声音量测与覆盖",
+      "subject": "scan",
+      "state": "measured",
+      "invariant": "扫描端点取选中声画轨的实际覆盖终点上界",
+      "observable": "音频早收留下尾部空洞",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/scan.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/scan.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "measure",
+          "uncovered"
+        ]
+      }
+    },
+    {
+      "id": "问题排查与诊断-picture-hole",
+      "task_type": "问题排查与诊断",
+      "capability_family": "画面连续性",
+      "subject": "scan",
+      "state": "picture-covered",
+      "invariant": "长时间戳步长可打开显示空洞",
+      "observable": "picture-hole 登记两段画面覆盖",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "catalog"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "_measure",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "问题排查与诊断-sound-null",
+      "task_type": "问题排查与诊断",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "omitted",
+      "invariant": "未选伴音不生成声音量测和声音缺口",
+      "observable": "无声样片可比较其画面而音频栏为 null",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "catalog"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "inspect",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "问题排查与诊断-picture-target",
+      "task_type": "问题排查与诊断",
+      "capability_family": "画格证据",
+      "subject": "excerpt",
+      "state": "sampled",
+      "invariant": "目标时刻若落入画面洞则无画格",
+      "observable": "画面缺失用 null 记录并无文件",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/media.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/media.py"
+        ],
+        "functions": [
+          "_capture",
+          "decode"
+        ]
+      }
+    },
+    {
+      "id": "问题排查与诊断-fill",
+      "task_type": "问题排查与诊断",
+      "capability_family": "波形证据",
+      "subject": "excerpt",
+      "state": "annotated",
+      "invariant": "补零并独立记录真实未覆盖段",
+      "observable": "内声洞在波形映射列准确补样范围",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "sound",
+          "uncovered"
+        ]
+      }
+    },
+    {
+      "id": "部署运维-upload",
+      "task_type": "部署运维",
+      "capability_family": "母带保管",
+      "subject": "master",
+      "state": "staged",
+      "invariant": "无效媒体不能进入已登记集合",
+      "observable": "坏容器返回 400 且没有母带描述符",
+      "primary_mechanism": "resource_lifecycle",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/service.py",
+        "slatewatch/media.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/service.py",
+          "slatewatch/media.py"
+        ],
+        "functions": [
+          "master",
+          "inspect"
+        ]
+      }
+    },
+    {
+      "id": "部署运维-identity",
+      "task_type": "部署运维",
+      "capability_family": "母带保管",
+      "subject": "master",
+      "state": "registered",
+      "invariant": "登记身份依赖源字节和实际流选择",
+      "observable": "重复登记相同字节选择得到同一 ID",
+      "primary_mechanism": "idempotency",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/service.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/service.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "master",
+          "put"
+        ]
+      }
+    },
+    {
+      "id": "部署运维-codec",
+      "task_type": "部署运维",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "validated",
+      "invariant": "只有选中轨道进入允许范围判定",
+      "observable": "非法伴音选择被拒绝但可显式不选",
+      "primary_mechanism": "error_propagation",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/http.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/http.py"
+        ],
+        "functions": [
+          "validate_track",
+          "upload"
+        ]
+      }
+    },
+    {
+      "id": "部署运维-scan-version",
+      "task_type": "部署运维",
+      "capability_family": "规则与扫描身份",
+      "subject": "scan",
+      "state": "stored",
+      "invariant": "扫描身份纳入分析版本",
+      "observable": "同源同规则复用描述符",
+      "primary_mechanism": "idempotency",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/scan.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/scan.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "scan_identity",
+          "scan"
+        ]
+      }
+    },
+    {
+      "id": "部署运维-raster",
+      "task_type": "部署运维",
+      "capability_family": "空间量测",
+      "subject": "track",
+      "state": "decoded",
+      "invariant": "缩放前检查解码后的几何",
+      "observable": "量测和 PGM 使用统一灰度画格尺寸",
+      "primary_mechanism": "capacity",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/evidence.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/evidence.py"
+        ],
+        "functions": [
+          "thumbnail",
+          "finish"
+        ]
+      }
+    },
+    {
+      "id": "部署运维-frame-time",
+      "task_type": "部署运维",
+      "capability_family": "画面连续性",
+      "subject": "track",
+      "state": "presented",
+      "invariant": "帧按显示 PTS 严格递增",
+      "observable": "分数帧率跨度不会由整数 fps 建轴",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/picture.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/picture.py"
+        ],
+        "functions": [
+          "decode",
+          "push"
+        ]
+      }
+    },
+    {
+      "id": "部署运维-pcm",
+      "task_type": "部署运维",
+      "capability_family": "声音时间与声道",
+      "subject": "track",
+      "state": "normalized",
+      "invariant": "时间戳量化吸附以原采样格为准",
+      "observable": "44.1/48 kHz 等按实际采样率组织 PCM",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "decode",
+          "sample_boundary"
+        ]
+      }
+    },
+    {
+      "id": "部署运维-extent",
+      "task_type": "部署运维",
+      "capability_family": "声音量测与覆盖",
+      "subject": "scan",
+      "state": "measured",
+      "invariant": "扫描端点取选中声画轨的实际覆盖终点上界",
+      "observable": "音频早收留下尾部空洞",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/scan.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/scan.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "measure",
+          "uncovered"
+        ]
+      }
+    },
+    {
+      "id": "部署运维-sound-null",
+      "task_type": "部署运维",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "omitted",
+      "invariant": "未选伴音不生成声音量测和声音缺口",
+      "observable": "无声样片可比较其画面而音频栏为 null",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "catalog"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "inspect",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "部署运维-ordered",
+      "task_type": "部署运维",
+      "capability_family": "证据选取",
+      "subject": "excerpt",
+      "state": "packed",
+      "invariant": "一批有限摘片共享一次解码",
+      "observable": "多候选定位结果同批按 ID 稳定排列",
+      "primary_mechanism": "capacity",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/service.py",
+        "slatewatch/evidence.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/service.py",
+          "slatewatch/evidence.py"
+        ],
+        "functions": [
+          "_selection",
+          "extract"
+        ]
+      }
+    },
+    {
+      "id": "部署运维-waveform",
+      "task_type": "部署运维",
+      "capability_family": "波形证据",
+      "subject": "excerpt",
+      "state": "assembled",
+      "invariant": "WAV 保留原生声道、采样率及绝对源样本",
+      "observable": "样本数量等于源采样半开区间长度",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "write_wav",
+          "sample_boundary"
+        ]
+      }
+    },
+    {
+      "id": "部署运维-snapshot",
+      "task_type": "部署运维",
+      "capability_family": "冻结交付",
+      "subject": "seal",
+      "state": "assembled",
+      "invariant": "冻结包保留生成当时的复核视图",
+      "observable": "后续 hold 产生新包而旧包仍 pending",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "publish"
+      ],
+      "source_anchors": [
+        "slatewatch/service.py",
+        "slatewatch/review.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/service.py",
+          "slatewatch/review.py"
+        ],
+        "functions": [
+          "seal",
+          "adjudicate"
+        ]
+      }
+    },
+    {
+      "id": "部署运维-manifest",
+      "task_type": "部署运维",
+      "capability_family": "冻结交付",
+      "subject": "seal",
+      "state": "published",
+      "invariant": "成员长度与摘要进入封包身份",
+      "observable": "输出 ZIP 含 index 和证据关系",
+      "primary_mechanism": "export_freeze",
+      "workflow_ids": [
+        "publish"
+      ],
+      "source_anchors": [
+        "slatewatch/seal.py",
+        "slatewatch/rules.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/seal.py",
+          "slatewatch/rules.py"
+        ],
+        "functions": [
+          "pack",
+          "identifier"
+        ]
+      }
+    },
+    {
+      "id": "部署运维-atomic",
+      "task_type": "部署运维",
+      "capability_family": "冻结交付",
+      "subject": "seal",
+      "state": "written",
+      "invariant": "先落完整字节再登记索引",
+      "observable": "已有同地址对象须通过摘要检查",
+      "primary_mechanism": "resource_lifecycle",
+      "workflow_ids": [
+        "publish"
+      ],
+      "source_anchors": [
+        "slatewatch/store.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/store.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "publish",
+          "seal"
+        ]
+      }
+    },
+    {
+      "id": "部署运维-verify-file",
+      "task_type": "部署运维",
+      "capability_family": "交付校验",
+      "subject": "seal",
+      "state": "verified",
+      "invariant": "包哈希、成员名集合与每个摘要都要匹配",
+      "observable": "读取可返回 verified；字节变化 409",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "verify"
+      ],
+      "source_anchors": [
+        "slatewatch/seal.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/seal.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "verify",
+          "digest_file"
+        ]
+      }
+    },
+    {
+      "id": "泛Agent需求-selection",
+      "task_type": "泛Agent需求",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "selected",
+      "invariant": "签收记录的索引必须来自对应媒体类型",
+      "observable": "未选伴音时伴音描述为 null",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "intake"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "pick_track",
+          "master"
+        ]
+      }
+    },
+    {
+      "id": "泛Agent需求-policy-defaults",
+      "task_type": "泛Agent需求",
+      "capability_family": "规则与扫描身份",
+      "subject": "policy",
+      "state": "resolved",
+      "invariant": "省略的阈值持久化为实际值",
+      "observable": "无阈值请求能读回完整生效参数",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "policy"
+      ],
+      "source_anchors": [
+        "slatewatch/rules.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/rules.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "new_policy",
+          "put"
+        ]
+      }
+    },
+    {
+      "id": "泛Agent需求-black",
+      "task_type": "泛Agent需求",
+      "capability_family": "空间量测",
+      "subject": "finding",
+      "state": "black",
+      "invariant": "黑场由低灰像素比例和持续时间共同决定",
+      "observable": "Basalt 片头有黑候选",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/hits.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/hits.py"
+        ],
+        "functions": [
+          "black_ratio",
+          "candidates"
+        ]
+      }
+    },
+    {
+      "id": "泛Agent需求-texture",
+      "task_type": "泛Agent需求",
+      "capability_family": "画面连续性",
+      "subject": "finding",
+      "state": "freeze",
+      "invariant": "画面差和水平边缘差同时达标且显示覆盖连续",
+      "observable": "停格成段，覆盖洞断开候选",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/hits.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/hits.py"
+        ],
+        "functions": [
+          "differences",
+          "candidates"
+        ]
+      }
+    },
+    {
+      "id": "泛Agent需求-silence",
+      "task_type": "泛Agent需求",
+      "capability_family": "声音量测与覆盖",
+      "subject": "finding",
+      "state": "silence",
+      "invariant": "静音需要有实际样本覆盖的完整窗口",
+      "observable": "全左路数字静音与内声洞分别列出",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/sound.py",
+        "slatewatch/hits.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/sound.py",
+          "slatewatch/hits.py"
+        ],
+        "functions": [
+          "_bins",
+          "candidates"
+        ]
+      }
+    },
+    {
+      "id": "泛Agent需求-clip",
+      "task_type": "泛Agent需求",
+      "capability_family": "声音量测与覆盖",
+      "subject": "finding",
+      "state": "clip",
+      "invariant": "严重度保留窗口满幅样本比例",
+      "observable": "修订版去掉右声道削顶",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/sound.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/sound.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "finish",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "泛Agent需求-extent",
+      "task_type": "泛Agent需求",
+      "capability_family": "声音量测与覆盖",
+      "subject": "scan",
+      "state": "measured",
+      "invariant": "扫描端点取选中声画轨的实际覆盖终点上界",
+      "observable": "音频早收留下尾部空洞",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "scan"
+      ],
+      "source_anchors": [
+        "slatewatch/scan.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/scan.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "measure",
+          "uncovered"
+        ]
+      }
+    },
+    {
+      "id": "泛Agent需求-picture-hole",
+      "task_type": "泛Agent需求",
+      "capability_family": "画面连续性",
+      "subject": "scan",
+      "state": "picture-covered",
+      "invariant": "长时间戳步长可打开显示空洞",
+      "observable": "picture-hole 登记两段画面覆盖",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "catalog"
+      ],
+      "source_anchors": [
+        "slatewatch/picture.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/picture.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "_measure",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "泛Agent需求-sound-null",
+      "task_type": "泛Agent需求",
+      "capability_family": "选流与时基",
+      "subject": "track",
+      "state": "omitted",
+      "invariant": "未选伴音不生成声音量测和声音缺口",
+      "observable": "无声样片可比较其画面而音频栏为 null",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "catalog"
+      ],
+      "source_anchors": [
+        "slatewatch/media.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/media.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "inspect",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "泛Agent需求-lanes",
+      "task_type": "泛Agent需求",
+      "capability_family": "制作放行",
+      "subject": "intent",
+      "state": "validated",
+      "invariant": "伴音的指定声道只影响该声道",
+      "observable": "黑场不能带声道而静音可限定声道",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "intent"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "intent",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "泛Agent需求-rollup",
+      "task_type": "泛Agent需求",
+      "capability_family": "人工复核",
+      "subject": "review",
+      "state": "held",
+      "invariant": "整卷状态由最严重的候选推动",
+      "observable": "仍有 held 时整卷不能 pass",
+      "primary_mechanism": "policy_rules",
+      "workflow_ids": [
+        "review"
+      ],
+      "source_anchors": [
+        "slatewatch/review.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/review.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "adjudicate",
+          "review"
+        ]
+      }
+    },
+    {
+      "id": "泛Agent需求-resolved",
+      "task_type": "泛Agent需求",
+      "capability_family": "扫描差异",
+      "subject": "finding",
+      "state": "unpaired",
+      "invariant": "未配对项按扫描侧分别归类",
+      "observable": "清除的右声道削顶列入 resolved",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "compare"
+      ],
+      "source_anchors": [
+        "slatewatch/compare.py",
+        "slatewatch/service.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/compare.py",
+          "slatewatch/service.py"
+        ],
+        "functions": [
+          "pairs",
+          "compare"
+        ]
+      }
+    },
+    {
+      "id": "泛Agent需求-picture-target",
+      "task_type": "泛Agent需求",
+      "capability_family": "画格证据",
+      "subject": "excerpt",
+      "state": "sampled",
+      "invariant": "目标时刻若落入画面洞则无画格",
+      "observable": "画面缺失用 null 记录并无文件",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/media.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/media.py"
+        ],
+        "functions": [
+          "_capture",
+          "decode"
+        ]
+      }
+    },
+    {
+      "id": "泛Agent需求-fill",
+      "task_type": "泛Agent需求",
+      "capability_family": "波形证据",
+      "subject": "excerpt",
+      "state": "annotated",
+      "invariant": "补零并独立记录真实未覆盖段",
+      "observable": "内声洞在波形映射列准确补样范围",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "evidence"
+      ],
+      "source_anchors": [
+        "slatewatch/evidence.py",
+        "slatewatch/clock.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/evidence.py",
+          "slatewatch/clock.py"
+        ],
+        "functions": [
+          "sound",
+          "uncovered"
+        ]
+      }
+    },
+    {
+      "id": "泛Agent需求-verify-file",
+      "task_type": "泛Agent需求",
+      "capability_family": "交付校验",
+      "subject": "seal",
+      "state": "verified",
+      "invariant": "包哈希、成员名集合与每个摘要都要匹配",
+      "observable": "读取可返回 verified；字节变化 409",
+      "primary_mechanism": "snapshot_consistency",
+      "workflow_ids": [
+        "verify"
+      ],
+      "source_anchors": [
+        "slatewatch/seal.py",
+        "slatewatch/store.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/seal.py",
+          "slatewatch/store.py"
+        ],
+        "functions": [
+          "verify",
+          "digest_file"
+        ]
+      }
+    }
+  ]
+}

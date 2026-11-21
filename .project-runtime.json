@@ -1,0 +1,51 @@
+{
+  "project_shape": "backend",
+  "language": "Python",
+  "source_extensions": [
+    ".py"
+  ],
+  "testing": "deferred",
+  "build_command": "python3 -m compileall -q slatewatch",
+  "workflow_checks": [
+    {
+      "workflow_id": "intake",
+      "command": "python3 -m slatewatch.walkthrough intake"
+    },
+    {
+      "workflow_id": "policy",
+      "command": "python3 -m slatewatch.walkthrough policy"
+    },
+    {
+      "workflow_id": "scan",
+      "command": "python3 -m slatewatch.walkthrough scan"
+    },
+    {
+      "workflow_id": "intent",
+      "command": "python3 -m slatewatch.walkthrough intent"
+    },
+    {
+      "workflow_id": "review",
+      "command": "python3 -m slatewatch.walkthrough review"
+    },
+    {
+      "workflow_id": "compare",
+      "command": "python3 -m slatewatch.walkthrough compare"
+    },
+    {
+      "workflow_id": "evidence",
+      "command": "python3 -m slatewatch.walkthrough evidence"
+    },
+    {
+      "workflow_id": "publish",
+      "command": "python3 -m slatewatch.walkthrough publish"
+    },
+    {
+      "workflow_id": "catalog",
+      "command": "python3 -m slatewatch.walkthrough catalog"
+    },
+    {
+      "workflow_id": "verify",
+      "command": "python3 -m slatewatch.walkthrough verify"
+    }
+  ]
+}

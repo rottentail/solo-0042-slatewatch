@@ -1,0 +1,291 @@
+{
+  "project_shape": "backend",
+  "name": "Slatewatch",
+  "modules": [
+    {
+      "id": "http",
+      "path": "slatewatch/http.py",
+      "responsibility": "受信工位 HTTP 请求与并发上限"
+    },
+    {
+      "id": "service",
+      "path": "slatewatch/service.py",
+      "responsibility": "协调母带、量测、裁决与发布"
+    },
+    {
+      "id": "clock",
+      "path": "slatewatch/clock.py",
+      "responsibility": "共享时标、半开区间与样本换算"
+    },
+    {
+      "id": "media",
+      "path": "slatewatch/media.py",
+      "responsibility": "选流、解码、画格与 PCM"
+    },
+    {
+      "id": "picture",
+      "path": "slatewatch/picture.py",
+      "responsibility": "灰阶亮度、纹理变化和显示覆盖"
+    },
+    {
+      "id": "sound",
+      "path": "slatewatch/sound.py",
+      "responsibility": "原采样率覆盖和逐声道窗统计"
+    },
+    {
+      "id": "hits",
+      "path": "slatewatch/hits.py",
+      "responsibility": "连续候选及扫描内身份"
+    },
+    {
+      "id": "scan",
+      "path": "slatewatch/scan.py",
+      "responsibility": "扫描身份、测量统合和空洞计算"
+    },
+    {
+      "id": "rules",
+      "path": "slatewatch/rules.py",
+      "responsibility": "不可变量测规则和输入校验"
+    },
+    {
+      "id": "review",
+      "path": "slatewatch/review.py",
+      "responsibility": "制作意图和裁决状态投影"
+    },
+    {
+      "id": "compare",
+      "path": "slatewatch/compare.py",
+      "responsibility": "同节目时线的版本对照"
+    },
+    {
+      "id": "evidence",
+      "path": "slatewatch/evidence.py",
+      "responsibility": "源时标摘片、补零记录"
+    },
+    {
+      "id": "seal",
+      "path": "slatewatch/seal.py",
+      "responsibility": "冻结格式和实际字节校验"
+    },
+    {
+      "id": "store",
+      "path": "slatewatch/store.py",
+      "responsibility": "不可变记录、追加事件及字节对象"
+    }
+  ],
+  "workflows": [
+    {
+      "id": "intake",
+      "name": "母带登记",
+      "entry": "POST /masters",
+      "success": "声画流、索引、标签与内容地址可查",
+      "failure": "坏容器 400",
+      "verification": "python3 -m slatewatch.walkthrough intake",
+      "steps": [
+        "校验并暂存输入",
+        "选流登记原件和描述符"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "media",
+        "store"
+      ]
+    },
+    {
+      "id": "policy",
+      "name": "规则版登记",
+      "entry": "POST /policies",
+      "success": "默认版和修订版各可按 ID 读取",
+      "failure": "声音窗和最短候选不相容时 400",
+      "verification": "python3 -m slatewatch.walkthrough policy",
+      "steps": [
+        "解析默认值和阈值",
+        "规范化并持久化"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "rules",
+        "store"
+      ]
+    },
+    {
+      "id": "scan",
+      "name": "技术信号扫描",
+      "entry": "POST /scans",
+      "success": "独立候选及覆盖区间和源流已登记",
+      "failure": "未知规则 404",
+      "verification": "python3 -m slatewatch.walkthrough scan",
+      "steps": [
+        "解码并分别量测画面与伴音",
+        "汇入空洞与技术候选并存档"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "store",
+        "scan",
+        "media",
+        "clock",
+        "picture",
+        "sound",
+        "hits",
+        "rules"
+      ]
+    },
+    {
+      "id": "intent",
+      "name": "登记制作意图区间",
+      "entry": "POST /scans/{id}/intents",
+      "success": "完整覆盖后候选 expected",
+      "failure": "画面意图指定声道时 400",
+      "verification": "python3 -m slatewatch.walkthrough intent",
+      "steps": [
+        "验证范围和声道并追加",
+        "按同指标和声道投影当前意图"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "store",
+        "review",
+        "clock"
+      ]
+    },
+    {
+      "id": "review",
+      "name": "提交或撤回裁决",
+      "entry": "POST /scans/{id}/rulings + GET /scans/{id}/review",
+      "success": "扣留后可重回自动判定",
+      "failure": "异卷候选 404",
+      "verification": "python3 -m slatewatch.walkthrough review",
+      "steps": [
+        "在所属扫描追加裁决",
+        "按序重读并统合当前过审状态"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "store",
+        "review",
+        "clock"
+      ]
+    },
+    {
+      "id": "compare",
+      "name": "扫描版次对照",
+      "entry": "POST /compare",
+      "success": "修订样片已消除的削顶列入 resolved",
+      "failure": "无效交并门槛 400",
+      "verification": "python3 -m slatewatch.walkthrough compare",
+      "steps": [
+        "读取两轮不可变扫描",
+        "按指标、声道、重叠与稳定顺序配对"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "store",
+        "compare",
+        "clock"
+      ]
+    },
+    {
+      "id": "evidence",
+      "name": "异常摘片",
+      "entry": "POST /scans/{id}/evidence",
+      "success": "有源时间的画格、波形和补零区间",
+      "failure": "空摘片清单 400",
+      "verification": "python3 -m slatewatch.walkthrough evidence",
+      "steps": [
+        "选定候选并裁剪节目窗口",
+        "重解码并生成媒体和映射"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "store",
+        "evidence",
+        "media",
+        "clock"
+      ]
+    },
+    {
+      "id": "publish",
+      "name": "冻结审片证据",
+      "entry": "POST /scans/{id}/seals",
+      "success": "旧 pending 和新 hold 包并存",
+      "failure": "找不到待摘候选 404",
+      "verification": "python3 -m slatewatch.walkthrough publish",
+      "steps": [
+        "读取当时的复核视图并摘片",
+        "建立索引后提交封包描述符"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "store",
+        "review",
+        "evidence",
+        "seal"
+      ]
+    },
+    {
+      "id": "catalog",
+      "name": "读取技术扫描",
+      "entry": "GET /scans/{id}",
+      "success": "可见画面内洞，未选伴音为 null",
+      "failure": "未知扫描 404",
+      "verification": "python3 -m slatewatch.walkthrough catalog",
+      "steps": [
+        "读既有描述符",
+        "以覆盖区间和流表解释未选与缺失"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "store",
+        "scan",
+        "picture",
+        "media"
+      ]
+    },
+    {
+      "id": "verify",
+      "name": "核对冻结包",
+      "entry": "GET /seals/{id}/verify + /bundle",
+      "success": "完整索引及成员核对一致",
+      "failure": "字节篡改后 409",
+      "verification": "python3 -m slatewatch.walkthrough verify",
+      "steps": [
+        "按描述符定位字节对象",
+        "核对全包及各成员后交付"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "store",
+        "seal"
+      ]
+    }
+  ],
+  "complexity": {
+    "mechanisms": [
+      "batch_transaction",
+      "capacity",
+      "concurrency",
+      "error_propagation",
+      "export_freeze",
+      "idempotency",
+      "lineage",
+      "policy_rules",
+      "ranking_reorder",
+      "resource_lifecycle",
+      "snapshot_consistency",
+      "state_machine",
+      "time_semantics",
+      "versioning_audit"
+    ]
+  }
+}
