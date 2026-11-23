@@ -10,10 +10,13 @@ import av
 
 SAMPLE_RATE = 8000
 SIZE = (160, 96)
-REELS = ('basalt', 'revision', 'picture-hole', 'no-sound', 'fractional')
+REELS = ('basalt', 'revision', 'picture-hole', 'no-sound', 'fractional',
+         'repair-a', 'repair-b')
+# Missing-frame episodes shared by the repair-shed reels, on the programme clock.
+REPAIR_HOLES = ((Fraction(2), Fraction(63, 25)), (Fraction(3), Fraction(88, 25)))
 
 
-def raster(index, dark, still):
+def raster(index, dark, still, mark=None):
     width, height = SIZE
     frame = av.VideoFrame(width, height, 'gray')
     plane = frame.planes[0]
@@ -21,7 +24,10 @@ def raster(index, dark, still):
     raw = bytearray(plane.buffer_size)
     for y in range(height):
         start = y * plane.line_size
-        row = bytes(width) if dark else bytes(40 + (x + y * 2 + phase) % 181 for x in range(width))
+        if mark is not None:
+            row = bytes((40 + (x + y * 2 + mark * 17) % 181) for x in range(width))
+        else:
+            row = bytes(width) if dark else bytes(40 + (x + y * 2 + phase) % 181 for x in range(width))
         raw[start:start + width] = row
     plane.update(raw)
     return frame
@@ -51,9 +57,12 @@ def make(path, name):
         video = container.add_stream('ffv1', rate=fps)
         video.width, video.height = SIZE
         video.pix_fmt = 'gray'
-        audio = None if name == 'no-sound' else container.add_stream('pcm_s16le', rate=SAMPLE_RATE)
+        audio = None if name == 'no-sound' or name.startswith('repair-') else container.add_stream('pcm_s16le', rate=SAMPLE_RATE)
         if audio:
             audio.layout = 'stereo'
+        if name.startswith('repair-'):
+            _make_repair(container, video, name)
+            return Path(path)
         next_sample = 0
         for i in range(round(4 * fps)):
             seconds = Fraction(i, fps)
@@ -72,6 +81,36 @@ def make(path, name):
         if audio:
             container.mux(audio.encode())
     return Path(path)
+
+
+def _in_hole(seconds):
+    return any(start <= seconds < end for start, end in REPAIR_HOLES)
+
+
+def _make_repair(container, video, name):
+    """A keeps two missing-frame holes; B fills the first with distinct cells and
+    holds one frozen cell across most of the second hole."""
+    fps = Fraction(25)
+    frame_count = round(4 * fps)
+    held_mark = None
+    for i in range(frame_count):
+        seconds = Fraction(i, fps)
+        if name == 'repair-a' and _in_hole(seconds):
+            continue
+        if name == 'repair-b' and REPAIR_HOLES[1][0] <= seconds < REPAIR_HOLES[1][1] - Fraction(1, 25):
+            # One real cell dwells across most of the second hole.
+            if held_mark is None:
+                held_mark = i
+            frame = raster(i, False, False, mark=held_mark)
+        elif name == 'repair-b' and _in_hole(seconds):
+            # Distinct content cells for every programme position of the first hole.
+            frame = raster(i, False, False, mark=i)
+        else:
+            frame = raster(i, False, False)
+        frame.pts = i
+        frame.time_base = 1 / fps
+        container.mux(video.encode(frame))
+    container.mux(video.encode())
 
 
 def main():

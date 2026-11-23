@@ -168,8 +168,41 @@ def verify(tour):
     return {'verified': verified, 'tampered': tour.call(uri + '/verify', expected=409)}
 
 
+def repair(tour):
+    damaged = tour.scan('repair-a', sound='none')
+    donor = tour.scan('repair-b', sound='none')
+    payload = {'damaged_scan': damaged['id'], 'donor_scan': donor['id']}
+    plan = tour.call('/repair-plans', payload, 201)
+    assert plan['counts'] == {'solid': 14, 'held': 12, 'unverified': 0}
+    assert [hole['counts'] for hole in plan['holes']] == [
+        {'solid': 13, 'held': 0, 'unverified': 0},
+        {'solid': 1, 'held': 12, 'unverified': 0},
+    ]
+    # B-side actual source display times survive on every solid and held slot.
+    first_hole = plan['holes'][0]
+    assert all(pos['b_source_start_us'] == pos['target_start_us'] for pos in first_hole['positions'])
+    held_slot = next(pos for pos in plan['holes'][1]['positions'] if pos['classification'] == 'held')
+    assert held_slot['b_source_start_us'] == 3000000 and held_slot['b_source_end_us'] == 3040000
+    # The same request returns the same immutable plan descriptor.
+    assert tour.call('/repair-plans', payload, 201)['id'] == plan['id']
+    fractional = tour.call('/repair-plans', {**payload, 'target_frame_rate': '30000/1001'}, 201)
+    assert fractional['id'] != plan['id'] and fractional['holes'][0]['uncertain_edges']
+    errors = {
+        'same_scan': tour.call('/repair-plans', {'damaged_scan': damaged['id'], 'donor_scan': damaged['id']}, 400),
+        'bad_rate': tour.call('/repair-plans', {**payload, 'target_frame_rate': '0'}, 400),
+        'missing': tour.call('/repair-plans', {'damaged_scan': 'scan-missing', 'donor_scan': donor['id']}, 404),
+        'no_hole': tour.call('/repair-plans',
+                             {'damaged_scan': donor['id'], 'donor_scan': damaged['id']}, 400),
+    }
+    return {'plan': plan['id'], 'counts': plan['counts'],
+            'fractional_slots': fractional['holes'][0]['target_slots'],
+            'uncertain_edges': len(fractional['holes'][0]['uncertain_edges']),
+            'errors': errors}
+
+
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog,
+             'verify': verify, 'repair': repair}
 
 
 def main():

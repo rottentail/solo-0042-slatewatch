@@ -121,7 +121,8 @@ class Handler(BaseHTTPRequestHandler):
             return 200, {'status': 'ready'}, 'application/json'
         if len(parts) == 2:
             group, key = parts
-            types = {'masters': 'master', 'policies': 'policy', 'scans': 'scan', 'seals': 'seal'}
+            types = {'masters': 'master', 'policies': 'policy', 'scans': 'scan',
+                     'seals': 'seal', 'repair-plans': 'repair'}
             if group in types:
                 return 200, app.vault.get(types[group], key), 'application/json'
         if len(parts) == 3:
@@ -136,7 +137,8 @@ class Handler(BaseHTTPRequestHandler):
 
     def post(self, app, parts):
         if len(parts) == 1:
-            operations = {'policies': (app.policy, 201), 'scans': (app.scan, 201), 'compare': (app.compare, 200)}
+            operations = {'policies': (app.policy, 201), 'scans': (app.scan, 201),
+                          'compare': (app.compare, 200), 'repair-plans': (app.repair_plan, 201)}
             if parts[0] in operations:
                 operation, code = operations[parts[0]]
                 return code, operation(self.json_body()), 'application/json'

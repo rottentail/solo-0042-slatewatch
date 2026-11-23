@@ -51,6 +51,10 @@
       "command": "python3 -m slatewatch.walkthrough verify"
     },
     {
+      "workflow_id": "repair",
+      "command": "python3 -m slatewatch.walkthrough repair"
+    },
+    {
       "workflow_id": "desk",
       "command": "python3 -m slatewatch.desk_walkthrough"
     }

@@ -6,6 +6,7 @@ from .clock import InputError, integer, shape, text
 from .compare import compare
 from .evidence import extract
 from .media import inspect
+from .repair import build_plan, request_payload
 from .review import adjudicate, find_hit, intent, ruling
 from .rules import canonical, identifier, new_policy
 from .scan import measure, scan_identity
@@ -57,6 +58,16 @@ class Slatewatch:
         later = self.vault.get('scan', text(data['after'], 'after'))
         minimum = integer(data.get('minimum_permille', 300), 'minimum_permille', 1, 1000)
         return compare(earlier, later, minimum)
+
+    def repair_plan(self, data):
+        damaged_id, donor_id, rate = request_payload(data)
+        damaged = self.vault.get('scan', damaged_id)
+        donor = self.vault.get('scan', donor_id)
+        donor_master = self.vault.get('master', donor['master_id'])
+        donor_path = self.vault.object_path(donor_master['sha256'])
+        record = build_plan(damaged, donor, donor_path, rate)
+        # Only the plan descriptor is written; both source masters stay read-only.
+        return self.vault.put('repair', record)
 
     def _selection(self, scan_id, data):
         shape(data, ('hit_ids',), ('padding_ms', 'frames'))

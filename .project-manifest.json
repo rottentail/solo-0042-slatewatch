@@ -58,6 +58,11 @@
       "responsibility": "同节目时线的版本对照"
     },
     {
+      "id": "repair",
+      "path": "slatewatch/repair.py",
+      "responsibility": "缺帧修补计划、目标帧率格位分类与 B 版源时标不确定边缘"
+    },
+    {
       "id": "evidence",
       "path": "slatewatch/evidence.py",
       "responsibility": "源时标摘片、补零记录"
@@ -295,6 +300,27 @@
         "review",
         "seal",
         "store"
+      ]
+    },
+    {
+      "id": "repair",
+      "name": "缺帧修补计划",
+      "entry": "POST /repair-plans",
+      "success": "A 版缺帧范围按目标帧率格位分为可用实格、只有持格、两边都无可证实内容，B 版源时标与不确定边缘可查",
+      "failure": "无画面空洞 400、同卷或坏帧率 400、未知扫描 404",
+      "verification": "python3 -m slatewatch.walkthrough repair",
+      "steps": [
+        "读取 A 版画面空洞与 B 版解码实格",
+        "按目标帧率网格逐格分类并保留 B 版源时间",
+        "登记不可变修补计划，原母带保持只读"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "repair",
+        "store",
+        "media",
+        "clock"
       ]
     }
   ],
