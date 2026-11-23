@@ -168,8 +168,55 @@ def verify(tour):
     return {'verified': verified, 'tampered': tour.call(uri + '/verify', expected=409)}
 
 
+def field_patrol(tour):
+    """Independent combing patrol over the four field-pattern control reels."""
+    policy = tour.policy()
+    results = {}
+    for name in ('field-progressive', 'field-interlaced', 'field-deinterlaced', 'field-mixed'):
+        master = tour.master(name, sound='none')
+        record = tour.call('/field-inspections',
+                           {'master_id': master['id'], 'policy_id': policy['id']}, 201)
+        results[name] = record
+    progressive = results['field-progressive']
+    interlaced = results['field-interlaced']
+    deinterlaced = results['field-deinterlaced']
+    mixed = results['field-mixed']
+    # stationary fine detail and deinterlaced output must stay clean
+    assert not progressive['hits'] and progressive['dominant_field_order'] == 'undetermined'
+    assert not deinterlaced['hits'] and deinterlaced['combing_frames'] == 0
+    # genuine cross-field motion is reported with the field order measured from content
+    assert interlaced['hits'] and interlaced['dominant_field_order'] == 'top_field_first'
+    assert all(hit['kind'] == 'combing' for hit in interlaced['hits'])
+    # mixed-standard programme: combing only inside the woven episode
+    covered = [(hit['start_us'], hit['end_us']) for hit in mixed['hits']]
+    assert covered and all(start >= 2_400_000 and end <= 4_200_000 for start, end in covered)
+    assert 2_400_000 <= min(start for start, _ in covered)
+    first_hit = interlaced['hits'][0]
+    evidence = tour.call(f"/field-inspections/{interlaced['id']}/evidence",
+                         {'hit_ids': [first_hit['id']], 'padding_ms': 80, 'frames': 3})
+    with ZipFile(BytesIO(evidence)) as archive:
+        names = archive.namelist()
+        mapping = json.loads(archive.read('field-evidence.json'))[0]
+        required = ('woven.pgm', 'field-top.pgm', 'field-bottom.pgm',
+                    'deinterlaced-bob.pgm', 'comb-crop.pgm')
+        assert all(any(name.endswith(suffix) for name in names) for suffix in required)
+        assert all(frame['source_us'] == frame['start_us'] for frame in mapping['frames'])
+    foreign = tour.call(f"/field-inspections/{interlaced['id']}/evidence",
+                        {'hit_ids': ['hit-unknown']}, expected=400)
+    bad_policy = tour.call('/field-inspections',
+                           {'master_id': master['id'], 'policy_id': 'missing'}, expected=404)
+    return {'progressive_hits': len(progressive['hits']),
+            'deinterlaced_hits': len(deinterlaced['hits']),
+            'interlaced_hits': len(interlaced['hits']),
+            'interlaced_order': interlaced['dominant_field_order'],
+            'mixed_ranges_us': covered,
+            'evidence_files': len(names),
+            'foreign_hit': foreign, 'missing_policy': bad_policy}
+
+
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog,
+             'verify': verify, 'field-patrol': field_patrol}
 
 
 def main():

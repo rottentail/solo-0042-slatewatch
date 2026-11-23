@@ -5,6 +5,9 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from .clock import InputError, integer, shape, text
 from .compare import compare
 from .evidence import extract
+from .field_evidence import build_field_bundle
+from .field_scan import measure_fields
+from .fields import inspection_identity
 from .media import inspect
 from .review import adjudicate, find_hit, intent, ruling
 from .rules import canonical, identifier, new_policy
@@ -38,6 +41,49 @@ class Slatewatch:
             return existing
         path = self.vault.object_path(asset['sha256'])
         return self.vault.put('scan', measure(asset, path, policy))
+
+    def field_inspection(self, data):
+        shape(data, ('master_id', 'policy_id'))
+        asset = self.vault.get('master', text(data['master_id'], 'master_id'))
+        policy = self.vault.get('policy', text(data['policy_id'], 'policy_id'))
+        identity = inspection_identity(asset, policy)
+        existing = self.vault.get('field-inspection', identity, required=False)
+        if existing:
+            return existing
+        path = self.vault.object_path(asset['sha256'])
+        return self.vault.put('field-inspection', measure_fields(asset, path, policy))
+
+    def field_evidence(self, inspection_id, data):
+        shape(data, (), ('hit_ids', 'padding_ms', 'frames'))
+        inspection = self.vault.get('field-inspection', text(inspection_id, 'inspection_id'))
+        asset = self.vault.get('master', inspection['master_id'])
+        hits = self._field_hits(inspection, data.get('hit_ids'))
+        padding = integer(data.get('padding_ms', 120), 'padding_ms', 0, 2000)
+        frames = integer(data.get('frames', 3), 'frames', 1, 8)
+        path = self.vault.object_path(asset['sha256'])
+        files, _ = build_field_bundle(path, inspection, hits, frames, padding)
+        buf = BytesIO()
+        with ZipFile(buf, 'w', compression=ZIP_DEFLATED) as archive:
+            for name, body in sorted(files.items()):
+                archive.writestr(name, body)
+        return buf.getvalue()
+
+    @staticmethod
+    def _field_hits(inspection, requested):
+        if requested is None:
+            if not inspection['hits']:
+                raise InputError('this field inspection found no combing evidence')
+            return list(inspection['hits'])
+        if not isinstance(requested, list) or not 1 <= len(requested) <= 6:
+            raise InputError('provide one to six combing finding identifiers, or omit hit_ids')
+        ids = [text(key, 'finding identifier') for key in requested]
+        if len(set(ids)) != len(ids):
+            raise InputError('finding identifiers must be unique')
+        known = {hit['id']: hit for hit in inspection['hits']}
+        missing = [key for key in ids if key not in known]
+        if missing:
+            raise InputError(f"finding {missing[0]!r} does not belong to this field inspection")
+        return [known[key] for key in ids]
 
     def add_intent(self, scan_id, data):
         scan = self.vault.get('scan', scan_id)

@@ -12,6 +12,7 @@ MAX_ASSET = 48 * 1024 * 1024
 MAX_PIXELS = 3840 * 2160
 MAX_FRAMES = 12000
 WIDTH, HEIGHT = 80, 48
+FIELD_WIDTH = 160
 FORMATS = {'matroska', 'mov'}
 CODECS = {'h264', 'hevc', 'mpeg4', 'ffv1', 'aac', 'pcm_s16le', 'flac', 'opus', 'mp3'}
 
@@ -20,6 +21,17 @@ CODECS = {'h264', 'hevc', 'mpeg4', 'ffv1', 'aac', 'pcm_s16le', 'flac', 'opus', '
 class Picture:
     timestamp_us: int
     duration_us: int
+    pixels: bytes
+
+
+@dataclass(frozen=True)
+class FieldFrame:
+    """Full-height, width-capped grayscale raster used for field inspection."""
+    timestamp_us: int
+    duration_us: int
+    width: int
+    height: int
+    line_size: int
     pixels: bytes
 
 
@@ -118,6 +130,27 @@ def thumbnail(frame):
     return b''.join(raw[y * plane.line_size:y * plane.line_size + WIDTH] for y in range(HEIGHT))
 
 
+def field_raster(frame):
+    """Grayscale raster that keeps every source row so field parity survives.
+
+    Only the width is capped; the full vertical resolution is retained, which is
+    what makes cross-field combing measurable.  Container interlace flags are
+    deliberately never consulted here or downstream.  The returned buffer is
+    compact, so its stride equals the capped width exactly.
+    """
+    if frame.width * frame.height > MAX_PIXELS:
+        raise InputError('decoded picture exceeds geometry limit')
+    if frame.height < 16:
+        raise InputError('picture is too short to separate fields')
+    width = min(frame.width, FIELD_WIDTH)
+    gray = frame.reformat(width=width, height=frame.height, format='gray')
+    plane = gray.planes[0]
+    raw = memoryview(plane)
+    pixels = b''.join(bytes(raw[y * plane.line_size:y * plane.line_size + width])
+                      for y in range(frame.height))
+    return width, frame.height, width, pixels
+
+
 def decode(path, manifest):
     """Yield lightweight pictures and native-rate PCM in decode order."""
     video = manifest['picture']
@@ -171,6 +204,35 @@ def decode(path, manifest):
                                 yield PCM(first, frame.sample_rate, audio['channels'], pcm)
                             first += block.samples
                         next_sample = first
+        except (av.error.FFmpegError, ValueError) as exc:
+            if isinstance(exc, InputError):
+                raise
+            raise InputError('the selected media stream could not be decoded') from exc
+
+
+def field_decode(path, manifest):
+    """Yield full-height grayscale field rasters in display order, video only."""
+    video = manifest['picture']
+    with open_media(path) as container:
+        stream = container.streams[video['index']]
+        prior = None
+        count = 0
+        try:
+            for packet in container.demux(stream):
+                for frame in packet.decode():
+                    point = timestamp(frame, manifest['origin_us'])
+                    when = round(point)
+                    if when < 0:
+                        continue
+                    if prior is not None and when <= prior:
+                        raise InputError('picture display timestamps must be strictly increasing')
+                    prior = when
+                    count += 1
+                    if count > MAX_FRAMES:
+                        raise InputError('too many decoded pictures')
+                    width, height, line_size, pixels = field_raster(frame)
+                    duration = round((frame.duration or 0) * frame.time_base * SECOND)
+                    yield FieldFrame(when, duration, width, height, line_size, pixels)
         except (av.error.FFmpegError, ValueError) as exc:
             if isinstance(exc, InputError):
                 raise

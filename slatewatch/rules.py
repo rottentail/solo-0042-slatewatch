@@ -7,7 +7,7 @@ from .clock import InputError, integer, shape, text
 
 PCM_FULL_SCALE = 1 << 15
 
-KINDS = ('black', 'freeze', 'silence', 'clip', 'picture_gap', 'sound_gap')
+KINDS = ('black', 'freeze', 'silence', 'clip', 'picture_gap', 'sound_gap', 'combing')
 INTENT_KINDS = frozenset(('black', 'freeze', 'silence'))
 CHANNEL_KINDS = frozenset(('silence', 'clip'))
 
@@ -56,8 +56,37 @@ class Thresholds:
         return result
 
 
+@dataclass(frozen=True)
+class FieldThresholds:
+    """Content-only interlace combing tolerances.
+
+    No stream or container progressive/interlaced flag participates: a frame is
+    reported only when its woven rows show comb teeth *and* the temporal field
+    pairing test independently confirms a cross-field time offset.
+    """
+    comb_luma: int = 16
+    comb_field_gate: int = 14
+    comb_permille: int = 3
+    pair_gap: int = 8
+    motion_mse: int = 3
+    combing_min_ms: int = 120
+
+    @classmethod
+    def from_request(cls, data):
+        shape(data, (), [field.name for field in fields(cls)])
+        limits = {
+            'comb_luma': (4, 96), 'comb_field_gate': (2, 96),
+            'comb_permille': (1, 100), 'pair_gap': (1, 4000),
+            'motion_mse': (1, 4000), 'combing_min_ms': (40, 10000),
+        }
+        values = {key: integer(value, key, *limits[key]) for key, value in data.items()}
+        return cls(**values)
+
+
 def new_policy(payload):
-    shape(payload, ('label',), ('thresholds',))
+    shape(payload, ('label',), ('thresholds', 'field_thresholds'))
+    picture = Thresholds.from_request(payload.get('thresholds', {}))
+    field = FieldThresholds.from_request(payload.get('field_thresholds', {}))
     record = {'label': text(payload['label'], 'label'),
-              'thresholds': asdict(Thresholds.from_request(payload.get('thresholds', {})))}
+              'thresholds': asdict(picture), 'field_thresholds': asdict(field)}
     return {'id': identifier('policy', record), **record}
