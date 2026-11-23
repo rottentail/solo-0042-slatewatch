@@ -1,6 +1,6 @@
 """Render a scan alongside its live adjudication and selected finding."""
 
-from . import library, timeline
+from . import disclosures, library, timeline
 from .render import fragment, page
 from .text import KINDS, badge, interval, lane, safe
 
@@ -32,7 +32,8 @@ def details(scan, hit):
     note = f'{safe(ruling["reviewer"])} · {safe(ruling["reason"])}' if ruling else '尚无人工裁决'
     return fragment('finding', scan=scan['id'], hit=hit['id'], title=KINDS[hit['kind']],
                     lane=lane(hit), span=interval(hit), status=badge(hit['status']),
-                    note=note, intent_form=intent_form)
+                    note=note, intent_form=intent_form,
+                    disclosure_form=disclosures.form(scan, hit))
 
 
 def show(app, scan_id, selected):

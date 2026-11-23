@@ -2,6 +2,7 @@
 from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile
 
+from . import disclosure as disclosure_pkg
 from .clock import InputError, integer, shape, text
 from .compare import compare
 from .evidence import extract
@@ -96,6 +97,26 @@ class Slatewatch:
         with self.vault.staged(data) as (source, digest):
             self.vault.publish(source, digest)
         return self.vault.put('seal', {**record, 'sha256': digest})
+
+    def disclosure(self, scan_id, data):
+        scan = self.vault.get('scan', scan_id)
+        asset = self.vault.get('master', scan['master_id'])
+        review = adjudicate(scan, *self.vault.timeline(scan_id))
+        authorization = disclosure_pkg.parse_grants(scan, review, data)
+        path = self.vault.object_path(asset['sha256'])
+        items = disclosure_pkg.build(path, scan, authorization)
+        record, bundle = disclosure_pkg.pack(scan, review, asset['sha256'], authorization, items)
+        with self.vault.staged(bundle) as (source, digest):
+            self.vault.publish(source, digest)
+        return self.vault.put('disclosure', {**record, 'sha256': digest})
+
+    def verify_disclosure(self, disclosure_id):
+        record = self.vault.get('disclosure', disclosure_id)
+        return disclosure_pkg.verify(self.vault.object_path(record['sha256']), record)
+
+    def download_disclosure(self, disclosure_id):
+        verification = self.verify_disclosure(disclosure_id)
+        return self.vault.object_path(verification['sha256']).read_bytes()
 
     def verify(self, seal_id):
         record = self.vault.get('seal', seal_id)

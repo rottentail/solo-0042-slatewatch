@@ -1,0 +1,17 @@
+<div class="wrap"><p><a href="/desk/disclosures">← 披露件</a></p>
+<header class="striphead"><h1>披露件详情</h1></header>
+<dl><dt>披露编号</dt><dd><code>$key</code></dd>
+<dt>接收方</dt><dd>$recipient</dd>
+<dt>冻结时裁决</dt><dd>$status</dd>
+<dt>扫描</dt><dd><a href="/desk/scans/$scan">$scan</a></dd>
+<dt>源母带 SHA-256</dt><dd><code>$master</code></dd>
+<dt>成员文件</dt><dd>$members 个，逐一记录大小与 SHA-256</dd>
+<dt>全包 SHA-256</dt><dd><code>$digest</code></dd></dl>
+$verified
+<form class="actions" method="post" action="/desk/disclosures/$key/verify">
+  <button class="primary" name="verify" value="1">校验披露件</button>
+  <a class="button" href="/slatewatch/v1/disclosures/$key/bundle" download="slatewatch-disclosure-$key.zip">下载披露 ZIP</a>
+</form>
+<p class="muted">接收方无需整卷母带：包内 index.json 列出全部成员哈希，disclosure.json 说明每项证据支持的判断、授权窗口与声道，
+源内缺口标记为 source_*，因裁剪产生的边界标记为 outside_authorized_window。</p>
+</div>

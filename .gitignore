@@ -1,4 +1,5 @@
 .venv/
+.pydist/
 __pycache__/
 *.pyc
 slatewatch-vault/

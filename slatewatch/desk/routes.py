@@ -5,7 +5,7 @@ from urllib.parse import urlencode, urlsplit
 
 from ..clock import Conflict, InputError, Missing
 from ..media import MAX_ASSET
-from . import compare, forms, library, preview, scans, seals
+from . import compare, disclosures, forms, library, preview, scans, seals
 from .render import ASSETS, HERE, page
 from .text import safe
 
@@ -96,6 +96,12 @@ def route(handler, parsed):
             return html(seals.detail(app, key))
         case 'POST', ['desk', 'seals', key, 'verify']:
             return html(seals.detail(app, key, verified=True))
+        case 'GET', ['desk', 'disclosures']:
+            return html(disclosures.index(app))
+        case 'GET', ['desk', 'disclosures', key]:
+            return html(disclosures.detail(app, key))
+        case 'POST', ['desk', 'disclosures', key, 'verify']:
+            return html(disclosures.detail(app, key, verified=True))
         case _:
             raise Missing('工作台没有此页面。')
 
@@ -116,6 +122,10 @@ def scan_action(app, cache, key, operation, data):
             request['channel'] = hit['channel']
         app.add_intent(key, request)
         return redirect(selected_url(key, hit_id))
+    if operation == 'disclosure':
+        scan = app.vault.get('scan', key)
+        record = app.disclosure(key, disclosures.parse_form(scan, data))
+        return redirect(f'/desk/disclosures/{record["id"]}')
     if operation not in ('preview', 'evidence', 'seal'):
         raise Missing('工作台没有此操作。')
     padding, frames = forms.number(data, 'padding_ms', 120), forms.number(data, 'frames', 3)

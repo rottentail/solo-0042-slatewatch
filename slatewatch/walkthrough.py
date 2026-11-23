@@ -1,5 +1,6 @@
 """Short production walkthroughs using a private vault and real HTTP requests."""
 import argparse
+from hashlib import sha256
 from io import BytesIO
 import json
 from pathlib import Path
@@ -11,6 +12,7 @@ from urllib.request import Request, urlopen
 import wave
 from zipfile import ZipFile
 
+from .disclosure import verify_bundle_bytes
 from .http import PREFIX, Server
 from .reels import make
 
@@ -155,6 +157,69 @@ def catalog(tour):
     return {'coverage': observed['coverage'], 'unknown_scan': tour.call('/scans/unknown', expected=404)}
 
 
+def disclosure(tour):
+    record = tour.scan()
+    uri = f"/scans/{record['id']}"
+    silence = tour.hit(record, 'silence')   # channel 1 finding
+    clip = tour.hit(record, 'clip')         # channel 2 finding, different clock window
+    gap = tour.hit(record, 'sound_gap')     # internal source coverage hole
+    payload = {'recipient': '外包声学承包商', 'note': '只给授权声道与异常窗口',
+               'grants': [{'hit_id': silence['id']}, {'hit_id': clip['id']},
+                          {'hit_id': gap['id'], 'padding_ms': 100, 'frames': 4}]}
+    sealed = tour.call(uri + '/disclosures', payload, 201)
+    assert sealed['recipient'] == '外包声学承包商' and sealed['format'] == 1
+    verified = tour.call(f"/disclosures/{sealed['id']}/verify")
+    assert verified['status'] == 'verified'
+    bundle = tour.call(f"/disclosures/{sealed['id']}/bundle")
+    assert sha256(bundle).hexdigest() == sealed['sha256']
+    # The recipient can verify the bytes without the workstation vault.
+    standalone = verify_bundle_bytes(bundle)
+    assert standalone['bundle_sha256'] == sealed['sha256'] and standalone['members'] == verified['members']
+    with ZipFile(BytesIO(bundle)) as archive:
+        manifest = json.loads(archive.read('disclosure.json'))
+        assert manifest['master_sha256'] == sealed['master_sha256']
+        items = {item['finding_kind']: item for item in manifest['items']}
+        assert set(items) == {'silence', 'clip', 'sound_gap'}
+        # Each item's clock mapping is also frozen under its own folder.
+        for item in manifest['items']:
+            assert json.loads(archive.read(f"disclosure/{item['hit_id']}/clock.json")) == item
+        # Channel discipline: the package never carries the other lane.
+        assert items['silence']['sound']['channels'] == [1]
+        assert items['clip']['sound']['channels'] == [2]
+        for item in manifest['items']:
+            with wave.open(BytesIO(archive.read(f"disclosure/{item['hit_id']}/sound.wav"))) as audio:
+                assert audio.getnchannels() == len(item['sound']['channels'])
+                assert audio.getnframes() == (item['sound']['end_source_sample']
+                                              - item['sound']['first_source_sample'])
+        # Default grant has zero padding: authorized window equals the finding span.
+        assert items['silence']['authorized_window'] == {
+            'start_us': silence['start_us'], 'end_us': silence['end_us']}
+        # The internal source hole stays attributed to the source...
+        hole = items['sound_gap']['sound']['filled_sample_ranges']
+        assert hole and all(part['reason'] == 'source_sound_gap' for part in hole)
+        # ...while a window edge cutting into the same hole is an omission, not a source fact.
+        edge = tour.call(uri + '/disclosures', {'recipient': '同一承包商', 'grants': [{
+            'hit_id': gap['id'], 'window_start_us': gap['start_us'],
+            'window_end_us': gap['end_us'] + 100_000}]}, 201)
+        edge_bundle = tour.call(f"/disclosures/{edge['id']}/bundle")
+        with ZipFile(BytesIO(edge_bundle)) as edge_archive:
+            edge_item = json.loads(edge_archive.read('disclosure.json'))['items'][0]
+            assert all(part['reason'] == 'outside_authorized_window'
+                       for part in edge_item['sound']['filled_sample_ranges'])
+        # Picture holes are source facts too; frames outside the hole remain available.
+        assert any(frame['missing_reason'] is None for frame in items['sound_gap']['picture'])
+    # Authorization errors never produce a package.
+    wrong_channel = tour.call(uri + '/disclosures',
+                              {'recipient': 'X', 'grants': [{'hit_id': silence['id'], 'channels': [2]}]}, 400)
+    foreign = tour.call(uri + '/disclosures',
+                        {'recipient': 'X', 'grants': [{'hit_id': 'hit-unknown'}]}, 404)
+    no_recipient = tour.call(uri + '/disclosures', {'grants': []}, 400)
+    return {'disclosure_id': sealed['id'], 'members': verified['members'],
+            'standalone': standalone['status'], 'source_hole': hole,
+            'omission_edge': edge_item['sound']['filled_sample_ranges'],
+            'rejected': {'wrong_channel': wrong_channel, 'foreign_hit': foreign, 'empty': no_recipient}}
+
+
 def verify(tour):
     record = tour.scan()
     sealed = tour.call(f"/scans/{record['id']}/seals", tour.selection(record), 201)
@@ -169,7 +234,8 @@ def verify(tour):
 
 
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog,
+             'disclosure': disclosure, 'verify': verify}
 
 
 def main():

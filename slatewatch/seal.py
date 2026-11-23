@@ -40,7 +40,8 @@ def pack(manifest, excerpts):
     return record, buf.getvalue()
 
 
-def verify(path, record):
+def check_bundle(path, record):
+    """Verify a sealed byte object against its descriptor; shared by every frozen format."""
     try:
         if digest_file(path) != record['sha256']:
             raise Conflict('bundle hash differs from sealed record')
@@ -60,6 +61,10 @@ def verify(path, record):
         if isinstance(exc, Conflict):
             raise
         raise Conflict('sealed bundle cannot be read') from exc
+
+
+def verify(path, record):
+    check_bundle(path, record)
     return {'id': record['id'], 'status': 'verified', 'sha256': record['sha256'],
             'members': len(record['members']), 'scan_id': record['scan_id'],
             'review_status': record['review_status']}

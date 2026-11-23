@@ -54,12 +54,23 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 | `POST /compare` | 以 `before`、`after` 扫描 ID 及可选的 `minimum_permille` 对照共享时线上的候选 |
 | `POST /scans/{id}/evidence` | 按 1 至 6 个 `hit_ids`、可选 `padding_ms` 和 `frames` 生成即时 ZIP。每条证据含时标映射和可用媒体 |
 | `POST /scans/{id}/seals` | 接收同一摘片选项，冻结扫描、裁决及媒体，返回封包描述符 |
+| `POST /scans/{id}/disclosures` | 按接收方授权生成独立披露件：每个 `grants` 项给出 `hit_id`、授权 `channels`、`window_start_us/window_end_us` 或 `padding_ms`、`frames` |
 | `GET /seals/{id}`、`/seals/{id}/verify`、`/seals/{id}/bundle` | 读取描述、校验包哈希与文件索引，或下载已校验的 ZIP |
+| `GET /disclosures/{id}`、`/disclosures/{id}/verify`、`/disclosures/{id}/bundle` | 读取披露描述、按保管库描述符校验，或下载已校验的披露 ZIP |
 
 上传限制为 48 MiB，源时长限 120 秒。允许的容器、编码、轨道与采样范围定义在 `slatewatch/media.py`。`coverage.sound: null` 表示未选伴音，带缺口的已选伴音有实际覆盖区间。波形证据对未覆盖采样补零，`clock.json` 单列补零区间，供复核时区别源内数字静音。画格是为判读技术信号生成的灰阶缩略图。
+
+## 授权披露件
+
+制作方只允许承包商接触某条异常对应的伴音与窗口时，使用披露件而不是全量证据包或冻结包。披露件按接收方冻结，一次请求最多 6 条授权（`grants`），每条授权绑定一个候选。
+
+- **声道隔离**：声音类候选（`silence`、`clip`）只允许披露该候选实测的源声道；未授权声道不会进入 WAV。画面类候选可显式列出授权声道，未选伴音的扫描只产出画面材料。WAV 按原采样率重排，`clock.json` 的 `channels` 给出每个 WAV 声轨对应的源声道号，`source_track_channels` 记录源轨总声道数。
+- **窗口即边界**：授权窗口必须完整包含候选区间，默认无留边（`padding_ms` 为 0），窗口外材料不带出。两条异常可以共享同一段画面，但各自的窗口与声道独立授权。
+- **源洞与裁剪不混淆**：补零区间与缺失画格都带 `reason`。`source_sound_gap`/`source_picture_gap` 表示源母带在该处本就没有覆盖；`outside_authorized_window` 表示缺口只在披露窗口边缘、因裁剪而存在。窗口内还附 `source_sound_coverage` 与 `picture_source_coverage`，接收方无需整卷即可判断证据能支持哪条判断。
+- **可独立核真**：包内 `index.json` 列出每个成员的大小与 SHA-256，接收方用 `slatewatch.disclosure.verify_bundle_bytes` 仅凭 ZIP 即可校验文件未被替换；工位侧 `GET /disclosures/{id}/verify` 另按保管库描述符核对全包哈希。`disclosure.json` 汇总接收方、源母带哈希、冻结时裁决和每项证据对应的候选判断，`scan-context.json` 给出扫描覆盖与流描述。
 
 输入、未找到和冲突分别返回 400、404、409。工位并发槽位用完返回 503。不同规则或流选择可产生不同扫描，原始母带和既有冻结包可继续读取。
 
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog`、`disclosure` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV、冻结包与授权披露件。自动测试套件暂缓。

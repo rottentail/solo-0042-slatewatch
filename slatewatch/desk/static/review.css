@@ -27,3 +27,8 @@
   .review { padding-inline: 13px; }
   .table-wrap .time { white-space: nowrap; }
 }
+.disclosure-form { border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px; margin-top: 14px; }
+.disclosure-form summary { font-weight: 600; }
+.disclosure-form .channels { border: 0; padding: 0; margin: 6px 0; display: flex; gap: 14px; flex-wrap: wrap; }
+.disclosure-form .channel { display: inline-flex; align-items: center; gap: 4px; font-weight: 400; }
+.disclosure-form input[type="checkbox"] { width: auto; }

@@ -63,6 +63,11 @@
       "responsibility": "源时标摘片、补零记录"
     },
     {
+      "id": "disclosure",
+      "path": "slatewatch/disclosure.py",
+      "responsibility": "按接收方授权的声道与窗口生成独立披露件并区分源洞与裁剪"
+    },
+    {
       "id": "seal",
       "path": "slatewatch/seal.py",
       "responsibility": "冻结格式和实际字节校验"
@@ -237,6 +242,31 @@
       ]
     },
     {
+      "id": "disclosure",
+      "name": "授权披露件",
+      "entry": "POST /scans/{id}/disclosures",
+      "success": "只含授权声道与窗口的冻结 ZIP，源洞与裁剪边界分开记录且可独立核真",
+      "failure": "越权声道或异卷候选返回 400/404",
+      "verification": "python3 -m slatewatch.walkthrough disclosure",
+      "steps": [
+        "校验接收方、候选归属、授权声道与窗口包含关系",
+        "按窗口重解码并抽取授权声道 PCM 与画面",
+        "冻结披露索引、覆盖说明与裁决快照"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "store",
+        "disclosure",
+        "evidence",
+        "media",
+        "clock",
+        "review",
+        "seal",
+        "rules"
+      ]
+    },
+    {
       "id": "catalog",
       "name": "读取技术扫描",
       "entry": "GET /scans/{id}",
@@ -278,7 +308,7 @@
       "id": "desk",
       "name": "浏览器技审与证据交接",
       "entry": "GET /desk",
-      "success": "可见源轨覆盖、恢复证据位置、录入裁决并独立验证冻结结果",
+      "success": "可见源轨覆盖、恢复证据位置、录入裁决并独立验证冻结结果与授权披露件",
       "failure": "未知候选返回 404，未选伴音、补零与画面缺口区分展示",
       "verification": "python3 -m slatewatch.desk_walkthrough",
       "steps": [
@@ -294,6 +324,7 @@
         "evidence",
         "review",
         "seal",
+        "disclosure",
         "store"
       ]
     }
