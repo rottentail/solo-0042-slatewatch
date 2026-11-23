@@ -1,7 +1,9 @@
 """Short production walkthroughs using a private vault and real HTTP requests."""
 import argparse
+from array import array
 from io import BytesIO
 import json
+from math import isqrt
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from threading import Thread
@@ -11,7 +13,11 @@ from urllib.request import Request, urlopen
 import wave
 from zipfile import ZipFile
 
+import av
+
+from .calibrate import BITS, TAPE_SIZE
 from .http import PREFIX, Server
+from .media import Picture, decode
 from .reels import make
 
 
@@ -54,6 +60,35 @@ class Tour:
     @staticmethod
     def hit(scan, kind):
         return next(hit for hit in scan['hits'] if hit['kind'] == kind)
+
+
+def tape_media(data, path):
+    """Decode a calibration tape the way a player would: pictures plus raw PCM."""
+    path.write_bytes(data)
+    width, height = TAPE_SIZE
+    pictures = []
+    samples = array('h')
+    with av.open(str(path)) as container:
+        video = container.streams.video[0]
+        audio = container.streams.audio[0]
+        rate = video.average_rate
+        for packet in container.demux((video, audio)):
+            for frame in packet.decode():
+                if isinstance(frame, av.VideoFrame):
+                    gray = frame.reformat(format='gray')
+                    plane = gray.planes[0]
+                    raw = memoryview(plane)
+                    pictures.append(b''.join(raw[y * plane.line_size:y * plane.line_size + width]
+                                             for y in range(height)))
+                else:
+                    block = array('h')
+                    block.frombytes(memoryview(frame.planes[0])[:frame.samples * 2])
+                    samples.extend(block)
+    return rate, pictures, samples
+
+
+def rms(values):
+    return isqrt(sum(x * x for x in values) // max(1, len(values)))
 
 
 def intake(tour):
@@ -168,8 +203,83 @@ def verify(tour):
     return {'verified': verified, 'tampered': tour.call(uri + '/verify', expected=409)}
 
 
+def calibration(tour):
+    observed = {}
+    mappings = {}
+    reels = [('basalt', {}, 4, 0), ('no-sound', {}, 4, 0),
+             ('picture-hole', {'sound': 'none'}, 3, 1), ('fractional', {}, 5, 0)]
+    for name, streams, sync_count, hole_count in reels:
+        record = tour.scan(name, **streams)
+        master = tour.call(f"/masters/{record['master_id']}")
+        payload = tour.call(f"/scans/{record['id']}/calibration", {'pulse_ms': 1000})
+        with ZipFile(BytesIO(payload)) as archive:
+            assert sorted(archive.namelist()) == ['calibration.mkv', 'clock.json']
+            mapping = json.loads(archive.read('clock.json'))
+            rate, pictures, samples = tape_media(archive.read('calibration.mkv'),
+                                                 tour.directory / f'{name}-tape.mkv')
+        mappings[name] = mapping
+        assert mapping['master_sha256'] == master['sha256'] and mapping['scan_id'] == record['id']
+        assert mapping['tape']['video']['frames'] == len(pictures)
+        assert mapping['tape']['audio']['samples'] == len(samples)
+        assert str(rate) == mapping['tape']['video']['frame_rate']
+        width, height = TAPE_SIZE
+        for n, rows in enumerate(pictures):
+            decoded = 0
+            for bit in range(BITS):
+                block = rows[(3 * width + bit * 8):(3 * width + bit * 8 + 8)]
+                decoded = decoded * 2 + (sum(block) > len(block) * 125)
+            assert decoded == n, (name, n, decoded)
+        syncs = [event for event in mapping['events'] if event['kind'] == 'sync']
+        holes = [event for event in mapping['events'] if event['kind'] == 'hole']
+        assert (len(syncs), len(holes)) == (sync_count, hole_count), name
+        marked = set()
+        for event in syncs:
+            marked.add(event['tape_frame'])
+            body = pictures[event['tape_frame']][8 * width:]
+            assert sum(body) > len(body) * 180, (name, event)
+            first, count = event['beep_first_sample'], event['beep_samples']
+            assert rms(samples[first:first + count]) > 3000
+            before = samples[max(0, first - 4800):first]
+            assert not before or max(abs(x) for x in before) < 500
+        for event in holes:
+            for n in range(event['tape_first_frame'], event['tape_first_frame'] + event['tape_frames']):
+                marked.add(n)
+                body = pictures[n][8 * width:]
+                bright = sum(v > 180 for v in body)
+                dark = sum(v < 40 for v in body)
+                assert bright * 3 > len(body) and dark * 3 > len(body), (name, n)
+            first, count = event['tone_first_sample'], event['tone_samples']
+            assert rms(samples[first:first + count]) > 1000
+        for n, rows in enumerate(pictures):
+            if n not in marked:
+                assert sum(rows[8 * width:]) < len(rows[8 * width:]) * 100, (name, n)
+        path = tour.directory / 'vault' / 'objects' / master['sha256']
+        source_times = [block.timestamp_us for block in decode(path, record['tracks'])
+                        if isinstance(block, Picture)]
+        assert {event['source_frame_us'] for event in syncs} <= set(source_times)
+        for event in syncs:
+            assert event['beep_first_sample'] == round(event['source_frame_us'] * 48000 / 1_000_000)
+        observed[name] = {'sync': len(syncs), 'hole': len(holes), 'frames': len(pictures),
+                          'sound': mapping['source']['sound']}
+    assert observed['no-sound']['sound'] == 'not-selected'
+    assert observed['basalt']['sound'] == 'selected'
+    hole = next(event for event in mappings['picture-hole']['events'] if event['kind'] == 'hole')
+    assert (hole['source_start_us'], hole['source_end_us']) == (2000000, 2520000)
+    punched = mappings['picture-hole']['events']
+    assert not any(event['kind'] == 'sync' and event['scheduled_us'] == 2000000 for event in punched)
+    fractional = mappings['fractional']
+    assert fractional['tape']['video']['frame_rate'] == '30000/1001'
+    first_sync = next(event for event in fractional['events'] if event['kind'] == 'sync')
+    assert first_sync['tape_frame'] == first_sync['source_frame_index'] == 0
+    fractional_scan = tour.scan('fractional')
+    bad = tour.call(f"/scans/{fractional_scan['id']}/calibration", {'pulse_ms': 10}, 400)
+    return {'reels': observed, 'unknown_scan': tour.call('/scans/unknown/calibration', {}, 404),
+            'invalid_pulse': bad}
+
+
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog,
+             'calibration': calibration, 'verify': verify}
 
 
 def main():

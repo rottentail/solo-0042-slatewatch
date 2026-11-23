@@ -57,6 +57,12 @@ def run(server, root):
     assert '人工扣留'.encode() in updated
     verified = request(origin, seal + '/verify', {'verify': 1})[2]
     assert '已通过校验'.encode() in verified
+    _, tape_mime, tape = request(origin, route + '/calibration', {'pulse_ms': 1000})
+    assert tape_mime == 'application/zip'
+    with ZipFile(BytesIO(tape)) as archive:
+        assert sorted(archive.namelist()) == ['calibration.mkv', 'clock.json']
+        mapping = json.loads(archive.read('clock.json'))
+    assert mapping['scan_id'] == first['id'] and mapping['master_sha256'] and mapping['events']
     key = seal.rsplit('/', 1)[1]
     descriptor = tour.call(f'/seals/{key}')
     bundle = tour.call(f'/seals/{key}/bundle')
@@ -67,7 +73,7 @@ def run(server, root):
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对、调机校验带均通过')
 
 
 def main():

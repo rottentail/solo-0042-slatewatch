@@ -116,6 +116,10 @@ def scan_action(app, cache, key, operation, data):
             request['channel'] = hit['channel']
         app.add_intent(key, request)
         return redirect(selected_url(key, hit_id))
+    if operation == 'calibration':
+        pulse = forms.number(data, 'pulse_ms', 1000)
+        return 200, app.calibration(key, {'pulse_ms': pulse}), 'application/zip', \
+            {'Content-Disposition': 'attachment; filename="slatewatch-calibration.zip"'}
     if operation not in ('preview', 'evidence', 'seal'):
         raise Missing('工作台没有此操作。')
     padding, frames = forms.number(data, 'padding_ms', 120), forms.number(data, 'frames', 3)

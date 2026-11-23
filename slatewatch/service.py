@@ -2,6 +2,7 @@
 from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile
 
+from .calibrate import build_tape
 from .clock import InputError, integer, shape, text
 from .compare import compare
 from .evidence import extract
@@ -85,6 +86,18 @@ class Slatewatch:
                 archive.writestr(f'{prefix}/clock.json', canonical(mapping))
                 for name, body in members.items():
                     archive.writestr(f'{prefix}/{name}', body)
+        return buf.getvalue()
+
+    def calibration(self, scan_id, data):
+        shape(data, (), ('pulse_ms',))
+        pulse = integer(data.get('pulse_ms', 1000), 'pulse_ms', 100, 10000)
+        scan = self.vault.get('scan', scan_id)
+        asset = self.vault.get('master', scan['master_id'])
+        tape, mapping = build_tape(self.vault.object_path(asset['sha256']), scan, asset, pulse * 1000)
+        buf = BytesIO()
+        with ZipFile(buf, 'w', compression=ZIP_DEFLATED) as archive:
+            archive.writestr('calibration.mkv', tape)
+            archive.writestr('clock.json', canonical(mapping))
         return buf.getvalue()
 
     def seal(self, scan_id, data):

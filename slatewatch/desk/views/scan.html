@@ -4,6 +4,13 @@
     <header class="striphead"><div><p>当前扫描 · $source</p><h1>$master</h1></div>$state</header>
     <p class="muted rule">规则 · $policy</p>
     <section aria-label="节目时间轴">$clip</section>
+    <section aria-label="调机校验带">
+      <form method="post" action="/desk/scans/$scan/calibration" class="actions">
+        <label>同步脉冲间隔（毫秒）<input name="pulse_ms" type="number" min="100" max="10000" value="1000" required></label>
+        <button>下载调机校验带</button>
+      </form>
+      <p class="muted">校验带按源节目时钟生成：同步闪帧落在实存画格，声脉冲按 48000 Hz 采样格取整，跨过画面洞显示滚动条纹并奏低音；包内 clock.json 记录每个事件对应的源时标与母带身份。</p>
+    </section>
     <section aria-labelledby="results">
       <h2 id="results">技术候选</h2>
       <div class="table-wrap"><table><thead><tr><th scope="col">异常</th><th scope="col">轨道</th><th scope="col">节目时标</th><th scope="col">当前结论</th></tr></thead>

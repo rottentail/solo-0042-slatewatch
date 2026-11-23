@@ -53,6 +53,7 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 | `GET /scans/{id}/review` | 读取按当前意图及裁决投影的复核状态 |
 | `POST /compare` | 以 `before`、`after` 扫描 ID 及可选的 `minimum_permille` 对照共享时线上的候选 |
 | `POST /scans/{id}/evidence` | 按 1 至 6 个 `hit_ids`、可选 `padding_ms` 和 `frames` 生成即时 ZIP。每条证据含时标映射和可用媒体 |
+| `POST /scans/{id}/calibration` | 生成调机校验带 ZIP，可选 `pulse_ms`（100–10000，默认 1000）。内含可播放的 `calibration.mkv` 和反查源时标的 `clock.json` |
 | `POST /scans/{id}/seals` | 接收同一摘片选项，冻结扫描、裁决及媒体，返回封包描述符 |
 | `GET /seals/{id}`、`/seals/{id}/verify`、`/seals/{id}/bundle` | 读取描述、校验包哈希与文件索引，或下载已校验的 ZIP |
 
@@ -60,6 +61,8 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 输入、未找到和冲突分别返回 400、404、409。工位并发槽位用完返回 503。不同规则或流选择可产生不同扫描，原始母带和既有冻结包可继续读取。
 
+调机校验带按源节目时钟编码，无声节目和已选伴音的节目都可以生成。画面每帧顶部带可机读的帧序号，同步闪帧落在实存画格的显示时刻，1 kHz 声脉冲按 48000 Hz 采样格取整到同一源时刻；跨过画面洞的时段显示滚动条纹并奏 220 Hz 低音，与实测同步事件区分。`clock.json` 记录每个事件的源时标、带内画格与采样位置及母带身份（`master_id`、`sha256`、`scan_id`），分数帧率源保留其 30000/1001 等原始帧率。
+
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`calibration`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。

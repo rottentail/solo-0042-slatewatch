@@ -147,6 +147,8 @@ class Handler(BaseHTTPRequestHandler):
                 return 201, operations[action](key, self.json_body()), 'application/json'
             if action == 'evidence':
                 return 200, app.evidence(key, self.json_body()), 'application/zip'
+            if action == 'calibration':
+                return 200, app.calibration(key, self.json_body()), 'application/zip'
         raise Missing('route does not exist')
 
     def run_request(self):

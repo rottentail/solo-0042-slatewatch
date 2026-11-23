@@ -63,6 +63,11 @@
       "responsibility": "源时标摘片、补零记录"
     },
     {
+      "id": "calibrate",
+      "path": "slatewatch/calibrate.py",
+      "responsibility": "调机校验带生成与源时标对应"
+    },
+    {
       "id": "seal",
       "path": "slatewatch/seal.py",
       "responsibility": "冻结格式和实际字节校验"
@@ -212,6 +217,25 @@
         "service",
         "store",
         "evidence",
+        "media",
+        "clock"
+      ]
+    },
+    {
+      "id": "calibration",
+      "name": "调机校验带",
+      "entry": "POST /scans/{id}/calibration",
+      "success": "ZIP 内 MKV 可解码，闪帧、声脉冲与洞标记和源时标对应",
+      "failure": "未知扫描 404，脉冲间隔越界 400",
+      "verification": "python3 -m slatewatch.walkthrough calibration",
+      "steps": [
+        "重解码实存画格并规划同步与洞事件",
+        "编码校验带并输出源时标对应"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "calibrate",
         "media",
         "clock"
       ]
