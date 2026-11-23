@@ -13,8 +13,8 @@ SIZE = (160, 96)
 REELS = ('basalt', 'revision', 'picture-hole', 'no-sound', 'fractional')
 
 
-def raster(index, dark, still):
-    width, height = SIZE
+def raster(index, dark, still, size=SIZE):
+    width, height = size
     frame = av.VideoFrame(width, height, 'gray')
     plane = frame.planes[0]
     phase = 3 if still else index * 5
@@ -44,12 +44,12 @@ def audio_frame(first, count, revision):
     return frame
 
 
-def make(path, name):
+def make(path, name, size=SIZE):
     fps = Fraction(30000, 1001) if name == 'fractional' else Fraction(25)
     audio_end = 28000 if name == 'revision' else 25600
     with av.open(str(path), mode='w', format='matroska') as container:
         video = container.add_stream('ffv1', rate=fps)
-        video.width, video.height = SIZE
+        video.width, video.height = size
         video.pix_fmt = 'gray'
         audio = None if name == 'no-sound' else container.add_stream('pcm_s16le', rate=SAMPLE_RATE)
         if audio:
@@ -60,7 +60,7 @@ def make(path, name):
             if name != 'picture-hole' or not Fraction(2) <= seconds < Fraction(5, 2):
                 dark = Fraction(0) <= seconds < (Fraction(8, 25) if name == 'revision' else Fraction(12, 25))
                 still = Fraction(3, 5) <= seconds < Fraction(7, 5)
-                frame = raster(i, dark, still)
+                frame = raster(i, dark, still, size)
                 frame.pts = i
                 frame.time_base = 1 / fps
                 container.mux(video.encode(frame))

@@ -6,7 +6,7 @@ from pathlib import Path
 
 import av
 
-from .clock import InputError, LIMIT, SECOND, Span, timestamp
+from .clock import InputError, LIMIT, Missing, SECOND, Span, timestamp
 
 MAX_ASSET = 48 * 1024 * 1024
 MAX_PIXELS = 3840 * 2160
@@ -116,6 +116,45 @@ def thumbnail(frame):
     plane = gray.planes[0]
     raw = memoryview(plane)
     return b''.join(raw[y * plane.line_size:y * plane.line_size + WIDTH] for y in range(HEIGHT))
+
+
+def native_picture(path, manifest, wanted_us):
+    """Decode the selected video up to the picture displayed exactly at wanted_us."""
+    video = manifest['picture']
+    with open_media(path) as container:
+        stream = container.streams[video['index']]
+        prior = None
+        count = 0
+        try:
+            for packet in container.demux([stream]):
+                for frame in packet.decode():
+                    when = round(timestamp(frame, manifest['origin_us']))
+                    if when < 0:
+                        continue
+                    if prior is not None and when <= prior:
+                        raise InputError('picture display timestamps must be strictly increasing')
+                    prior = when
+                    count += 1
+                    if count > MAX_FRAMES:
+                        raise InputError('too many decoded pictures')
+                    if when == wanted_us:
+                        if frame.width * frame.height > MAX_PIXELS:
+                            raise InputError('decoded picture exceeds geometry limit')
+                        gray = frame.reformat(format='gray')
+                        plane = gray.planes[0]
+                        raw = memoryview(plane)
+                        pixels = b''.join(raw[y * plane.line_size:y * plane.line_size + gray.width]
+                                          for y in range(gray.height))
+                        return {'timestamp_us': when,
+                                'duration_us': round((frame.duration or 0) * frame.time_base * SECOND),
+                                'width': gray.width, 'height': gray.height, 'pixels': pixels}
+                    if when > wanted_us:
+                        raise Missing('此时刻没有源画格覆盖。')
+        except (av.error.FFmpegError, ValueError) as exc:
+            if isinstance(exc, InputError):
+                raise
+            raise InputError('the selected media stream could not be decoded') from exc
+    raise Missing('此时刻没有源画格覆盖。')
 
 
 def decode(path, manifest):

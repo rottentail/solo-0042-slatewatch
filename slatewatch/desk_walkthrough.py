@@ -49,6 +49,24 @@ def run(server, root):
     assert request(origin, png.decode())[2].startswith(b'\x89PNG')
     assert request(origin, preview + '/sound.wav')[2].startswith(b'RIFF')
 
+    assert 'region-tool'.encode() in page
+    source_us = re.search(rb'name="source_us" value="(\d+)"', page)[1].decode()
+    region_url, _, region_page = request(origin, route + '/region', {
+        'hit': hit['id'], 'source_us': source_us, 'x': 4, 'y': 3, 'width': 12, 'height': 9})
+    assert '局部源像素复查'.encode() in region_page and '源像素矩形'.encode() in region_page
+    assert request(origin, region_url + '/region.png')[2].startswith(b'\x89PNG')
+    with ZipFile(BytesIO(request(origin, region_url + '/region.zip')[2])) as archive:
+        mapping = json.loads(archive.read('region.json'))
+        assert mapping['source_us'] == int(source_us)
+        rect = mapping['source']['rect']
+        assert archive.read('region.pgm').startswith(f"P5\n{rect['width']} {rect['height']}\n255\n".encode())
+    gap = next(item for item in singular['hits'] if item['kind'] == 'picture_gap')
+    missing = request(origin, f'/desk/scans/{singular["id"]}/region',
+                      {'hit': gap['id'], 'source_us': 2040000, 'x': 0, 'y': 0, 'width': 4, 'height': 4}, expected=404)[2]
+    assert '没有源画格覆盖'.encode() in missing
+    request(origin, route + '/region',
+            {'hit': hit['id'], 'source_us': source_us, 'x': 75, 'y': 0, 'width': 10, 'height': 4}, expected=400)
+
     seal, _, frozen = request(origin, route + '/seal', {'hit': hit['id']})
     assert '待审'.encode() in frozen
     _, _, updated = request(origin, route + '/ruling', {
@@ -67,7 +85,7 @@ def run(server, root):
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：实测时间轴、证据画格与 WAV、局部源像素复查、裁决、冻结校验、版次比对均通过')
 
 
 def main():

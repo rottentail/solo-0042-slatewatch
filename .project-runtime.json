@@ -39,6 +39,10 @@
       "command": "python3 -m slatewatch.walkthrough evidence"
     },
     {
+      "workflow_id": "region",
+      "command": "python3 -m slatewatch.walkthrough region"
+    },
+    {
       "workflow_id": "publish",
       "command": "python3 -m slatewatch.walkthrough publish"
     },

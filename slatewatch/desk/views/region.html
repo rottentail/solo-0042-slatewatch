@@ -1,0 +1,17 @@
+<div class="wrap">
+  <p><a href="/desk/scans/$scan?hit=$hit#finding">← 返回复核</a></p>
+  <header class="striphead"><div><p>源画格 <code>$source</code> · 缩图选区 <code>$thumb</code></p><h1>局部源像素复查</h1></div></header>
+  <section aria-label="局部源像素" class="region-view">
+    <figure><img src="$base/region.png" alt="局部源像素画格">
+    <figcaption><strong>$pixels</strong><small>源画幅 $geometry · 未缩放的灰阶源像素</small></figcaption></figure>
+  </section>
+  <section class="form-section" aria-label="来源映射">
+    <h2>来源映射</h2>
+    <dl>
+      <dt>源画格时标</dt><dd><code>$source</code></dd>
+      <dt>缩图选区（80×48）</dt><dd><code>$thumb</code></dd>
+      <dt>源像素矩形（$geometry）</dt><dd><code>$src</code></dd>
+    </dl>
+  </section>
+  <p><a class="button primary" href="$base/region.zip" download="slatewatch-region.zip">下载局部证据包</a></p>
+</div>

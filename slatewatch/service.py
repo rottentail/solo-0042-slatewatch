@@ -2,10 +2,11 @@
 from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from .clock import InputError, integer, shape, text
+from .clock import InputError, LIMIT, integer, shape, text
 from .compare import compare
 from .evidence import extract
 from .media import inspect
+from .region import extract as extract_region
 from .review import adjudicate, find_hit, intent, ruling
 from .rules import canonical, identifier, new_policy
 from .scan import measure, scan_identity
@@ -85,6 +86,20 @@ class Slatewatch:
                 archive.writestr(f'{prefix}/clock.json', canonical(mapping))
                 for name, body in members.items():
                     archive.writestr(f'{prefix}/{name}', body)
+        return buf.getvalue()
+
+    def region(self, scan_id, data):
+        shape(data, ('hit_id', 'source_us', 'rect'))
+        scan = self.vault.get('scan', scan_id)
+        hit = find_hit(scan, text(data['hit_id'], 'hit_id'))
+        source_us = integer(data['source_us'], 'source_us', 0, LIMIT)
+        asset = self.vault.get('master', scan['master_id'])
+        path = self.vault.object_path(asset['sha256'])
+        mapping, pgm = extract_region(path, scan, hit, source_us, data['rect'])
+        buf = BytesIO()
+        with ZipFile(buf, 'w', compression=ZIP_DEFLATED) as archive:
+            archive.writestr('region.json', canonical(mapping))
+            archive.writestr('region.pgm', pgm)
         return buf.getvalue()
 
     def seal(self, scan_id, data):

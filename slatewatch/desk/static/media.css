@@ -21,3 +21,7 @@ figcaption { display: grid; }
 figcaption strong { font: 650 13px var(--mono); }
 figcaption small { color: var(--muted); }
 audio { width: min(540px, 100%); }
+.region-canvas { display: block; width: 100%; aspect-ratio: 5 / 3; border: 1px solid var(--line); background: #22282a; image-rendering: pixelated; cursor: crosshair; touch-action: none; }
+.region-tool p { margin: 8px 0 4px; }
+.region-view figure { margin: 0; }
+.region-view img { display: block; width: 100%; height: auto; border: 1px solid var(--line); background: #22282a; image-rendering: pixelated; }

@@ -13,18 +13,31 @@ from .render import page
 from .text import interval, safe, timestamp
 
 
-def png(pgm):
-    prefix = f'P5\n{WIDTH} {HEIGHT}\n255\n'.encode()
-    if not pgm.startswith(prefix) or len(pgm) != len(prefix) + WIDTH * HEIGHT:
+def pgm_geometry(data):
+    try:
+        magic, dims, maxval, pixels = data.split(b'\n', 3)
+        width, height = (int(value) for value in dims.split())
+    except ValueError as exc:
+        raise InputError('无法显示此证据画格。') from exc
+    if magic != b'P5' or maxval != b'255' or width < 1 or height < 1 or len(pixels) != width * height:
         raise InputError('无法显示此证据画格。')
-    pixels = pgm[len(prefix):]
+    return width, height, pixels
 
+
+def gray_png(pixels, width, height):
     def chunk(name, payload):
         return pack('!I', len(payload)) + name + payload + pack('!I', crc32(name + payload))
 
-    rows = b''.join(b'\0' + pixels[i:i + WIDTH] for i in range(0, len(pixels), WIDTH))
-    return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', pack('!2I5B', WIDTH, HEIGHT, 8, 0, 0, 0, 0))
+    rows = b''.join(b'\0' + pixels[i:i + width] for i in range(0, len(pixels), width))
+    return (b'\x89PNG\r\n\x1a\n' + chunk(b'IHDR', pack('!2I5B', width, height, 8, 0, 0, 0, 0))
             + chunk(b'IDAT', compress(rows)) + chunk(b'IEND', b''))
+
+
+def png(pgm):
+    width, height, pixels = pgm_geometry(pgm)
+    if (width, height) != (WIDTH, HEIGHT):
+        raise InputError('无法显示此证据画格。')
+    return gray_png(pixels, width, height)
 
 
 def create(app, cache, scan_id, hit_id, padding, frames):
@@ -44,17 +57,28 @@ def create(app, cache, scan_id, hit_id, padding, frames):
 
 def show(key, mapping):
     base = f'/desk/previews/{key}'
+    scan_id = safe(mapping['scan_id'])
+    hit_id = safe(mapping['hit_id'])
     frames = []
     for item in mapping['picture']:
         label = timestamp(item['target_us'])
+        tool = ''
         if item['file']:
             name = item['file'].removesuffix('.pgm') + '.png'
-            picture = f'<img src="{base}/{name}" alt="证据画格">'
+            picture = f'<img src="{base}/{name}" alt="证据画格" class="region-source">'
             fact = f'源帧 {timestamp(item["source_us"])}'
+            tool = (f'<div class="region-tool" data-image="{base}/{name}">'
+                    f'<p class="muted">在画格上拖拽框选，导出对应的源像素。</p>'
+                    f'<form method="post" action="/desk/scans/{scan_id}/region" class="actions">'
+                    f'<input name="hit" value="{hit_id}" type="hidden">'
+                    f'<input name="source_us" value="{item["source_us"]}" type="hidden">'
+                    f'<input name="x" type="hidden"><input name="y" type="hidden">'
+                    f'<input name="width" type="hidden"><input name="height" type="hidden">'
+                    f'<button class="primary" disabled>导出局部源像素</button></form></div>')
         else:
             picture = '<div class="missing-frame">无画格覆盖</div>'
             fact = '此采样点无源帧'
-        frames.append(f'<figure>{picture}<figcaption><strong>{label}</strong><small>{fact}</small></figcaption></figure>')
+        frames.append(f'<figure>{picture}<figcaption><strong>{label}</strong><small>{fact}</small></figcaption>{tool}</figure>')
     track = mapping['sound']
     sound = '<p class="muted">未选伴音轨</p>'
     if track is not None:

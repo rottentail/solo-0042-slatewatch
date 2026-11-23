@@ -12,6 +12,7 @@ import wave
 from zipfile import ZipFile
 
 from .http import PREFIX, Server
+from .media import HEIGHT, WIDTH
 from .reels import make
 
 
@@ -168,8 +169,59 @@ def verify(tour):
     return {'verified': verified, 'tampered': tour.call(uri + '/verify', expected=409)}
 
 
+def excerpt_frame_us(tour, scan, hit, frames=3):
+    package = tour.call(f"/scans/{scan['id']}/evidence", {'hit_ids': [hit['id']], 'padding_ms': 80, 'frames': frames})
+    with ZipFile(BytesIO(package)) as archive:
+        clock = json.loads(archive.read(f"{hit['id']}/clock.json"))
+    return next(frame['source_us'] for frame in clock['picture'] if frame['source_us'] is not None)
+
+
+def check_region(tour, scan, hit, source_us, rect):
+    package = tour.call(f"/scans/{scan['id']}/regions",
+                        {'hit_id': hit['id'], 'source_us': source_us, 'rect': rect})
+    track = scan['tracks']['picture']
+    with ZipFile(BytesIO(package)) as archive:
+        assert sorted(archive.namelist()) == ['region.json', 'region.pgm']
+        mapping = json.loads(archive.read('region.json'))
+        pgm = archive.read('region.pgm')
+    width, height = track['width'], track['height']
+    expected = {'x': rect['x'] * width // WIDTH, 'y': rect['y'] * height // HEIGHT}
+    expected['width'] = -(-(rect['x'] + rect['width']) * width // WIDTH) - expected['x']
+    expected['height'] = -(-(rect['y'] + rect['height']) * height // HEIGHT) - expected['y']
+    assert mapping['scan_id'] == scan['id'] and mapping['hit_id'] == hit['id']
+    assert mapping['source_us'] == source_us and mapping['thumbnail']['rect'] == rect
+    assert mapping['source'] == {'width': width, 'height': height, 'rect': expected}
+    header = f"P5\n{expected['width']} {expected['height']}\n255\n".encode()
+    assert pgm.startswith(header) and len(pgm) == len(header) + expected['width'] * expected['height']
+    return {'source_us': source_us, 'source_rect': mapping['source']['rect']}
+
+
+def region(tour):
+    record = tour.scan()
+    hit = tour.hit(record, 'freeze')
+    source_us = excerpt_frame_us(tour, record, hit)
+    observed = check_region(tour, record, hit, source_us, {'x': 10, 'y': 6, 'width': 20, 'height': 12})
+    odd_path = make(tour.directory / 'odd.mkv', 'odd', size=(171, 89))
+    odd_master = tour.call(f"/masters?{urlencode({'label': 'odd'})}", odd_path.read_bytes(), 201)
+    odd_scan = tour.call('/scans', {'master_id': odd_master['id'], 'policy_id': tour.policy()['id']}, 201)
+    odd_hit = tour.hit(odd_scan, 'freeze')
+    odd = check_region(tour, odd_scan, odd_hit, excerpt_frame_us(tour, odd_scan, odd_hit, frames=2),
+                       {'x': 3, 'y': 5, 'width': 7, 'height': 9})
+    hole = tour.scan('picture-hole', sound='none')
+    gap = tour.hit(hole, 'picture_gap')
+    missing = tour.call(f"/scans/{hole['id']}/regions",
+                        {'hit_id': gap['id'], 'source_us': 2040000, 'rect': {'x': 0, 'y': 0, 'width': 4, 'height': 4}}, 404)
+    overflow = tour.call(f"/scans/{record['id']}/regions",
+                         {'hit_id': hit['id'], 'source_us': source_us, 'rect': {'x': 70, 'y': 0, 'width': 20, 'height': 4}}, 400)
+    foreign = tour.call(f"/scans/{record['id']}/regions",
+                        {'hit_id': gap['id'], 'source_us': source_us, 'rect': {'x': 1, 'y': 1, 'width': 2, 'height': 2}}, 404)
+    return {'source': observed, 'odd_geometry': odd, 'no_coverage': missing,
+            'overflow_rect': overflow, 'foreign_hit': foreign}
+
+
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'region': region, 'publish': seal,
+             'catalog': catalog, 'verify': verify}
 
 
 def main():

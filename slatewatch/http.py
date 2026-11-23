@@ -147,6 +147,8 @@ class Handler(BaseHTTPRequestHandler):
                 return 201, operations[action](key, self.json_body()), 'application/json'
             if action == 'evidence':
                 return 200, app.evidence(key, self.json_body()), 'application/zip'
+            if action == 'regions':
+                return 200, app.region(key, self.json_body()), 'application/zip'
         raise Missing('route does not exist')
 
     def run_request(self):
@@ -156,7 +158,7 @@ class Handler(BaseHTTPRequestHandler):
             self.reply(400, {'error': 'invalid request target'})
             return
         quick_read = parsed.path.startswith('/desk/static/') or (
-            parsed.path.startswith('/desk/previews/') and parsed.path.count('/') == 4
+            parsed.path.startswith(('/desk/previews/', '/desk/regions/')) and parsed.path.count('/') == 4
         )
         if self.command == 'GET' and quick_read:
             try:
