@@ -131,6 +131,8 @@ class Handler(BaseHTTPRequestHandler):
             if parts[0] in operations:
                 operation, code = operations[parts[0]]
                 return code, operation(self.json_body()), 'application/json'
+        if len(parts) == 3 and parts[0] == 'masters' and parts[2] == 'aperture':
+            return 200, app.aperture(parts[1], self.json_body()), 'application/zip'
         if len(parts) == 3 and parts[0] == 'scans':
             _, key, action = parts
             operations = {'intents': app.add_intent, 'rulings': app.add_ruling, 'seals': app.seal}

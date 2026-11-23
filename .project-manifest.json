@@ -28,6 +28,11 @@
       "responsibility": "灰阶亮度、纹理变化和显示覆盖"
     },
     {
+      "id": "aperture",
+      "path": "slatewatch/aperture.py",
+      "responsibility": "有效画幅变化量测与源画格导出"
+    },
+    {
       "id": "sound",
       "path": "slatewatch/sound.py",
       "responsibility": "原采样率覆盖和逐声道窗统计"
@@ -267,6 +272,25 @@
         "service",
         "store",
         "seal"
+      ]
+    },
+    {
+      "id": "aperture",
+      "name": "有效画幅变化分析",
+      "entry": "POST /masters/{id}/aperture",
+      "success": "变化时刻、前后边界与源画格打包返回",
+      "failure": "未知母带 404",
+      "verification": "python3 -m slatewatch.walkthrough aperture",
+      "steps": [
+        "按网格统计列行亮度峰值",
+        "合并稳定画幅时段并导出画格"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "aperture",
+        "media",
+        "clock"
       ]
     }
   ],

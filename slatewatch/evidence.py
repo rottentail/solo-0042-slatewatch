@@ -6,7 +6,7 @@ import sys
 import wave
 
 from .clock import SECOND, Span, coalesce, sample_boundary, uncovered
-from .media import HEIGHT, WIDTH, Picture, decode
+from .media import Picture, decode
 
 
 def write_wav(values, rate, channels):
@@ -64,7 +64,7 @@ class Excerpt:
             name = None
             if frame is not None:
                 name = f'frame-{index + 1:02d}.pgm'
-                files[name] = f'P5\n{WIDTH} {HEIGHT}\n255\n'.encode() + frame.pixels
+                files[name] = f'P5\n{frame.width} {frame.height}\n255\n'.encode() + frame.pixels
             picture_map.append({'target_us': point, 'source_us': frame.timestamp_us if frame else None,
                                 'file': name})
         sound_map = None

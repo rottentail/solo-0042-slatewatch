@@ -2,6 +2,7 @@
 from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile
 
+from .aperture import BLACK_LUMA, MIN_SEGMENT_MS, analyze, bundle
 from .clock import InputError, integer, shape, text
 from .compare import compare
 from .evidence import extract
@@ -57,6 +58,17 @@ class Slatewatch:
         later = self.vault.get('scan', text(data['after'], 'after'))
         minimum = integer(data.get('minimum_permille', 300), 'minimum_permille', 1, 1000)
         return compare(earlier, later, minimum)
+
+    def aperture(self, master_id, data):
+        asset = self.vault.get('master', text(master_id, 'master_id'))
+        shape(data, (), ('frames', 'black_luma_max', 'min_segment_ms'))
+        frames = integer(data.get('frames', 2), 'frames', 1, 4)
+        black = integer(data.get('black_luma_max', BLACK_LUMA), 'black_luma_max', 0, 127)
+        minimum = integer(data.get('min_segment_ms', MIN_SEGMENT_MS), 'min_segment_ms', 40, 5000)
+        path = self.vault.object_path(asset['sha256'])
+        report, images = analyze(path, asset['media'], frames, black, minimum)
+        report = {'master_id': asset['id'], 'label': asset['label'], **report}
+        return bundle(report, images)
 
     def _selection(self, scan_id, data):
         shape(data, ('hit_ids',), ('padding_ms', 'frames'))

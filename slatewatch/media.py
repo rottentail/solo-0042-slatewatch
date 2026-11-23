@@ -21,6 +21,8 @@ class Picture:
     timestamp_us: int
     duration_us: int
     pixels: bytes
+    width: int = WIDTH
+    height: int = HEIGHT
 
 
 @dataclass(frozen=True)
@@ -109,19 +111,20 @@ def inspect(path, picture_index, sound_index):
                 'picture': track_info(picture), 'sound': track_info(sound) if sound is not None else None}
 
 
-def thumbnail(frame):
+def thumbnail(frame, width=WIDTH, height=HEIGHT):
     if frame.width * frame.height > MAX_PIXELS:
         raise InputError('decoded picture exceeds geometry limit')
-    gray = frame.reformat(width=WIDTH, height=HEIGHT, format='gray')
+    gray = frame.reformat(width=width, height=height, format='gray')
     plane = gray.planes[0]
     raw = memoryview(plane)
-    return b''.join(raw[y * plane.line_size:y * plane.line_size + WIDTH] for y in range(HEIGHT))
+    return b''.join(raw[y * plane.line_size:y * plane.line_size + width] for y in range(height))
 
 
-def decode(path, manifest):
+def decode(path, manifest, grid=None):
     """Yield lightweight pictures and native-rate PCM in decode order."""
     video = manifest['picture']
     audio = manifest['sound']
+    width, height = grid if grid is not None else (WIDTH, HEIGHT)
     with open_media(path) as container:
         selected = [container.streams[video['index']]]
         if audio:
@@ -145,7 +148,7 @@ def decode(path, manifest):
                         if count > MAX_FRAMES:
                             raise InputError('too many decoded pictures')
                         duration = round((frame.duration or 0) * frame.time_base * SECOND)
-                        yield Picture(when, duration, thumbnail(frame))
+                        yield Picture(when, duration, thumbnail(frame, width, height), width, height)
                     else:
                         if frame.sample_rate != audio['rate'] or len(frame.layout.channels) != audio['channels']:
                             raise InputError('source audio format changes mid-stream')

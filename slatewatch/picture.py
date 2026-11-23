@@ -10,13 +10,13 @@ def black_ratio(pixels, threshold):
     return sum(pixels.count(i) for i in range(threshold + 1)) * 1000 // len(pixels)
 
 
-def differences(previous, current):
+def differences(previous, current, width=WIDTH):
     delta = sum(abs(old - new) for old, new in zip(previous, current))
     edge_delta = 0
-    for row in range(0, len(current), WIDTH):
-        for x in range(row + 1, row + WIDTH):
+    for row in range(0, len(current), width):
+        for x in range(row + 1, row + width):
             edge_delta += abs((current[x] - current[x - 1]) - (previous[x] - previous[x - 1]))
-    return delta * 1000 // len(current), edge_delta * 1000 // (len(current) - len(current) // WIDTH)
+    return delta * 1000 // len(current), edge_delta * 1000 // (len(current) - len(current) // width)
 
 
 def nominal_duration(track):
@@ -60,12 +60,12 @@ class PictureMeter:
         self.black_bins.append((span, black if black >= self.thresholds.black_permille else None))
         still = None
         if self.previous is not None and self.coverage[-1].end == start:
-            delta, edge = differences(self.previous, frame.pixels)
+            delta, edge = differences(self.previous.pixels, frame.pixels, frame.width)
             if delta <= self.thresholds.freeze_delta_milli and edge <= self.thresholds.freeze_edge_milli:
                 still = delta
         self.freeze_bins.append((span, still))
         self.coverage.append(span)
-        self.previous = frame.pixels
+        self.previous = frame
 
     def finish(self):
         if not self.pending:

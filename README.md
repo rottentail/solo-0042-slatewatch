@@ -31,7 +31,7 @@ curl -fsS "$BASE/scans/SCAN_ID/review"
 curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d '{"hit_ids":["HIT_ID"],"padding_ms":80,"frames":3}' -o evidence.zip
 ```
 
-`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
+`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。`montage` 混编多种有效画幅：满幅、上下遮幅、同遮幅下的构图平移、左右不对称窄边、淡入进入新遮幅，以及左侧本来就暗的满幅画面。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
 
 ## 接口
 
@@ -48,6 +48,7 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 | `POST /scans/{id}/rulings` | 用 `hit_id`、`outcome`、`reason` 和 `reviewer` 操作单个候选。`outcome` 为 `accept`、`hold` 或 `reset` |
 | `GET /scans/{id}/review` | 读取按当前意图及裁决投影的复核状态 |
 | `POST /compare` | 以 `before`、`after` 扫描 ID 及可选的 `minimum_permille` 对照共享时线上的候选 |
+| `POST /masters/{id}/aperture` | 量测有效画幅变化，返回含 `aperture.json` 与源画格的 ZIP |
 | `POST /scans/{id}/evidence` | 按 1 至 6 个 `hit_ids`、可选 `padding_ms` 和 `frames` 生成即时 ZIP。每条证据含时标映射和可用媒体 |
 | `POST /scans/{id}/seals` | 接收同一摘片选项，冻结扫描、裁决及媒体，返回封包描述符 |
 | `GET /seals/{id}`、`/seals/{id}/verify`、`/seals/{id}/bundle` | 读取描述、校验包哈希与文件索引，或下载已校验的 ZIP |
@@ -55,6 +56,12 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 上传限制为 48 MiB，源时长限 120 秒。允许的容器、编码、轨道与采样范围定义在 `slatewatch/media.py`。`coverage.sound: null` 表示未选伴音，带缺口的已选伴音有实际覆盖区间。波形证据对未覆盖采样补零，`clock.json` 单列补零区间，供复核时区别源内数字静音。画格是为判读技术信号生成的灰阶缩略图。
 
 输入、未找到和冲突分别返回 400、404、409。工位并发槽位用完返回 503。不同规则或流选择可产生不同扫描，原始母带和既有冻结包可继续读取。
+
+## 有效画幅分析
+
+`POST /masters/{id}/aperture` 找出混编节目中有效画幅（非黑边区域）实际变化的时刻。画面按 192×108 灰阶网格统计每列每行的亮度峰值：整条时段内峰值不超过黑电平的列或行才算消隐边，因此淡入时整屏变暗和节目中本来就黑的一侧不会吃掉有效画幅；边界旁内容本身很暗的侧边标 `dark_edge:<side>`，留给剪接员核对。跨越暗场的变化标 `kind: "fade"` 并给出 `dim_us` 区间。
+
+返回 ZIP 含 `aperture.json` 和每个变化前后各若干张源画格（灰阶 PGM，由 `frames` 控制，1–4 张，默认 2），供判断是消隐边改变还是构图移动。报告中 `bounds` 以源像素半开区间给出 `top`、`bottom`、`left`、`right`，`bars` 是四边黑边宽度，`at_us` 是新画幅首个稳定画格的时标。可选输入：`black_luma_max`（0–127，默认 24）、`min_segment_ms`（40–5000，默认 240）。本地文件也可以直接分析：`python -m slatewatch.aperture 源文件 输出.zip`。
 
 ## 复核运行
 

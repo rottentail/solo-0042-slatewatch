@@ -155,6 +155,42 @@ def catalog(tour):
     return {'coverage': observed['coverage'], 'unknown_scan': tour.call('/scans/unknown', expected=404)}
 
 
+def aperture(tour):
+    master = tour.master('montage')
+    body = tour.call(f"/masters/{master['id']}/aperture", {'frames': 2})
+    with ZipFile(BytesIO(body)) as archive:
+        report = json.loads(archive.read('aperture.json'))
+        names = set(archive.namelist())
+        for change in report['changes']:
+            for frame in change['frames']:
+                assert frame['file'] in names and archive.read(frame['file']).startswith(b'P5')
+    full = {'top': 0, 'bottom': 96, 'left': 0, 'right': 160}
+    letterbox = {'top': 12, 'bottom': 84, 'left': 0, 'right': 160}
+    pillarbox = {'top': 0, 'bottom': 96, 'left': 6, 'right': 142}
+    faded = {'top': 8, 'bottom': 76, 'left': 0, 'right': 160}
+    changes = report['changes']
+    assert len(changes) == 4 and len(report['segments']) == 5
+    assert abs(changes[0]['at_us'] - 1_200_000) <= 80_000 and changes[0]['kind'] == 'cut'
+    assert abs(changes[1]['at_us'] - 3_600_000) <= 80_000 and changes[1]['kind'] == 'cut'
+    assert 4_800_000 <= changes[2]['at_us'] <= 5_200_000 and changes[2]['kind'] == 'fade'
+    assert changes[2]['dim_us'] is not None
+    assert abs(changes[3]['at_us'] - 6_000_000) <= 160_000 and changes[3]['kind'] == 'cut'
+    for change, before, after in zip(changes, (full, letterbox, pillarbox, faded),
+                                     (letterbox, pillarbox, faded, full)):
+        assert _bounds_close(change['before'], before) and _bounds_close(change['after'], after)
+    assert changes[0]['changed_sides'] == ['top', 'bottom']
+    assert changes[1]['changed_sides'] == ['left', 'right', 'top', 'bottom']
+    assert 'dark_edge:left' in report['segments'][-1]['flags']
+    error = tour.call(f"/masters/{master['id']}/aperture", {'frames': 9}, 400)
+    return {'changes': [{'at_us': c['at_us'], 'kind': c['kind'], 'changed_sides': c['changed_sides']}
+                        for c in changes],
+            'segment_flags': [s['flags'] for s in report['segments']], 'invalid_frames': error}
+
+
+def _bounds_close(observed, expected, tolerance=3):
+    return all(abs(observed[side] - value) <= tolerance for side, value in expected.items())
+
+
 def verify(tour):
     record = tour.scan()
     sealed = tour.call(f"/scans/{record['id']}/seals", tour.selection(record), 201)
@@ -169,7 +205,8 @@ def verify(tour):
 
 
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify,
+             'aperture': aperture}
 
 
 def main():
