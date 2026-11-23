@@ -19,6 +19,7 @@
 .finding details { margin: 9px 0; }
 .finding summary { cursor: pointer; width: fit-content; }
 .finding input[type="number"] { width: 112px; }
+.finding .check { display: flex; align-items: center; gap: 6px; min-height: 34px; }
 @media (max-width: 720px) {
   .workspace { display: block; }
   .sidebar { border-right: 0; border-bottom: 1px solid var(--line); }

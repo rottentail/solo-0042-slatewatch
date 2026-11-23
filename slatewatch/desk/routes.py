@@ -5,7 +5,7 @@ from urllib.parse import urlencode, urlsplit
 
 from ..clock import Conflict, InputError, Missing
 from ..media import MAX_ASSET
-from . import compare, forms, library, preview, scans, seals
+from . import compare, delivery, forms, library, preview, scans, seals
 from .render import ASSETS, HERE, page
 from .text import safe
 
@@ -116,12 +116,16 @@ def scan_action(app, cache, key, operation, data):
             request['channel'] = hit['channel']
         app.add_intent(key, request)
         return redirect(selected_url(key, hit_id))
-    if operation not in ('preview', 'evidence', 'seal'):
+    if operation not in ('preview', 'evidence', 'seal', 'delivery'):
         raise Missing('工作台没有此操作。')
     padding, frames = forms.number(data, 'padding_ms', 120), forms.number(data, 'frames', 3)
     if operation == 'preview':
         token = preview.create(app, cache, key, hit_id, padding, frames)
         return redirect(f'/desk/previews/{token}')
+    if operation == 'delivery':
+        request = {'hit_ids': [hit_id], 'padding_ms': padding, 'frames': frames,
+                   'sound': data.get('sound') == '1'}
+        return html(delivery.show(key, app.delivery_check(key, request)))
     request = {'hit_ids': [hit_id], 'padding_ms': padding, 'frames': frames}
     if operation == 'seal':
         record = app.seal(key, request)

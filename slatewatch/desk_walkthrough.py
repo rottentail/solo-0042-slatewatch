@@ -49,6 +49,14 @@ def run(server, root):
     assert request(origin, png.decode())[2].startswith(b'\x89PNG')
     assert request(origin, preview + '/sound.wav')[2].startswith(b'RIFF')
 
+    shipped = request(origin, route + '/delivery', {'hit': hit['id'], 'padding_ms': 80, 'frames': 3, 'sound': '1'})[2]
+    assert '组合可投递'.encode() in shipped
+    images_only = request(origin, route + '/delivery', {'hit': hit['id'], 'padding_ms': 80, 'frames': 2})[2]
+    assert '组合不足'.encode() in images_only and '伴音听审'.encode() in images_only
+    clip = tour.hit(first, 'clip')
+    stereo = request(origin, route + '/delivery', {'hit': clip['id'], 'padding_ms': 80, 'frames': 2})[2]
+    assert '双声道伴音'.encode() in stereo and '证据不足'.encode() in stereo
+
     seal, _, frozen = request(origin, route + '/seal', {'hit': hit['id']})
     assert '待审'.encode() in frozen
     _, _, updated = request(origin, route + '/ruling', {
@@ -67,7 +75,7 @@ def run(server, root):
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：实测时间轴、证据画格与 WAV、投递前检查、裁决、冻结校验、版次比对均通过')
 
 
 def main():

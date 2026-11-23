@@ -132,6 +132,33 @@ def evidence(tour):
     return {'map': mapping, 'invalid_selection': tour.call(uri, {'hit_ids': []}, 400)}
 
 
+def delivery(tour):
+    record = tour.scan()
+    uri = f"/scans/{record['id']}/delivery-check"
+    ids = [hit['id'] for hit in record['hits']]
+    full = tour.call(uri, {'hit_ids': ids, 'frames': 3, 'sound': True})
+    assert full['ready'] and not full['missing']
+    images_only = tour.call(uri, {'hit_ids': ids, 'frames': 2, 'sound': False})
+    assert set(images_only['missing']) == {'sound', 'stereo'}
+    clip = tour.hit(record, 'clip')
+    assert images_only['missing']['stereo'] == [clip['id']]
+    freeze = tour.hit(record, 'freeze')
+    single = tour.call(uri, {'hit_ids': [freeze['id']], 'frames': 1})
+    assert single['missing'] == {'picture_pair': [freeze['id']]}
+    hole = tour.scan('picture-hole', sound='none')
+    gap = tour.hit(hole, 'picture_gap')
+    hole_uri = f"/scans/{hole['id']}/delivery-check"
+    shallow = tour.call(hole_uri, {'hit_ids': [gap['id']], 'padding_ms': 80, 'frames': 3})
+    assert shallow['missing'] == {'picture_pair': [gap['id']]}
+    deep = tour.call(hole_uri, {'hit_ids': [gap['id']], 'padding_ms': 600, 'frames': 3})
+    assert deep['ready']
+    invalid = tour.call(uri, {'hit_ids': [freeze['id']], 'sound': 'yes'}, 400)
+    return {'full_plan_ready': full['ready'],
+            'images_only_missing': {key: len(value) for key, value in images_only['missing'].items()},
+            'single_frame_freeze': single['missing'], 'targets_in_hole': shallow['missing'],
+            'flanked_hole_ready': deep['ready'], 'invalid_sound_flag': invalid}
+
+
 def seal(tour):
     record = tour.scan()
     uri = f"/scans/{record['id']}"
@@ -169,7 +196,8 @@ def verify(tour):
 
 
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'delivery': delivery, 'publish': seal,
+             'catalog': catalog, 'verify': verify}
 
 
 def main():

@@ -4,6 +4,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 from .clock import InputError, integer, shape, text
 from .compare import compare
+from .delivery import assess
 from .evidence import extract
 from .media import inspect
 from .review import adjudicate, find_hit, intent, ruling
@@ -58,8 +59,8 @@ class Slatewatch:
         minimum = integer(data.get('minimum_permille', 300), 'minimum_permille', 1, 1000)
         return compare(earlier, later, minimum)
 
-    def _selection(self, scan_id, data):
-        shape(data, ('hit_ids',), ('padding_ms', 'frames'))
+    def _selection(self, scan_id, data, optional=(), minimum_frames=1):
+        shape(data, ('hit_ids',), ('padding_ms', 'frames', *optional))
         ids = data['hit_ids']
         if not isinstance(ids, list) or not 1 <= len(ids) <= 6:
             raise InputError('provide one to six finding identifiers')
@@ -70,8 +71,19 @@ class Slatewatch:
         asset = self.vault.get('master', scan['master_id'])
         hits = [find_hit(scan, key) for key in sorted(ids)]
         padding = integer(data.get('padding_ms', 120), 'padding_ms', 0, 2000)
-        frames = integer(data.get('frames', 3), 'frames', 1, 8)
+        frames = integer(data.get('frames', 3), 'frames', minimum_frames, 8)
         return scan, asset, hits, padding, frames
+
+    def delivery_check(self, scan_id, data):
+        scan, asset, hits, padding, frames = self._selection(scan_id, data, optional=('sound',),
+                                                             minimum_frames=0)
+        shipped = data.get('sound', True)
+        if type(shipped) is not bool:
+            raise InputError('sound must be true or false')
+        path = self.vault.object_path(asset['sha256'])
+        excerpts = extract(path, scan, hits, padding, frames)
+        plan = {'frames': frames, 'sound': shipped, 'padding_ms': padding}
+        return assess(scan, hits, excerpts, plan)
 
     def evidence(self, scan_id, data):
         scan, asset, hits, padding, frames = self._selection(scan_id, data)

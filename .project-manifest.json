@@ -63,6 +63,11 @@
       "responsibility": "源时标摘片、补零记录"
     },
     {
+      "id": "delivery",
+      "path": "slatewatch/delivery.py",
+      "responsibility": "投递前核对所选材料的作证能力"
+    },
+    {
       "id": "seal",
       "path": "slatewatch/seal.py",
       "responsibility": "冻结格式和实际字节校验"
@@ -217,6 +222,25 @@
       ]
     },
     {
+      "id": "delivery",
+      "name": "投递前检查",
+      "entry": "POST /scans/{id}/delivery-check",
+      "success": "每个待复核候选在实际摘出材料中有证据，组合不足时按名列出所缺作证能力",
+      "failure": "非法投递组合参数 400",
+      "verification": "python3 -m slatewatch.walkthrough delivery",
+      "steps": [
+        "按投递组合摘出实际画格映射与波形记录",
+        "按候选种类核对实存画格、前后对照与伴音声道"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "delivery",
+        "evidence",
+        "clock"
+      ]
+    },
+    {
       "id": "publish",
       "name": "冻结审片证据",
       "entry": "POST /scans/{id}/seals",
@@ -278,7 +302,7 @@
       "id": "desk",
       "name": "浏览器技审与证据交接",
       "entry": "GET /desk",
-      "success": "可见源轨覆盖、恢复证据位置、录入裁决并独立验证冻结结果",
+      "success": "可见源轨覆盖、恢复证据位置、投递前核对组合、录入裁决并独立验证冻结结果",
       "failure": "未知候选返回 404，未选伴音、补零与画面缺口区分展示",
       "verification": "python3 -m slatewatch.desk_walkthrough",
       "steps": [
@@ -292,6 +316,7 @@
         "service",
         "scan",
         "evidence",
+        "delivery",
         "review",
         "seal",
         "store"

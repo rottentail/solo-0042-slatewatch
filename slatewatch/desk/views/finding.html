@@ -5,7 +5,9 @@
     <input name="hit" value="$hit" type="hidden">
     <label>留边（毫秒）<input name="padding_ms" type="number" min="0" max="2000" value="120" required></label>
     <label>画格数<input name="frames" type="number" min="1" max="8" value="3" required></label>
+    <label class="check"><input name="sound" type="checkbox" value="1" checked>含伴音 WAV</label>
     <button class="primary">查看证据</button>
+    <button formaction="/desk/scans/$scan/delivery">投递前检查</button>
     <button formaction="/desk/scans/$scan/evidence">下载即时证据</button>
     <button formaction="/desk/scans/$scan/seal">冻结证据包</button>
   </form>
