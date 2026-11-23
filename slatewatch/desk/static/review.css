@@ -1,0 +1,29 @@
+.workspace { display: grid; grid-template-columns: minmax(156px, 216px) minmax(0, 1fr); min-height: calc(100vh - 62px); }
+.sidebar { background: #e9efef; border-right: 1px solid var(--line); padding: 15px 12px; }
+.sidebar header { display: flex; justify-content: space-between; align-items: center; padding: 3px 6px; }
+.sidebar header a { text-decoration: none; font-size: 19px; }
+.scanlist { display: grid; gap: 3px; }
+.scanlist a { padding: 8px 10px; border-left: 3px solid transparent; color: var(--ink); text-decoration: none; overflow-wrap: anywhere; }
+.scanlist a[aria-current] { border-color: var(--accent); background: var(--paper); }
+.scanlist small { display: block; color: var(--muted); margin-top: 2px; }
+.review { padding: 22px 30px 40px; width: min(100%, 1250px); min-width: 0; }
+.striphead { display: flex; flex-wrap: wrap; gap: 8px 16px; align-items: center; justify-content: space-between; }
+.striphead p { color: var(--muted); margin: 0; }
+.rule { margin: 0 0 13px; }
+.state { padding: 2px 6px; border-radius: 3px; white-space: nowrap; font-size: 12px; background: #e8ecee; }
+.state.expected, .state.accepted, .state.pass { color: #115c43; background: #dcf1e5; }
+.state.held, .state.hold { color: #8e3126; background: #fce5df; }
+.state.pending { color: #794a00; background: #fff0cb; }
+.selected { background: #e9f5f2; }
+.finding { border-top: 1px solid var(--line); margin-top: 21px; padding-top: 13px; }
+.finding details { margin: 9px 0; }
+.finding summary { cursor: pointer; width: fit-content; }
+.finding input[type="number"] { width: 112px; }
+@media (max-width: 720px) {
+  .workspace { display: block; }
+  .sidebar { border-right: 0; border-bottom: 1px solid var(--line); }
+  .scanlist { display: flex; overflow-x: auto; }
+  .scanlist a { flex: 0 0 auto; max-width: 180px; }
+  .review { padding-inline: 13px; }
+  .table-wrap .time { white-space: nowrap; }
+}

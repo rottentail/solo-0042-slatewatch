@@ -22,7 +22,9 @@
       "source_anchors": [
         "slatewatch/media.py",
         "slatewatch/evidence.py",
-        "slatewatch/seal.py"
+        "slatewatch/seal.py",
+        "slatewatch/desk/timeline.py",
+        "slatewatch/desk_walkthrough.py"
       ]
     },
     "功能优化": {
@@ -33,7 +35,9 @@
         "slatewatch/sound.py",
         "slatewatch/review.py",
         "slatewatch/compare.py",
-        "slatewatch/seal.py"
+        "slatewatch/seal.py",
+        "slatewatch/desk/timeline.py",
+        "slatewatch/desk_walkthrough.py"
       ]
     },
     "代码重构": {
@@ -43,7 +47,9 @@
         "slatewatch/scan.py",
         "slatewatch/evidence.py",
         "slatewatch/picture.py",
-        "slatewatch/service.py"
+        "slatewatch/service.py",
+        "slatewatch/desk/timeline.py",
+        "slatewatch/desk_walkthrough.py"
       ]
     },
     "依赖升级与迁移": {
@@ -52,7 +58,9 @@
       "source_anchors": [
         "slatewatch/media.py",
         "slatewatch/evidence.py",
-        "slatewatch/seal.py"
+        "slatewatch/seal.py",
+        "slatewatch/desk/timeline.py",
+        "slatewatch/desk_walkthrough.py"
       ]
     },
     "质量保障": {
@@ -61,7 +69,9 @@
       "source_anchors": [
         "slatewatch/clock.py",
         "slatewatch/review.py",
-        "slatewatch/evidence.py"
+        "slatewatch/evidence.py",
+        "slatewatch/desk/timeline.py",
+        "slatewatch/desk_walkthrough.py"
       ]
     },
     "项目维护": {
@@ -71,7 +81,9 @@
         "slatewatch/reels.py",
         "slatewatch/rules.py",
         "slatewatch/scan.py",
-        "slatewatch/seal.py"
+        "slatewatch/seal.py",
+        "slatewatch/desk/timeline.py",
+        "slatewatch/desk_walkthrough.py"
       ]
     },
     "技术讨论": {
@@ -80,7 +92,9 @@
       "source_anchors": [
         "slatewatch/picture.py",
         "slatewatch/sound.py",
-        "slatewatch/evidence.py"
+        "slatewatch/evidence.py",
+        "slatewatch/desk/timeline.py",
+        "slatewatch/desk_walkthrough.py"
       ]
     },
     "问题排查与诊断": {
@@ -90,7 +104,9 @@
         "slatewatch/media.py",
         "slatewatch/picture.py",
         "slatewatch/sound.py",
-        "slatewatch/scan.py"
+        "slatewatch/scan.py",
+        "slatewatch/desk/timeline.py",
+        "slatewatch/desk_walkthrough.py"
       ]
     },
     "部署运维": {
@@ -100,7 +116,9 @@
         "slatewatch/http.py",
         "slatewatch/media.py",
         "slatewatch/store.py",
-        "slatewatch/seal.py"
+        "slatewatch/seal.py",
+        "slatewatch/desk/timeline.py",
+        "slatewatch/desk_walkthrough.py"
       ]
     },
     "泛Agent需求": {
@@ -110,7 +128,9 @@
         "slatewatch/reels.py",
         "slatewatch/compare.py",
         "slatewatch/evidence.py",
-        "slatewatch/seal.py"
+        "slatewatch/seal.py",
+        "slatewatch/desk/timeline.py",
+        "slatewatch/desk_walkthrough.py"
       ]
     },
     "Bugfix": {
@@ -624,6 +644,34 @@
       "entry": "冻结包的成员身份",
       "distinct_outcome": "允许对交付件作独立复核",
       "mechanism": "snapshot_consistency"
+    },
+    {
+      "id": "desk-preview-coverage",
+      "anchor": "desk/preview.show evidence.finish",
+      "entry": "GET /desk",
+      "distinct_outcome": "页面显示源画格时标或缺失",
+      "mechanism": "time_semantics"
+    },
+    {
+      "id": "desk-preview-sound",
+      "anchor": "desk/preview.create evidence.sound",
+      "entry": "GET /desk",
+      "distinct_outcome": "WAV 和源采样范围可独立核对",
+      "mechanism": "lineage"
+    },
+    {
+      "id": "desk-visible-coverage",
+      "anchor": "desk/timeline.draw scan.measure",
+      "entry": "GET /desk",
+      "distinct_outcome": "画面缺口与未选伴音各有状态",
+      "mechanism": "time_semantics"
+    },
+    {
+      "id": "desk-frozen-view",
+      "anchor": "desk/seals.detail seal.verify",
+      "entry": "GET /desk",
+      "distinct_outcome": "可验真并读取旧裁决",
+      "mechanism": "export_freeze"
     }
   ],
   "tension_points": [
@@ -676,6 +724,11 @@
       "workflow_id": "verify",
       "description": "资料描述符存在并不能证明拷贝后的证据字节完整",
       "observable_failure": "播放还能打开的修改包被标记为已验真"
+    },
+    {
+      "workflow_id": "desk",
+      "description": "浏览器需保留时标、实测覆盖与补零的区分",
+      "observable_failure": "无媒体支持的时标被误显示为有效停画或真实静音"
     }
   ],
   "prompt_anchors": [
@@ -5291,6 +5344,116 @@
         "functions": [
           "verify",
           "digest_file"
+        ]
+      }
+    },
+    {
+      "id": "desk-preview-coverage",
+      "task_type": "功能开发",
+      "capability_family": "浏览器时标证据",
+      "subject": "证据帧",
+      "state": "浏览摘片",
+      "invariant": "目标时刻与源画格分别保留",
+      "observable": "页面显示源画格时标或缺失",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "desk"
+      ],
+      "source_anchors": [
+        "slatewatch/desk/preview.py",
+        "slatewatch/evidence.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/desk/preview.py",
+          "slatewatch/evidence.py"
+        ],
+        "functions": [
+          "show",
+          "finish"
+        ]
+      },
+      "extension_seam_id": "desk-preview-coverage"
+    },
+    {
+      "id": "desk-preview-sound",
+      "task_type": "功能开发",
+      "capability_family": "浏览器时标证据",
+      "subject": "原轨伴音",
+      "state": "证据试听",
+      "invariant": "播放使用原采样网格且补零另列",
+      "observable": "WAV 和源采样范围可独立核对",
+      "primary_mechanism": "lineage",
+      "workflow_ids": [
+        "desk"
+      ],
+      "source_anchors": [
+        "slatewatch/desk/preview.py",
+        "slatewatch/evidence.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/desk/preview.py",
+          "slatewatch/evidence.py"
+        ],
+        "functions": [
+          "create",
+          "sound"
+        ]
+      },
+      "extension_seam_id": "desk-preview-sound"
+    },
+    {
+      "id": "desk-visible-coverage",
+      "task_type": "功能优化",
+      "capability_family": "浏览器时标证据",
+      "subject": "节目时间轴",
+      "state": "完整节目扫描",
+      "invariant": "对齐呈现画面覆盖、声道候选和未选轨",
+      "observable": "画面缺口与未选伴音各有状态",
+      "primary_mechanism": "time_semantics",
+      "workflow_ids": [
+        "desk"
+      ],
+      "source_anchors": [
+        "slatewatch/desk/timeline.py",
+        "slatewatch/scan.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/desk/timeline.py",
+          "slatewatch/scan.py"
+        ],
+        "functions": [
+          "draw",
+          "measure"
+        ]
+      }
+    },
+    {
+      "id": "desk-frozen-view",
+      "task_type": "功能优化",
+      "capability_family": "浏览器时标证据",
+      "subject": "冻结包",
+      "state": "查看当次审查",
+      "invariant": "实时裁决更新不改变已固定证据",
+      "observable": "可验真并读取旧裁决",
+      "primary_mechanism": "export_freeze",
+      "workflow_ids": [
+        "desk"
+      ],
+      "source_anchors": [
+        "slatewatch/desk/seals.py",
+        "slatewatch/seal.py"
+      ],
+      "existing_touch_points": {
+        "files": [
+          "slatewatch/desk/seals.py",
+          "slatewatch/seal.py"
+        ],
+        "functions": [
+          "detail",
+          "verify"
         ]
       }
     }

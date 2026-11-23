@@ -1,0 +1,9 @@
+<details><summary>登记制作意图</summary>
+  <form method="post" action="/desk/scans/$scan/intent" class="actions">
+    <input name="hit" value="$hit" type="hidden">
+    <label>起点（微秒）<input name="start_us" value="$start" type="number" min="0" required></label>
+    <label>终点（微秒）<input name="end_us" value="$end" type="number" min="1" required></label>
+    <label>说明<input name="reason" required maxlength="350"></label>
+    <button type="submit">记录制作意图</button>
+  </form>
+</details>

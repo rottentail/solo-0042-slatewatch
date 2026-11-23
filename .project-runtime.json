@@ -1,8 +1,11 @@
 {
-  "project_shape": "backend",
-  "language": "Python",
+  "project_shape": "fullstack",
+  "language": "Python 3.12+ / HTML / CSS / JavaScript",
   "source_extensions": [
-    ".py"
+    ".py",
+    ".html",
+    ".css",
+    ".js"
   ],
   "testing": "deferred",
   "build_command": "python3 -m compileall -q slatewatch",
@@ -46,6 +49,10 @@
     {
       "workflow_id": "verify",
       "command": "python3 -m slatewatch.walkthrough verify"
+    },
+    {
+      "workflow_id": "desk",
+      "command": "python3 -m slatewatch.desk_walkthrough"
     }
   ]
 }

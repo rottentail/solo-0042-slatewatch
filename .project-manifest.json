@@ -1,5 +1,5 @@
 {
-  "project_shape": "backend",
+  "project_shape": "fullstack",
   "name": "Slatewatch",
   "modules": [
     {
@@ -71,6 +71,11 @@
       "id": "store",
       "path": "slatewatch/store.py",
       "responsibility": "不可变记录、追加事件及字节对象"
+    },
+    {
+      "id": "desk",
+      "path": "slatewatch/desk",
+      "responsibility": "HTML 时间轴、轨道证据映射、浏览器裁决和冻结交接"
     }
   ],
   "workflows": [
@@ -267,6 +272,29 @@
         "service",
         "store",
         "seal"
+      ]
+    },
+    {
+      "id": "desk",
+      "name": "浏览器技审与证据交接",
+      "entry": "GET /desk",
+      "success": "可见源轨覆盖、恢复证据位置、录入裁决并独立验证冻结结果",
+      "failure": "未知候选返回 404，未选伴音、补零与画面缺口区分展示",
+      "verification": "python3 -m slatewatch.desk_walkthrough",
+      "steps": [
+        "选择扫描及异常",
+        "回看画格与伴音范围",
+        "验证实时裁决和冻结状态"
+      ],
+      "module_ids": [
+        "desk",
+        "http",
+        "service",
+        "scan",
+        "evidence",
+        "review",
+        "seal",
+        "store"
       ]
     }
   ],

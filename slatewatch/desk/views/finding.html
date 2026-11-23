@@ -1,0 +1,22 @@
+<section class="finding" id="finding" aria-label="候选复核">
+  <header class="striphead"><div><p>$lane · <code>$span</code></p><h2>$title</h2></div>$status</header>
+  <p class="muted">$note</p>
+  <form method="post" action="/desk/scans/$scan/preview" class="actions">
+    <input name="hit" value="$hit" type="hidden">
+    <label>留边（毫秒）<input name="padding_ms" type="number" min="0" max="2000" value="120" required></label>
+    <label>画格数<input name="frames" type="number" min="1" max="8" value="3" required></label>
+    <button class="primary">查看证据</button>
+    <button formaction="/desk/scans/$scan/evidence">下载即时证据</button>
+    <button formaction="/desk/scans/$scan/seal">冻结证据包</button>
+  </form>
+  <details><summary>人工裁决</summary>
+    <form method="post" action="/desk/scans/$scan/ruling" class="actions">
+      <input name="hit" value="$hit" type="hidden">
+      <label>裁决<select name="outcome"><option value="accept">通过</option><option value="hold">扣留</option><option value="reset">撤回裁决</option></select></label>
+      <label>审片员<input name="reviewer" required maxlength="120"></label>
+      <label>理由<input name="reason" required maxlength="350"></label>
+      <button type="submit">记录裁决</button>
+    </form>
+  </details>
+  $intent_form
+</section>

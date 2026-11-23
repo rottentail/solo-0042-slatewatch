@@ -63,6 +63,13 @@ class Vault:
                 raise Conflict(f'{kind} identity conflicts with the existing record')
         return record
 
+    def recent(self, kind, limit=35):
+        with self.connect() as connection:
+            rows = connection.execute(
+                'SELECT document FROM descriptors WHERE kind=? ORDER BY rowid DESC LIMIT ?', (kind, limit)
+            ).fetchall()
+        return [json.loads(row[0]) for row in rows]
+
     def append(self, scan_id, kind, record):
         with self.connect() as connection:
             cursor = connection.execute('INSERT INTO review_events(scan_id, kind, document) VALUES (?, ?, ?)',

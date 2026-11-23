@@ -1,0 +1,8 @@
+<div class="wrap"><p><a href="/desk/seals">← 冻结包</a></p>
+<header class="striphead"><h1>冻结包详情</h1></header>
+<dl><dt>包编号</dt><dd><code>$key</code></dd><dt>冻结时裁决</dt><dd>$status</dd>
+<dt>扫描</dt><dd><a href="/desk/scans/$scan">$scan</a></dd><dt>包 SHA-256</dt><dd><code>$digest</code></dd></dl>
+$verified
+<form class="actions" method="post" action="/desk/seals/$key/verify">
+  <button class="primary" name="verify" value="1">校验冻结包</button><a class="button" href="/slatewatch/v1/seals/$key/bundle" download="slatewatch-$key.zip">下载冻结包</a>
+</form></div>

@@ -9,6 +9,8 @@ from threading import BoundedSemaphore
 from urllib.parse import parse_qs, urlsplit
 
 from .clock import Conflict, InputError, Missing
+from .desk.cache import PreviewCache
+from .desk import routes as desk
 from .media import MAX_ASSET
 from .rules import canonical
 from .service import Slatewatch
@@ -29,6 +31,7 @@ class Server(ThreadingHTTPServer):
 
     def __init__(self, address, root, slots=2):
         self.app = Slatewatch(root)
+        self.preview_cache = PreviewCache()
         self.capacity = BoundedSemaphore(slots)
         super().__init__(address, Handler)
 
@@ -40,12 +43,18 @@ class Handler(BaseHTTPRequestHandler):
         self.request.settimeout(20)
         super().setup()
 
-    def reply(self, status, value, mime='application/json'):
+    def reply(self, status, value, mime='application/json', headers=None):
         data = value if isinstance(value, bytes) else canonical(value)
         self.send_response(status)
         self.send_header('Content-Type', mime)
         self.send_header('Content-Length', str(len(data)))
         self.send_header('Cache-Control', 'no-store')
+        if headers is not None:
+            self.send_header('X-Content-Type-Options', 'nosniff')
+            self.send_header('Content-Security-Policy',
+                             "default-src 'self'; style-src 'self' 'unsafe-inline'; form-action 'self'; frame-ancestors 'none'; base-uri 'none'")
+            for name, content in headers.items():
+                self.send_header(name, content)
         self.end_headers()
         self.wfile.write(data)
 
@@ -141,11 +150,28 @@ class Handler(BaseHTTPRequestHandler):
         raise Missing('route does not exist')
 
     def run_request(self):
+        try:
+            parsed = urlsplit(self.path)
+        except ValueError:
+            self.reply(400, {'error': 'invalid request target'})
+            return
+        quick_read = parsed.path.startswith('/desk/static/') or (
+            parsed.path.startswith('/desk/previews/') and parsed.path.count('/') == 4
+        )
+        if self.command == 'GET' and quick_read:
+            try:
+                self.reply(*desk.handle(self, parsed))
+            except (ConnectionError, TimeoutError):
+                pass
+            return
         if not self.server.capacity.acquire(blocking=False):
             self.reply(HTTPStatus.SERVICE_UNAVAILABLE, {'error': 'all inspection slots are occupied'})
             return
         try:
             try:
+                if parsed.path in ('/', '/desk') or parsed.path.startswith('/desk/'):
+                    self.reply(*desk.handle(self, parsed))
+                    return
                 status, body, mime = self.route_request()
             except HttpError as exc:
                 status, body, mime = exc.status, {'error': str(exc)}, 'application/json'

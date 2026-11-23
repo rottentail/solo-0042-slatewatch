@@ -1,0 +1,32 @@
+<div class="wrap">
+  <header class="striphead"><h1>母带与规则</h1></header>
+  <section class="form-section">
+    <h2>登记母带</h2>
+    <form id="upload-form" method="post" action="/desk/upload" class="actions">
+      <label>节目名称<input id="asset-label" required maxlength="120"></label>
+      <label>节目文件<input id="asset-file" type="file" required accept=".mkv,.mov,.mp4,video/*"></label>
+      <label>画面轨编号<input id="asset-picture" type="number" min="0" max="9999" placeholder="默认首轨"></label>
+      <label>伴音轨<input id="asset-sound" value="first" pattern="first|none|[0-9]{1,4}" title="first、none 或流编号" required></label>
+      <button class="primary">登记</button>
+    </form>
+    <p id="upload-status" role="status"></p>
+  </section>
+  <section class="form-section">
+    <h2>登记规则</h2>
+    <form method="post" action="/desk/policy" class="actions">
+      <label>规则名称<input name="label" required maxlength="120"></label>
+      <label>最短黑场（毫秒）<input name="black_min_ms" type="number" min="20" max="10000" placeholder="300"></label>
+      <label>最短冻帧（毫秒）<input name="freeze_min_ms" type="number" min="30" max="10000" placeholder="500"></label>
+      <label>最短伴音缺口（毫秒）<input name="sound_gap_ms" type="number" min="10" max="5000" placeholder="100"></label>
+      <button>登记</button>
+    </form>
+  </section>
+  <section class="form-section"><h2>开始扫描</h2>
+    <form method="post" action="/desk/scan" class="actions">
+      <label>节目母带<select name="master" required><option value="">选择母带</option>$masters</select></label>
+      <label>技术规则<select name="policy" required><option value="">选择规则</option>$policies</select></label>
+      <button class="primary"$pending>扫描</button>
+    </form>
+  </section>
+</div>
+<script src="/desk/static/intake.js" defer></script>
