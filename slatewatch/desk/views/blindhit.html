@@ -1,0 +1,13 @@
+<section class="finding" id="$hit">
+  <header class="striphead"><div><p>$lane · <code>$span</code></p><h2>$title</h2></div></header>
+  <p class="muted">$note</p>
+  <section aria-label="证据画格" class="frames">$frames</section>
+  <section class="form-section" aria-label="原轨伴音"><h2>原轨伴音</h2>$sound</section>
+  <form method="post" action="/desk/handoffs/$handoff/ruling" class="actions">
+    <input name="hit" value="$hit" type="hidden">
+    <label>判读<select name="outcome"><option value="accept">通过</option><option value="hold">扣留</option><option value="reset">撤回判读</option></select></label>
+    <label>复核人<input name="reviewer" required maxlength="120"></label>
+    <label>理由<input name="reason" required maxlength="350"></label>
+    <button type="submit" class="primary">提交判读</button>
+  </form>
+</section>

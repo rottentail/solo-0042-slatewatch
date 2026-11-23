@@ -1,10 +1,12 @@
 """Application boundary for media intake, measurement, review and sealed evidence."""
 from io import BytesIO
+import json
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from .clock import InputError, integer, shape, text
+from .clock import Conflict, InputError, integer, shape, text
 from .compare import compare
 from .evidence import extract
+from . import handoff
 from .media import inspect
 from .review import adjudicate, find_hit, intent, ruling
 from .rules import canonical, identifier, new_policy
@@ -104,3 +106,45 @@ class Slatewatch:
     def download(self, seal_id):
         verification = self.verify(seal_id)
         return self.vault.object_path(verification['sha256']).read_bytes()
+
+    def _verified_seal(self, seal_id):
+        record = self.vault.get('seal', seal_id)
+        path = self.vault.object_path(record['sha256'])
+        verify(path, record)
+        return record, path
+
+    def create_handoff(self, seal_id, data):
+        shape(data, ())
+        record, path = self._verified_seal(text(seal_id, 'seal_id'))
+        with ZipFile(path) as archive:
+            maps = json.loads(archive.read('evidence.json'))
+        return self.vault.put('handoff', handoff.create(record, maps))
+
+    def handoff_view(self, handoff_id):
+        record = self.vault.get('handoff', handoff_id)
+        return handoff.view(record, self.vault.handoff_timeline(record['id']))
+
+    def handoff_bundle(self, handoff_id):
+        record = self.vault.get('handoff', handoff_id)
+        seal_record, path = self._verified_seal(record['seal_id'])
+        return handoff.blinded(record, seal_record, path)
+
+    def add_handoff_ruling(self, handoff_id, data):
+        record = self.vault.get('handoff', handoff_id)
+        return self.vault.append_handoff(record['id'], handoff.ruling(record, data))
+
+    def reconciliation(self, handoff_id):
+        record = self.vault.get('handoff', handoff_id)
+        events = self.vault.handoff_timeline(record['id'])
+        scan = self.vault.get('scan', record['scan_id'])
+        current = adjudicate(scan, *self.vault.timeline(scan['id']))
+        seal_record = self.vault.get('seal', record['seal_id'])
+        try:
+            _seal, path = self._verified_seal(seal_record['id'])
+            with ZipFile(path) as archive:
+                frozen = json.loads(archive.read('review.json'))
+            evidence = {'status': 'verified', 'sha256': seal_record['sha256']}
+        except Conflict as exc:
+            frozen = None
+            evidence = {'status': 'diverged', 'detail': str(exc)}
+        return handoff.reconcile(record, scan, frozen, current, events, evidence)

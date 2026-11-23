@@ -1,6 +1,6 @@
 # Slatewatch
 
-Slatewatch 是面向录播交付的节目母带技审台。浏览器工作台使用 HTML、CSS 和少量 JavaScript，由 Python 和 PyAV 提供检测与证据。技术人员可以登记母带与规则、查看画面和各声道覆盖、复核技术候选、对照两轮扫描，并固定当时的审片结论和媒体证据。
+Slatewatch 是面向录播交付的节目母带技审台。浏览器工作台使用 HTML、CSS 和少量 JavaScript，由 Python 和 PyAV 提供检测与证据。技术人员可以登记母带与规则、查看画面和各声道覆盖、复核技术候选、对照两轮扫描、固定当时的审片结论和媒体证据，并把冻结证据交给第二工位盲核。
 
 ## 运行
 
@@ -19,6 +19,10 @@ python -m slatewatch.http --root ./slatewatch-vault
 浏览器打开 <http://127.0.0.1:8974/desk>。在「母带与规则」登记媒体和规则后开始扫描。点选时间轴或候选列表中的异常可以播放伴音、查看样本对应的源画格，也可记录制作意图和人工裁决。浏览器画格以 PNG 展示，原 ZIP 仍包含 PGM 和时间映射。伴音未选轨会单独标明，摘片合成的零采样按原轨范围列出。
 
 「版次比对」显示同节目时标上的匹配和各版独有候选。「冻结包」保留冻结当时的结论，并提供独立核验与下载。浏览器预览是当前进程内的临时结果。有长期交接需求时，使用即时证据下载或冻结包。
+
+## 盲核交接
+
+同一节目需第二工位复核时，从冻结包详情或 `POST /seals/{id}/handoffs` 发起盲核交接，交接范围是包内带证据的候选。交接证据包隐去冻结时的裁决与包索引，只含扫描事实、画格、声轨和 `handoff.json` 清单，接收人可按实际声道、原节目时标与可用画格、声轨独立作证。提交全部判读前，交接接口与页面不返回任何既有裁决；判读齐后核对才开放。核对以同一冻结包的哈希为准：包校验失败说明证据确实不一样，冻结后旧裁决被改动标为旧结论已变化，两者都稳定时的分歧才是同一证据上的判断分歧。盲核约束依赖工位流程，保管库的其他入口仍可读取旧裁决。
 
 ## 一次审片
 
@@ -55,6 +59,10 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 | `POST /scans/{id}/evidence` | 按 1 至 6 个 `hit_ids`、可选 `padding_ms` 和 `frames` 生成即时 ZIP。每条证据含时标映射和可用媒体 |
 | `POST /scans/{id}/seals` | 接收同一摘片选项，冻结扫描、裁决及媒体，返回封包描述符 |
 | `GET /seals/{id}`、`/seals/{id}/verify`、`/seals/{id}/bundle` | 读取描述、校验包哈希与文件索引，或下载已校验的 ZIP |
+| `POST /seals/{id}/handoffs` | 空 JSON 体。从已校验的冻结包生成盲核交接，范围是包内带证据的候选；重复发起返回同一交接 |
+| `GET /handoffs/{id}`、`/handoffs/{id}/bundle` | 读取盲核进度与接收人自己的判读（不含旧裁决），或下载隐去旧裁决的交接证据包 |
+| `POST /handoffs/{id}/rulings` | 接收人按 `hit_id`、`outcome`、`reason`、`reviewer` 提交独立判读，`reset` 撤回自己的判读 |
+| `GET /handoffs/{id}/reconciliation` | 判读齐后核对两人结论：校验同一冻结证据，区分旧结论已变化与证据确实不一样；判读未齐返回 409 |
 
 上传限制为 48 MiB，源时长限 120 秒。允许的容器、编码、轨道与采样范围定义在 `slatewatch/media.py`。`coverage.sound: null` 表示未选伴音，带缺口的已选伴音有实际覆盖区间。波形证据对未覆盖采样补零，`clock.json` 单列补零区间，供复核时区别源内数字静音。画格是为判读技术信号生成的灰阶缩略图。
 
@@ -62,4 +70,4 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog`、`verify` 或 `handoff`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。

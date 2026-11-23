@@ -168,8 +168,45 @@ def verify(tour):
     return {'verified': verified, 'tampered': tour.call(uri + '/verify', expected=409)}
 
 
+def handoff(tour):
+    record = tour.scan()
+    uri = f"/scans/{record['id']}"
+    selection = tour.selection(record)
+    hit_id = selection['hit_ids'][0]
+    tour.call(uri + '/rulings', {'hit_id': hit_id, 'outcome': 'hold', 'reviewer': 'first',
+                                 'reason': 'empty programme interval'}, 201)
+    sealed = tour.call(uri + '/seals', selection, 201)
+    tour.call(uri + '/rulings', {'hit_id': hit_id, 'outcome': 'accept', 'reviewer': 'first',
+                                 'reason': 'cleared after freezing'}, 201)
+    blind = tour.call(f"/seals/{sealed['id']}/handoffs", {}, 201)
+    assert blind['hit_ids'] == [hit_id]
+    assert tour.call(f"/seals/{sealed['id']}/handoffs", {}, 201)['id'] == blind['id']
+    state = tour.call(f"/handoffs/{blind['id']}")
+    assert state['complete'] is False and state['rulings'] == []
+    package = tour.call(f"/handoffs/{blind['id']}/bundle")
+    with ZipFile(BytesIO(package)) as archive:
+        names = archive.namelist()
+        assert 'review.json' not in names and 'index.json' not in names
+        manifest = json.loads(archive.read('handoff.json'))
+        assert manifest['seal_sha256'] == sealed['sha256']
+    locked = tour.call(f"/handoffs/{blind['id']}/reconciliation", expected=409)
+    tour.call(f"/handoffs/{blind['id']}/rulings", {'hit_id': hit_id, 'outcome': 'hold', 'reviewer': 'second',
+                                                   'reason': 'interval still silent'}, 201)
+    result = tour.call(f"/handoffs/{blind['id']}/reconciliation")
+    row = result['hits'][0]
+    assert result['evidence']['status'] == 'verified' and row['relation'] == 'agree' and row['old_changed']
+    path = tour.directory / 'vault' / 'objects' / sealed['sha256']
+    with path.open('ab') as file:
+        file.write(b'corrupted copy')
+    diverged = tour.call(f"/handoffs/{blind['id']}/reconciliation")
+    assert diverged['evidence']['status'] == 'diverged' and diverged['hits'][0]['relation'] == 'unknown'
+    return {'locked': locked, 'relation': row['relation'], 'old_conclusion': result['old_conclusion'],
+            'tampered': diverged['evidence']['status']}
+
+
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify,
+             'handoff': handoff}
 
 
 def main():

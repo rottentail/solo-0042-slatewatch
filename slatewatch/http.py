@@ -124,6 +124,8 @@ class Handler(BaseHTTPRequestHandler):
             types = {'masters': 'master', 'policies': 'policy', 'scans': 'scan', 'seals': 'seal'}
             if group in types:
                 return 200, app.vault.get(types[group], key), 'application/json'
+            if group == 'handoffs':
+                return 200, app.handoff_view(key), 'application/json'
         if len(parts) == 3:
             group, key, action = parts
             if group == 'scans' and action == 'review':
@@ -132,6 +134,10 @@ class Handler(BaseHTTPRequestHandler):
                 return 200, app.verify(key), 'application/json'
             if group == 'seals' and action == 'bundle':
                 return 200, app.download(key), 'application/zip'
+            if group == 'handoffs' and action == 'bundle':
+                return 200, app.handoff_bundle(key), 'application/zip'
+            if group == 'handoffs' and action == 'reconciliation':
+                return 200, app.reconciliation(key), 'application/json'
         raise Missing('route does not exist')
 
     def post(self, app, parts):
@@ -147,6 +153,10 @@ class Handler(BaseHTTPRequestHandler):
                 return 201, operations[action](key, self.json_body()), 'application/json'
             if action == 'evidence':
                 return 200, app.evidence(key, self.json_body()), 'application/zip'
+        if len(parts) == 3 and parts[0] == 'seals' and parts[2] == 'handoffs':
+            return 201, app.create_handoff(parts[1], self.json_body()), 'application/json'
+        if len(parts) == 3 and parts[0] == 'handoffs' and parts[2] == 'rulings':
+            return 201, app.add_handoff_ruling(parts[1], self.json_body()), 'application/json'
         raise Missing('route does not exist')
 
     def run_request(self):

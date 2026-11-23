@@ -63,11 +63,30 @@ def run(server, root):
     assert sha256(bundle).hexdigest() == descriptor['sha256']
     with ZipFile(BytesIO(bundle)) as archive:
         assert json.loads(archive.read('review.json'))['status'] == 'pending'
+    handoff_url, _, blind = request(origin, seal + '/handoff', {'handoff': '1'})
+    assert '盲核判读'.encode() in blind and '提交判读'.encode() in blind
+    assert '人工扣留'.encode() not in blind and '人工通过'.encode() not in blind
+    assert b'/desk/scans/' not in blind and b'review.json' not in blind
+    handoff_id = handoff_url.rsplit('/', 1)[1]
+    frame = re.search(rb'src="(/desk/previews/[^"]+\.png)"', blind)[1]
+    assert request(origin, frame.decode())[2].startswith(b'\x89PNG')
+    sound = re.search(rb'src="(/desk/previews/[^"]+\.wav)"', blind)[1]
+    assert request(origin, sound.decode())[2].startswith(b'RIFF')
+    locked = request(origin, f'/desk/handoffs/{handoff_id}/reconciliation', expected=409)[2]
+    assert '尚未提交完整'.encode() in locked
+    request(origin, f'/desk/handoffs/{handoff_id}/ruling', {
+        'hit': hit['id'], 'outcome': 'hold', 'reason': '缺口仍在', 'reviewer': '第二工位',
+    })
+    reconciled = request(origin, f'/desk/handoffs/{handoff_id}/reconciliation')[2]
+    assert '同一冻结证据核验通过'.encode() in reconciled and '旧结论已变化'.encode() in reconciled
+    assert '冻结时无人工裁决'.encode() in reconciled
+    listed = request(origin, '/desk/handoffs')[2]
+    assert handoff_id.encode() in listed and '可核对'.encode() in listed
     query = urlencode({'before': first['id'], 'after': second['id']})
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对、盲核交接均通过')
 
 
 def main():

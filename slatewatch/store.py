@@ -33,6 +33,12 @@ class Vault:
                     document BLOB NOT NULL
                 );
                 CREATE INDEX IF NOT EXISTS review_scan ON review_events(scan_id, seq);
+                CREATE TABLE IF NOT EXISTS handoff_events (
+                    seq INTEGER PRIMARY KEY,
+                    handoff_id TEXT NOT NULL,
+                    document BLOB NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS handoff_event ON handoff_events(handoff_id, seq);
             ''')
 
     @contextmanager
@@ -84,6 +90,18 @@ class Vault:
         for seq, kind, document in rows:
             (intents if kind == 'intent' else rulings).append({'seq': seq, **json.loads(document)})
         return intents, rulings
+
+    def append_handoff(self, handoff_id, record):
+        with self.connect() as connection:
+            cursor = connection.execute('INSERT INTO handoff_events(handoff_id, document) VALUES (?, ?)',
+                                        (handoff_id, canonical(record)))
+            return {'seq': cursor.lastrowid, **record}
+
+    def handoff_timeline(self, handoff_id):
+        with self.connect() as connection:
+            rows = connection.execute('SELECT seq, document FROM handoff_events WHERE handoff_id=? ORDER BY seq',
+                                      (handoff_id,)).fetchall()
+        return [{'seq': seq, **json.loads(document)} for seq, document in rows]
 
     def object_path(self, digest):
         return self.objects / digest

@@ -5,7 +5,7 @@ from urllib.parse import urlencode, urlsplit
 
 from ..clock import Conflict, InputError, Missing
 from ..media import MAX_ASSET
-from . import compare, forms, library, preview, scans, seals
+from . import compare, forms, handoffs, library, preview, scans, seals
 from .render import ASSETS, HERE, page
 from .text import safe
 
@@ -96,6 +96,19 @@ def route(handler, parsed):
             return html(seals.detail(app, key))
         case 'POST', ['desk', 'seals', key, 'verify']:
             return html(seals.detail(app, key, verified=True))
+        case 'POST', ['desk', 'seals', key, 'handoff']:
+            record = app.create_handoff(key, {})
+            return redirect(f'/desk/handoffs/{record["id"]}')
+        case 'GET', ['desk', 'handoffs']:
+            return html(handoffs.index(app))
+        case 'GET', ['desk', 'handoffs', key]:
+            return html(handoffs.show(app, cache, key))
+        case 'POST', ['desk', 'handoffs', key, 'ruling']:
+            app.add_handoff_ruling(key, {'hit_id': data.get('hit', ''), 'outcome': data.get('outcome'),
+                                         'reason': data.get('reason'), 'reviewer': data.get('reviewer')})
+            return redirect(f'/desk/handoffs/{key}#{data.get("hit", "")}')
+        case 'GET', ['desk', 'handoffs', key, 'reconciliation']:
+            return html(handoffs.reconciliation(app, key))
         case _:
             raise Missing('工作台没有此页面。')
 
