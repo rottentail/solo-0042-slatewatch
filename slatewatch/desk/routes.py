@@ -5,7 +5,8 @@ from urllib.parse import urlencode, urlsplit
 
 from ..clock import Conflict, InputError, Missing
 from ..media import MAX_ASSET
-from . import compare, forms, library, preview, scans, seals
+from ..rules import KINDS
+from . import compare, forms, library, preview, reinjects, scans, seals
 from .render import ASSETS, HERE, page
 from .text import safe
 
@@ -29,7 +30,52 @@ def allow_origin(handler):
 def read_form(handler):
     if handler.headers.get_content_type() != 'application/x-www-form-urlencoded':
         raise InputError('预期审片表单。')
-    return forms.decode(handler.body(16 * 1024).decode('ascii'))
+    raw = handler.body(32 * 1024).decode('utf-8')
+    return forms.decode(raw)
+
+
+def _signed_number(value, name):
+    text_value = str(value)
+    if not text_value.lstrip('-').isdecimal() or text_value.count('-') > 1 or len(text_value) > 12:
+        raise InputError(f'表单字段 {name} 需要整数。')
+    return int(text_value)
+
+
+def reinject_payload(data):
+    """Parse the bounded one-mark-per-line textarea into the JSON API request shape."""
+    lines = [line.strip() for line in data.get('marks', '').splitlines() if line.strip()]
+    if not 1 <= len(lines) <= 60:
+        raise InputError('请提供 1 至 60 条代理标注。')
+    marks = []
+    seen = set()
+    for line in lines:
+        fields = [part.strip() for part in line.split(',')]
+        if len(fields) < 3 or fields[0] not in KINDS:
+            raise InputError(f'标注行无法识别：{line}')
+        kind, start_raw, end_raw = fields[:3]
+        mark = {'kind': kind, 'start_us': _signed_number(start_raw, 'start_us'),
+                'end_us': _signed_number(end_raw, 'end_us')}
+        extra = fields[3:]
+        if kind in ('silence', 'clip'):
+            if not extra:
+                raise InputError(f'{kind} 标注需要声道编号：{line}')
+            mark['channel'] = forms.number({'v': extra.pop(0)}, 'v')
+        if extra:
+            reference = extra.pop(0)
+            if reference in seen:
+                raise InputError(f'现场编号重复：{reference}')
+            seen.add(reference)
+            mark['reference'] = reference
+        if extra:
+            raise InputError(f'标注行字段过多：{line}')
+        marks.append(mark)
+    payload = {'marks': marks}
+    for key in ('proxy_label', 'reviewer'):
+        if data.get(key):
+            payload[key] = data[key]
+    if data.get('drift_tolerance_us'):
+        payload['drift_tolerance_us'] = forms.number(data, 'drift_tolerance_us')
+    return payload
 
 
 def selected_url(scan_id, hit_id):
@@ -90,6 +136,22 @@ def route(handler, parsed):
             return 200, content, mime, {}
         case 'GET', ['desk', 'compare']:
             return html(compare.show(app, params.get('before', ''), params.get('after', '')))
+        case 'GET', ['desk', 'reinjects']:
+            return html(reinjects.index(app, params.get('scan', '')))
+        case 'POST', ['desk', 'reinjects']:
+            record = app.reinject(data['scan'], reinject_payload(data))
+            return redirect(f'/desk/reinjects/{record["id"]}')
+        case 'GET', ['desk', 'reinjects', key]:
+            return html(reinjects.detail(app, key))
+        case 'POST', ['desk', 'reinjects', key, 'confirmations']:
+            payload = {'selections': [forms.number(data, 'selections')],
+                       'reviewer': data.get('reviewer', ''), 'reason': data.get('reason', '')}
+            if data.get('override'):
+                payload['override'] = True
+            app.confirm_reinject(key, payload)
+            return redirect(f'/desk/reinjects/{key}')
+        case 'GET', ['desk', 'reinjects', key, 'recheck']:
+            return html(reinjects.recheck_page(app, key))
         case 'GET', ['desk', 'seals']:
             return html(seals.index(app))
         case 'GET', ['desk', 'seals', key]:

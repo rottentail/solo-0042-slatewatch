@@ -6,6 +6,7 @@ from .clock import InputError, integer, shape, text
 from .compare import compare
 from .evidence import extract
 from .media import inspect
+from .reinject import build_report, confirmation_request, parse_request, recheck
 from .review import adjudicate, find_hit, intent, ruling
 from .rules import canonical, identifier, new_policy
 from .scan import measure, scan_identity
@@ -57,6 +58,37 @@ class Slatewatch:
         later = self.vault.get('scan', text(data['after'], 'after'))
         minimum = integer(data.get('minimum_permille', 300), 'minimum_permille', 1, 1000)
         return compare(earlier, later, minimum)
+
+    def reinject(self, scan_id, data):
+        """生成只读回灌预检报告；不写意图、裁决或任何既有审片记录。"""
+        scan = self.vault.get('scan', scan_id)
+        payload = parse_request(scan, data)
+        return self.vault.put('reinject', build_report(scan, payload, self.vault))
+
+    def confirm_reinject(self, reinject_id, data):
+        """人工确认后才把可定位段落为裁决，冲突须显式 override。"""
+        report = self.vault.get('reinject', reinject_id)
+        scan = self.vault.get('scan', report['scan_id'])
+        view = adjudicate(scan, *self.vault.timeline(scan['id']))
+        statuses = {item['id']: item['status'] for item in view['hits']}
+        request = confirmation_request(scan, report, data, statuses)
+        events = []
+        for action in request['actions']:
+            record = self.add_ruling(scan['id'], {
+                'hit_id': action['hit_id'], 'outcome': action['outcome'],
+                'reason': request['reason'], 'reviewer': request['reviewer']})
+            events.append(self.vault.append_reinject_event(reinject_id, {
+                'mark_index': action['mark_index'], 'hit_id': action['hit_id'],
+                'outcome': action['outcome'], 'ruling_seq': record['seq'],
+                'prior_status': action['prior_status'], 'override': request['override'],
+                'reviewer': request['reviewer'], 'reason': request['reason']}))
+        return {'reinject_id': reinject_id, 'scan_id': scan['id'],
+                'override': request['override'], 'confirmations': events}
+
+    def reinject_recheck(self, reinject_id):
+        report = self.vault.get('reinject', reinject_id)
+        scan = self.vault.get('scan', report['scan_id'])
+        return recheck(report, scan, self.vault, self.vault.reinject_timeline(reinject_id))
 
     def _selection(self, scan_id, data):
         shape(data, ('hit_ids',), ('padding_ms', 'frames'))

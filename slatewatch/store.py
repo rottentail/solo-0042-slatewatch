@@ -33,6 +33,12 @@ class Vault:
                     document BLOB NOT NULL
                 );
                 CREATE INDEX IF NOT EXISTS review_scan ON review_events(scan_id, seq);
+                CREATE TABLE IF NOT EXISTS reinject_events (
+                    seq INTEGER PRIMARY KEY,
+                    reinject_id TEXT NOT NULL,
+                    document BLOB NOT NULL
+                );
+                CREATE INDEX IF NOT EXISTS reinject_scan ON reinject_events(reinject_id, seq);
             ''')
 
     @contextmanager
@@ -84,6 +90,20 @@ class Vault:
         for seq, kind, document in rows:
             (intents if kind == 'intent' else rulings).append({'seq': seq, **json.loads(document)})
         return intents, rulings
+
+    def append_reinject_event(self, reinject_id, record):
+        with self.connect() as connection:
+            cursor = connection.execute(
+                'INSERT INTO reinject_events(reinject_id, document) VALUES (?, ?)',
+                (reinject_id, canonical(record)))
+            return {'seq': cursor.lastrowid, **record}
+
+    def reinject_timeline(self, reinject_id):
+        with self.connect() as connection:
+            rows = connection.execute(
+                'SELECT seq, document FROM reinject_events WHERE reinject_id=? ORDER BY seq',
+                (reinject_id,)).fetchall()
+        return [{'seq': seq, **json.loads(document)} for seq, document in rows]
 
     def object_path(self, digest):
         return self.objects / digest

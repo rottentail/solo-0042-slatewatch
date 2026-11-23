@@ -66,8 +66,32 @@ def run(server, root):
     query = urlencode({'before': first['id'], 'after': second['id']})
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
+
+    black = tour.hit(first, 'black')
+    freeze = tour.hit(first, 'freeze')
+    extent_end = first['extent']['end_us']
+    index_page = request(origin, '/desk/reinjects')[2]
+    assert '回灌预检'.encode() in index_page and '新建预检'.encode() in index_page
+    # 第三条静音段错放在节目尾部，母带静音候选位于前段，必然无法证明同一性。
+    marks = '\r\n'.join((
+        f'black,{black["start_us"] - 800000},{black["end_us"] - 800000},P-101',
+        f'freeze,{freeze["start_us"] + 1200000},{freeze["end_us"] + 1200000},P-102',
+        f'silence,{extent_end - 300000},{extent_end - 50000},1,P-103',
+    ))
+    created_path, _, created = request(origin, '/desk/reinjects', {
+        'scan': first['id'], 'proxy_label': '外场代理', 'reviewer': '现场',
+        'drift_tolerance_us': '2000000', 'marks': marks})
+    assert '无法证明同一性'.encode() in created and '建议'.encode() in created
+    reinject_id = created_path.rsplit('/', 1)[1]
+    report = tour.call(f'/reinjects/{reinject_id}')
+    suggestion = next(item for item in report['located'] if item['classification'] == 'suggestion')
+    confirm_path, _, confirmed_page = request(origin, f'/desk/reinjects/{reinject_id}/confirmations', {
+        'selections': str(suggestion['mark_index']), 'reviewer': '复核员', 'reason': '画格对照确认'})
+    assert confirm_path == f'/desk/reinjects/{reinject_id}' and '已确认'.encode() in confirmed_page
+    recheck = request(origin, f'/desk/reinjects/{reinject_id}/recheck')[2]
+    assert '状况变化后的复核对照'.encode() in recheck and '结论已变化'.encode() in recheck
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对、回灌预检均通过')
 
 
 def main():

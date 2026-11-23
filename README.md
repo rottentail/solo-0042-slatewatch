@@ -18,7 +18,16 @@ python -m slatewatch.http --root ./slatewatch-vault
 
 浏览器打开 <http://127.0.0.1:8974/desk>。在「母带与规则」登记媒体和规则后开始扫描。点选时间轴或候选列表中的异常可以播放伴音、查看样本对应的源画格，也可记录制作意图和人工裁决。浏览器画格以 PNG 展示，原 ZIP 仍包含 PGM 和时间映射。伴音未选轨会单独标明，摘片合成的零采样按原轨范围列出。
 
-「版次比对」显示同节目时标上的匹配和各版独有候选。「冻结包」保留冻结当时的结论，并提供独立核验与下载。浏览器预览是当前进程内的临时结果。有长期交接需求时，使用即时证据下载或冻结包。
+「版次比对」显示同节目时标上的匹配和各版独有候选。「回灌预检」把外场在低码率代理上写下的待扣留段对回原母带扫描。「冻结包」保留冻结当时的结论，并提供独立核验与下载。浏览器预览是当前进程内的临时结果。有长期交接需求时，使用即时证据下载或冻结包。
+
+## 代理回灌预检
+
+现场同事可能在剪去首尾、更换伴音轨或出现中段时间漂移的低码率代理上写下扣留段，现场编号也与母带候选不同。回灌预检只做同一性判定，不直接改任何已有裁决：
+
+- 每条代理标注按同类、同声道候选配对，分别尝试整体平移（首尾切除）与逐段漂移（中段错位），以交并比、平移量和残余端点差给出定位依据。
+- 能在原扫描定位的段，再对照该候选当前的人工结论：代理扣留撞上母带已人工通过（或相反）记为**冲突**，其余记为**建议**。得分接近、无可配对候选或交并不足的段记为**无法证明同一性**，不进入裁决。
+- 报告冻结预检当时的母带候选结论基线。人工在工作台或 API 显式确认后，裁决才经既有只追加通道写入；冲突必须带 `override` 并填写理由。
+- `recheck` 对照基线列出此后母带侧的结论变化（候选消失、结论变更）和每条代理段的确认状态，供状况变化后复核。
 
 ## 一次审片
 
@@ -52,6 +61,10 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 | `POST /scans/{id}/rulings` | 用 `hit_id`、`outcome`、`reason` 和 `reviewer` 操作单个候选。`outcome` 为 `accept`、`hold` 或 `reset` |
 | `GET /scans/{id}/review` | 读取按当前意图及裁决投影的复核状态 |
 | `POST /compare` | 以 `before`、`after` 扫描 ID 及可选的 `minimum_permille` 对照共享时线上的候选 |
+| `POST /scans/{id}/reinjects` | 提交代理审片标注做回灌预检，返回建议、冲突、无法证明同一性三类只读结论 |
+| `GET /reinjects/{id}` | 读取回灌预检报告及冻结时的母带候选基线 |
+| `POST /reinjects/{id}/confirmations` | 人工确认后才把可定位段写为裁决；冲突须带 `override`，无法证明的段不可选 |
+| `GET /reinjects/{id}/recheck` | 对照预检基线列出母带侧此后的结论变化与各段确认状态 |
 | `POST /scans/{id}/evidence` | 按 1 至 6 个 `hit_ids`、可选 `padding_ms` 和 `frames` 生成即时 ZIP。每条证据含时标映射和可用媒体 |
 | `POST /scans/{id}/seals` | 接收同一摘片选项，冻结扫描、裁决及媒体，返回封包描述符 |
 | `GET /seals/{id}`、`/seals/{id}/verify`、`/seals/{id}/bundle` | 读取描述、校验包哈希与文件索引，或下载已校验的 ZIP |
@@ -62,4 +75,4 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`reinject`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV、回灌预检和冻结包。自动测试套件暂缓。

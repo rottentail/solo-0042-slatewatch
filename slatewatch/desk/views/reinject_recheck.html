@@ -1,0 +1,14 @@
+<div class="wrap"><p><a href="/desk/reinjects/$key">← 回灌预检详情</a></p>
+<header class="striphead"><div><p>报告 <code>$key</code> · 扫描 <a href="/desk/scans/$scan">$scan</a></p>
+<h1>状况变化后的复核对照</h1></div></header>
+<p class="muted">基线为预检当时冻结的候选结论；下表列出此后母带扫描上的结论变化，已确认 $count 条。</p>
+<section aria-labelledby="changes">
+  <h2 id="changes">母带侧状况变化</h2>
+  <div class="table-wrap"><table><thead><tr><th scope="col">候选</th><th scope="col">预检时结论</th>
+  <th scope="col">当前结论</th><th scope="col">变化</th></tr></thead><tbody>$changes</tbody></table></div>
+</section>
+<section aria-labelledby="marks">
+  <h2 id="marks">代理段对照</h2>
+  <div class="table-wrap"><table><thead><tr><th scope="col">段序号</th><th scope="col">母带候选</th>
+  <th scope="col">确认状态</th><th scope="col">当前结论</th></tr></thead><tbody>$marks</tbody></table></div>
+</section></div>

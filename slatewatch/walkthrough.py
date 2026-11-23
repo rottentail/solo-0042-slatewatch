@@ -118,6 +118,75 @@ def compare(tour):
             'invalid_threshold': tour.call('/compare', {**data, 'minimum_permille': 0}, 400)}
 
 
+def reinject(tour):
+    record = tour.scan()
+    uri = f"/scans/{record['id']}"
+    by_kind = {hit['kind']: hit for hit in record['hits']}
+    head_cut = 800_000
+    black = by_kind['black']
+    freeze = by_kind['freeze']
+    clip = by_kind['clip']
+    marks = [
+        # 首尾切除：整体前移 0.8 秒，应在同一平移下定位为建议。
+        {'kind': 'black', 'start_us': black['start_us'] - head_cut,
+         'end_us': black['end_us'] - head_cut, 'reference': 'P-001', 'outcome': 'hold'},
+        # 中段漂移：冻帧只在局部偏移 1.2 秒，仍应逐段定位。
+        {'kind': 'freeze', 'start_us': freeze['start_us'] + 1_200_000,
+         'end_us': freeze['end_us'] + 1_200_000, 'reference': 'P-002'},
+        # 削顶段：先制造一条已人工通过的母带裁决，再让代理请求扣留以形成冲突。
+        {'kind': 'clip', 'channel': clip['channel'], 'start_us': clip['start_us'] - head_cut,
+         'end_us': clip['end_us'] - head_cut, 'reference': 'P-003', 'outcome': 'hold'},
+        # 现场编号不同但无法在母带定位：母带没有画面缺口候选，同指标下无可配对项。
+        {'kind': 'picture_gap', 'start_us': record['extent']['end_us'] - 400_000,
+         'end_us': record['extent']['end_us'] - 100_000, 'reference': 'P-004'},
+    ]
+    tour.call(uri + '/rulings', {'hit_id': clip['id'], 'outcome': 'accept',
+                                 'reason': 'master review passed', 'reviewer': 'master QC'}, 201)
+    payload = {'marks': marks, 'proxy_label': '外场低码率代理', 'reviewer': '现场同事',
+               'drift_tolerance_us': 2_000_000}
+    report = tour.call(uri + '/reinjects', payload, 201)
+    assert report['counts']['conflict'] == 1 and report['counts']['unproven'] == 1
+    assert report['counts']['suggestion'] == 2
+    conflict = next(item for item in report['located'] if item['classification'] == 'conflict')
+    suggestion = next(item for item in report['located'] if item['classification'] == 'suggestion')
+    assert conflict['hit_id'] == clip['id'] and conflict['master_status_at_check'] == 'accepted'
+    assert suggestion['shift_us'] in (head_cut, -1_200_000)
+    assert report['baseline'] and {item['hit_id'] for item in report['baseline']} == \
+        {hit['id'] for hit in record['hits']}
+    # 预检本身不得改动任何裁决。
+    review = tour.call(uri + '/review')
+    assert next(item for item in review['hits'] if item['id'] == clip['id'])['status'] == 'accepted'
+    # 冲突未显式 override 时拒绝写入；无法证明的段不能被选择。
+    blocked = tour.call(f"/reinjects/{report['id']}/confirmations",
+                        {'selections': [conflict['mark_index']], 'reviewer': '复核员',
+                         'reason': '尝试覆盖'}, 400)
+    bad = tour.call(f"/reinjects/{report['id']}/confirmations",
+                    {'selections': [3], 'reviewer': '复核员', 'reason': '无法定位项'}, 400)
+    # 人工确认建议段后，裁决经既有只追加通道落到母带候选上。
+    confirmed = tour.call(f"/reinjects/{report['id']}/confirmations",
+                          {'selections': [suggestion['mark_index']], 'reviewer': '复核员',
+                           'reason': '对照母带画格确认'}, 201)
+    applied = confirmed['confirmations'][0]
+    assert applied['hit_id'] == suggestion['hit_id'] and applied['outcome'] == 'hold'
+    after = tour.call(uri + '/review')
+    assert next(item for item in after['hits'] if item['id'] == applied['hit_id'])['status'] == 'held'
+    # 冲突带 override 后可确认。
+    overridden = tour.call(f"/reinjects/{report['id']}/confirmations",
+                           {'selections': [conflict['mark_index']], 'override': True,
+                            'reviewer': '复核员', 'reason': '代理证据成立，改判扣留'}, 201)
+    assert overridden['confirmations'][0]['prior_status'] == 'accepted'
+    # 复核对照能看到结论变化与已确认段。
+    checked = tour.call(f"/reinjects/{report['id']}/recheck")
+    changed = {item['hit_id']: item['change'] for item in checked['changes']}
+    assert applied['hit_id'] in changed and clip['id'] in changed
+    assert sum(1 for item in checked['marks'] if item['state'] == 'applied') == 2
+    invalid = tour.call(uri + '/reinjects',
+                        {'marks': [{'kind': 'clip', 'start_us': 1, 'end_us': 2}]}, 400)
+    return {'counts': report['counts'], 'alignment': report['alignment_model'],
+            'blocked_conflict': blocked, 'unproven_rejected': bad,
+            'recheck_changes': len(checked['changes']), 'missing_channel': invalid}
+
+
 def evidence(tour):
     record = tour.scan()
     uri = f"/scans/{record['id']}/evidence"
@@ -169,7 +238,8 @@ def verify(tour):
 
 
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'reinject': reinject, 'evidence': evidence, 'publish': seal,
+             'catalog': catalog, 'verify': verify}
 
 
 def main():
