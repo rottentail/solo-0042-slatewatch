@@ -21,3 +21,32 @@ figcaption { display: grid; }
 figcaption strong { font: 650 13px var(--mono); }
 figcaption small { color: var(--muted); }
 audio { width: min(540px, 100%); }
+.player { border: 1px solid var(--line); border-radius: 5px; background: var(--paper); padding: 12px 14px; margin: 0 0 12px; }
+.transport { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+.playback-clock { font: 650 16px var(--mono); margin-left: auto; }
+.seekbar { position: relative; border: 1px solid #647073; border-radius: 3px; background: #1d2729; cursor: crosshair; touch-action: none; }
+.seekbar:focus-visible { outline: 2px solid #166ecc; outline-offset: 3px; }
+.seek-lanes { display: grid; gap: 2px; padding: 4px 0; }
+.seek-lane, .seek-marks { position: relative; height: 12px; }
+.seek-lane { background: #343e40; }
+.seek-lane.void { background: repeating-linear-gradient(45deg, #2b3335 0 5px, #22292b 5px 10px); }
+.seek-marks { height: 14px; }
+.lane-ok, .lane-fill, .seek-hit { display: block; position: absolute; inset-block: 1px; }
+.lane-ok { background: #3c7775; }
+.lane-fill { background: #eb756a; }
+.seek-hit { inset-block: 2px; background: #e2a23a; opacity: .85; }
+.seek-frame { position: absolute; top: 1px; bottom: 1px; width: 2px; margin-left: -1px; background: #f0f5f5; }
+.seek-cursor { position: absolute; top: 0; bottom: 0; width: 2px; margin-left: -1px; background: #ffffff; box-shadow: 0 0 0 1px #1d2729; pointer-events: none; }
+.player-legend { margin: 8px 0 10px; color: var(--muted); }
+.key.measured { background: #3c7775; }
+.key.filled { background: #eb756a; }
+.key.void { background: repeating-linear-gradient(45deg, #2b3335 0 3px, #22292b 3px 6px); border: 1px solid #647073; }
+.key.anomaly { background: #e2a23a; }
+.key.grid { background: #f0f5f5; width: 2px; margin-inline: 4px; }
+.cursor-facts { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 4px 16px; margin: 0 0 8px; }
+.cursor-facts div { min-width: 0; }
+.cursor-facts dt { font-size: 12px; }
+.cursor-facts dd { margin: 0; font: 650 13px var(--mono); overflow-wrap: anywhere; }
+.player-help { font-size: 12px; margin: 0; }
+.frames figure.current img, .frames figure.current .missing-frame { outline: 2px solid var(--accent); outline-offset: -2px; }
+.frame-play { margin-top: 6px; min-height: 30px; font-size: 13px; }
