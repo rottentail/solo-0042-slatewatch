@@ -32,8 +32,11 @@ def read_form(handler):
     return forms.decode(handler.body(16 * 1024).decode('ascii'))
 
 
-def selected_url(scan_id, hit_id):
-    return f'/desk/scans/{scan_id}?' + urlencode({'hit': hit_id}) + '#finding'
+def selected_url(scan_id, hit_id, zoom=''):
+    query = {'hit': hit_id}
+    if zoom:
+        query['zoom'] = zoom
+    return f'/desk/scans/{scan_id}?' + urlencode(query) + '#finding'
 
 
 def upload(handler, app, query):
@@ -76,7 +79,7 @@ def route(handler, parsed):
             record = app.scan({'master_id': data.get('master', ''), 'policy_id': data.get('policy', '')})
             return redirect(f'/desk/scans/{record["id"]}')
         case 'GET', ['desk', 'scans', key]:
-            return html(scans.show(app, key, params.get('hit', '')))
+            return html(scans.show(app, key, params.get('hit', ''), params))
         case 'POST', ['desk', 'scans', key, operation]:
             return scan_action(app, cache, key, operation, data)
         case 'GET', ['desk', 'previews', key]:
@@ -102,10 +105,11 @@ def route(handler, parsed):
 
 def scan_action(app, cache, key, operation, data):
     hit_id = data.get('hit', '')
+    zoom = data.get('zoom', '')
     if operation == 'ruling':
         app.add_ruling(key, {'hit_id': hit_id, 'outcome': data.get('outcome'), 'reason': data.get('reason'),
                              'reviewer': data.get('reviewer')})
-        return redirect(selected_url(key, hit_id))
+        return redirect(selected_url(key, hit_id, zoom))
     if operation == 'intent':
         from ..review import find_hit
 
@@ -115,7 +119,7 @@ def scan_action(app, cache, key, operation, data):
         if hit['channel'] is not None:
             request['channel'] = hit['channel']
         app.add_intent(key, request)
-        return redirect(selected_url(key, hit_id))
+        return redirect(selected_url(key, hit_id, zoom))
     if operation not in ('preview', 'evidence', 'seal'):
         raise Missing('工作台没有此操作。')
     padding, frames = forms.number(data, 'padding_ms', 120), forms.number(data, 'frames', 3)

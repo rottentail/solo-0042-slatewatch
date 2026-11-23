@@ -6,7 +6,7 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from threading import Thread
 from urllib.error import HTTPError
-from urllib.parse import urlencode
+from urllib.parse import unquote, urlencode
 from urllib.request import Request, urlopen
 import json
 import re
@@ -67,7 +67,36 @@ def run(server, root):
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+
+    twin = tour.scan('twin-hole')
+    twin_route = f'/desk/scans/{twin["id"]}'
+    overview = request(origin, twin_route)[2].decode()
+    # Sub-pixel findings stay visible in the overview as an explicit cluster.
+    cluster_href = re.search(r'class="mark cluster"[^>]*href="([^"]+)"', overview)[1]
+    assert 'zoom=' in cluster_href and '同点多事由'.encode() in overview.encode()
+    zoom_query = unquote(cluster_href.split('?', 1)[1].split('#', 1)[0])
+    zoomed = request(origin, twin_route + '?' + zoom_query)[2].decode()
+    # Drilling in separates the two adjacent picture holes on their real coverage.
+    picture_styles = re.findall(r'class="mark picture_gap[^"]*" style="([^"]+)"', zoomed)
+    assert len(picture_styles) == 2
+    edges = [float(re.search(r'left:([-\d.]+)%', style).group(1)) +
+             float(re.search(r'width:([-\d.]+)%', style).group(1)) for style in picture_styles]
+    lefts = sorted(float(re.search(r'left:([-\d.]+)%', style).group(1)) for style in picture_styles)
+    assert min(edges) < max(lefts), '放大后两个相邻画面洞必须按真实覆盖分开可点选'
+    # Same programme instant carries a candidate on another lane.
+    sound_styles = re.findall(r'class="mark sound_gap[^"]*" style="([^"]+)"', zoomed)
+    assert sound_styles and re.search(r'left:([-\d.]+)%', sound_styles[0]).group(1) == \
+        re.search(r'left:([-\d.]+)%', picture_styles[0]).group(1)
+    # Each zoomed mark keeps its own selectable link and remembers the review window.
+    mark_links = set(re.findall(r'class="mark picture_gap[^"]*"[^>]*href="([^"]+)"', zoomed))
+    assert len(mark_links) == 2 and all('hit=' in link and 'zoom=' in link for link in mark_links)
+    # Descriptions keep microsecond precision at any width.
+    assert re.search(r'\d\d:\d\d\.\d{6} – \d\d:\d\d\.\d{6}', zoomed)
+    # Returning to the overview restores the original review position.
+    assert '/desk/scans/{}?zoom='.format(twin['id']) in zoomed and '返回总览' in zoomed
+    _, bad_type, _ = request(origin, twin_route + '?zoom=5:5', expected=400)
+    assert bad_type == 'text/html'
+    print('审片台：实测时间轴、缩放精查、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
 
 
 def main():
