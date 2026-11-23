@@ -12,6 +12,7 @@ import wave
 from zipfile import ZipFile
 
 from .http import PREFIX, Server
+from .exchange import build
 from .reels import make
 
 
@@ -118,6 +119,74 @@ def compare(tour):
             'invalid_threshold': tour.call('/compare', {**data, 'minimum_permille': 0}, 400)}
 
 
+def markers(tour):
+    picture = tour.scan('fractional')
+    holey = tour.scan('picture-hole')
+    ids = [hit['id'] for hit in picture['hits']]
+    uri = f"/scans/{picture['id']}/markers"
+    output = tour.call(uri, {'hit_ids': ids})
+    with ZipFile(BytesIO(output)) as archive:
+        assert sorted(archive.namelist()) == ['README.txt', 'exchange.json', 'markers.csv']
+        manifest = json.loads(archive.read('exchange.json'))
+        table = archive.read('markers.csv').decode('utf-8').splitlines()
+    assert manifest['target']['rate'] == '30000/1001'
+    assert manifest['source']['rate'] == '30000/1001'
+    assert [marker['kind'] for marker in manifest['markers']] == [hit['kind'] for hit in picture['hits']]
+    assert all(marker['source']['start_us'] == hit['start_us'] and marker['source']['end_us'] == hit['end_us']
+               for marker, hit in zip(manifest['markers'], picture['hits']))
+    assert all(marker['sequence']['start_timecode'] == marker['source']['start_timecode']
+               for marker in manifest['markers']), 'same-rate source should map frame for frame'
+    assert len(table) == len(ids) + 1
+    source = tour.scan('basalt')
+    with ZipFile(BytesIO(tour.call(f"/scans/{source['id']}/markers", {'hit_ids': [source['hits'][0]['id']]}))) as archive:
+        converted = json.loads(archive.read('exchange.json'))
+    assert converted['source']['rate'] == '25'
+    assert converted['markers'][0]['sequence']['start_frame'] == 0
+    holed = tour.call(f"/scans/{holey['id']}/markers",
+                      {'hit_ids': [tour.hit(holey, 'picture_gap')['id']]})
+    with ZipFile(BytesIO(holed)) as archive:
+        gap = json.loads(archive.read('exchange.json'))['markers'][0]
+    partial = [item['frame'] for item in gap['material']['picture']['partial_frames']]
+    assert partial and gap['material']['picture']['empty_ranges']
+    assert gap['material']['picture']['no_material'] is False
+    assert gap['sequence']['frames'] > gap['source']['frames']
+    assert gap['material']['picture']['available_us'] + gap['material']['picture']['hole_us'] \
+        == gap['sequence']['end_us'] - gap['sequence']['start_us']
+    assert tour.call(uri, {'hit_ids': []}, 400)['error'].startswith('provide one to 64')
+    synthetic = mapping()
+    return {'target': manifest['target']['rate'], 'markers': len(manifest['markers']),
+            'first': table[1], 'source_rate': converted['source']['rate'],
+            'gap_partial_frames': partial,
+            'gap_empty_ranges': gap['material']['picture']['empty_ranges'],
+            'gap_frames': [gap['source']['frames'], gap['sequence']['frames']],
+            'sub_frame': synthetic['sub_frame'], 'shared_frame': synthetic['shared_frame']}
+
+
+def mapping():
+    """Exercise the two mapping cases real sample signals cannot produce."""
+    scan = {'id': 'scan-synthetic', 'analysis_version': 1,
+            'tracks': {'picture': {'average_rate': '25'}, 'sound': None},
+            'coverage': {'picture': [{'start_us': 0, 'end_us': 2000000},
+                                     {'start_us': 2400000, 'end_us': 4000000}], 'sound': None},
+            'extent': {'start_us': 0, 'end_us': 4000000}}
+    hits = [{'id': 'hit-under-frame', 'kind': 'clip', 'channel': 2,
+             'start_us': 1000010, 'end_us': 1000020},
+            {'id': 'hit-across-hole', 'kind': 'black', 'channel': None,
+             'start_us': 2300000, 'end_us': 2500000}]
+    manifest = build(scan, {'id': 'master-synthetic'}, hits)
+    under, across = manifest['markers']
+    assert under['single_frame'] and under['source']['frames'] == 1
+    assert under['sequence']['frames'] == 1 and under['extension']['head_us'] > 0
+    assert under['kind'] == 'clip' and across['kind'] == 'black'
+    assert across['material']['picture']['empty_ranges']
+    assert across['material']['picture']['available_us'] > 0
+    return {'sub_frame': {'source_frames': under['source']['frames'],
+                          'sequence': [under['sequence']['start_frame'], under['sequence']['end_frame']],
+                          'extension_us': [under['extension']['head_us'], under['extension']['tail_us']]},
+            'shared_frame': {'sequence': [across['sequence']['start_frame'], across['sequence']['end_frame']],
+                             'empty_ranges': across['material']['picture']['empty_ranges']}}
+
+
 def evidence(tour):
     record = tour.scan()
     uri = f"/scans/{record['id']}/evidence"
@@ -169,7 +238,8 @@ def verify(tour):
 
 
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog,
+             'verify': verify, 'markers': markers}
 
 
 def main():

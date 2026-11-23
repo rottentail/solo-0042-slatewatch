@@ -18,7 +18,10 @@ from .walkthrough import Tour
 
 def request(origin, path, data=None, expected=200):
     headers = {'Origin': origin}
-    body = None if data is None else urlencode(data).encode()
+    if isinstance(data, (bytes, bytearray)):
+        body = bytes(data)
+    else:
+        body = None if data is None else urlencode(data).encode()
     try:
         response = urlopen(Request(origin + path, data=body, headers=headers), timeout=20)
     except HTTPError as exc:
@@ -66,8 +69,24 @@ def run(server, root):
     query = urlencode({'before': first['id'], 'after': second['id']})
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
+    exchange = request(origin, route + '/markers')[2]
+    assert '返修标记交换'.encode() in exchange and '30000/1001'.encode() in exchange
+    gap = tour.hit(singular, 'picture_gap')
+    gap_page = request(origin, f'/desk/scans/{singular["id"]}?hit={gap["id"]}')[2]
+    assert '返修目标格'.encode() in gap_page and '确实没有源画面'.encode() in gap_page
+    body = urlencode([('hit', hit['id'])]).encode()
+    archive = request(origin, route + '/exchange', body)[2]
+    assert archive[:2] == b'PK'
+    with ZipFile(BytesIO(archive)) as package:
+        manifest = json.loads(package.read('exchange.json'))
+        assert manifest['target']['rate'] == '30000/1001' and len(manifest['markers']) == 1
+    gap_exchange = request(origin, f'/desk/scans/{singular["id"]}/exchange',
+                           urlencode([('hit', gap['id'])]).encode())[2]
+    with ZipFile(BytesIO(gap_exchange)) as package:
+        gap_marker = json.loads(package.read('exchange.json'))['markers'][0]
+    assert gap_marker['material']['picture']['empty_ranges']
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对、返修标记均通过')
 
 
 def main():

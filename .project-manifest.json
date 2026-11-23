@@ -68,6 +68,11 @@
       "responsibility": "冻结格式和实际字节校验"
     },
     {
+      "id": "exchange",
+      "path": "slatewatch/exchange.py",
+      "responsibility": "源时标到 30000/1001 目标剪辑格的标记交换件"
+    },
+    {
       "id": "store",
       "path": "slatewatch/store.py",
       "responsibility": "不可变记录、追加事件及字节对象"
@@ -272,6 +277,27 @@
         "service",
         "store",
         "seal"
+      ]
+    },
+    {
+      "id": "markers",
+      "name": "返修标记交换",
+      "entry": "GET /desk/scans/{id}/markers + POST /scans/{id}/markers",
+      "success": "每个候选保留源时标并给出目标格、边界扩展和无源画面格",
+      "failure": "空选择或异卷候选分别 400、404",
+      "verification": "python3 -m slatewatch.walkthrough markers",
+      "steps": [
+        "读取扫描源环和覆盖区间",
+        "按 30000/1001 建目标格并标注扩展与画面洞",
+        "打包 exchange.json、markers.csv 与说明"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "exchange",
+        "scan",
+        "clock",
+        "desk"
       ]
     },
     {

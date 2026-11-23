@@ -20,6 +20,8 @@ python -m slatewatch.http --root ./slatewatch-vault
 
 「版次比对」显示同节目时标上的匹配和各版独有候选。「冻结包」保留冻结当时的结论，并提供独立核验与下载。浏览器预览是当前进程内的临时结果。有长期交接需求时，使用即时证据下载或冻结包。
 
+「返修标记交换」把审片选中的候选转换成剪辑可直接导入的标记：`exchange.json` 是完整清单，`markers.csv`（UTF-8）每行一个候选。目标序列固定为 30000/1001，源可能是整数或分数帧率；同一异常起止可能落在同一个目标格，此时仍保留独立一行。源微秒、源帧号和非丢帧源时码原样保留，目标时码按标称 30 fps 的非丢帧格式给出。`head_extension_us`/`tail_extension_us` 与 `extended_frames` 说明为覆盖异常而多占的边界剪辑格；`material.picture` 按目标格列出整格可剪、部分覆盖和确实无源画面的区间，边界格扩展与画面洞不会被混为一谈。导出反映当时的裁决投影，之后的裁决不会改写已下载的交换件。
+
 ## 一次审片
 
 另开终端并激活虚拟环境。下面的 `MASTER_ID`、`POLICY_ID`、`SCAN_ID` 和 `HIT_ID` 用上一步响应里的实际 ID 替换。
@@ -53,6 +55,7 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 | `GET /scans/{id}/review` | 读取按当前意图及裁决投影的复核状态 |
 | `POST /compare` | 以 `before`、`after` 扫描 ID 及可选的 `minimum_permille` 对照共享时线上的候选 |
 | `POST /scans/{id}/evidence` | 按 1 至 6 个 `hit_ids`、可选 `padding_ms` 和 `frames` 生成即时 ZIP。每条证据含时标映射和可用媒体 |
+| `POST /scans/{id}/markers` | 按 1 至 64 个 `hit_ids` 生成返修标记交换 ZIP。每个候选保留源时标和源时码，并给出 30000/1001 目标剪辑格、边界格扩展与无源画面格 |
 | `POST /scans/{id}/seals` | 接收同一摘片选项，冻结扫描、裁决及媒体，返回封包描述符 |
 | `GET /seals/{id}`、`/seals/{id}/verify`、`/seals/{id}/bundle` | 读取描述、校验包哈希与文件索引，或下载已校验的 ZIP |
 
@@ -62,4 +65,4 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog`、`verify` 或 `markers`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV、返修交换件和冻结包。自动测试套件暂缓。

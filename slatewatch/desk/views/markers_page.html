@@ -1,0 +1,12 @@
+<div class="wrap">
+  <p><a href="/desk/scans/$scan">← 返回审片</a></p>
+  <header class="striphead"><div><p>源 $source · 目标 $target</p><h1>返修标记交换</h1></div></header>
+  <p class="muted">目标格从节目零点按 30000/1001 建轴；源时标、源帧号和源时码保留扫描时的取值。边界格扩展是格内不属于异常本身的余量，源画面洞里的目标格确实没有可剪内容。</p>
+  <form method="post" action="/desk/scans/$scan/exchange">
+    <div class="table-wrap"><table><thead><tr>
+      <th scope="col">候选</th><th scope="col">轨道</th><th scope="col">节目时标</th><th scope="col">源时码</th>
+      <th scope="col">目标剪辑格</th><th scope="col">边界格扩展</th><th scope="col">可剪内容</th><th scope="col">画面洞</th>
+    </tr></thead><tbody>$rows</tbody></table></div>
+    <p class="actions"><button class="primary">下载标记交换件</button></p>
+  </form>
+</div>

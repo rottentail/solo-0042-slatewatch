@@ -5,7 +5,7 @@ from urllib.parse import urlencode, urlsplit
 
 from ..clock import Conflict, InputError, Missing
 from ..media import MAX_ASSET
-from . import compare, forms, library, preview, scans, seals
+from . import compare, forms, library, markers, preview, scans, seals
 from .render import ASSETS, HERE, page
 from .text import safe
 
@@ -59,6 +59,14 @@ def route(handler, parsed):
         allow_origin(handler)
         if parts == ['desk', 'upload']:
             return upload(handler, app, params)
+        if len(parts) == 4 and parts[:2] == ['desk', 'scans'] and parts[3] == 'exchange':
+            if handler.headers.get_content_type() != 'application/x-www-form-urlencoded':
+                raise InputError('预期审片表单。')
+            length = handler.headers.get('Content-Length')
+            chosen = [] if length in (None, '0') else forms.chosen(handler.body(16 * 1024).decode('ascii'))
+            archive = markers.download(app, parts[2], chosen)
+            return 200, archive, 'application/zip', {
+                'Content-Disposition': f'attachment; filename="slatewatch-{parts[2]}-markers.zip"'}
         data = read_form(handler)
     match method, parts:
         case 'GET', [''] | ['desk']:
@@ -77,6 +85,8 @@ def route(handler, parsed):
             return redirect(f'/desk/scans/{record["id"]}')
         case 'GET', ['desk', 'scans', key]:
             return html(scans.show(app, key, params.get('hit', '')))
+        case 'GET', ['desk', 'scans', key, 'markers']:
+            return html(markers.index(app, key))
         case 'POST', ['desk', 'scans', key, operation]:
             return scan_action(app, cache, key, operation, data)
         case 'GET', ['desk', 'previews', key]:

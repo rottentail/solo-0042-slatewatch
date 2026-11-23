@@ -5,6 +5,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from .clock import InputError, integer, shape, text
 from .compare import compare
 from .evidence import extract
+from .exchange import MAX_MARKERS, pack as pack_markers
 from .media import inspect
 from .review import adjudicate, find_hit, intent, ruling
 from .rules import canonical, identifier, new_policy
@@ -58,20 +59,30 @@ class Slatewatch:
         minimum = integer(data.get('minimum_permille', 300), 'minimum_permille', 1, 1000)
         return compare(earlier, later, minimum)
 
-    def _selection(self, scan_id, data):
+    def _chosen(self, scan_id, data, limit):
         shape(data, ('hit_ids',), ('padding_ms', 'frames'))
         ids = data['hit_ids']
-        if not isinstance(ids, list) or not 1 <= len(ids) <= 6:
-            raise InputError('provide one to six finding identifiers')
+        if not isinstance(ids, list) or not 1 <= len(ids) <= limit:
+            raise InputError(f'provide one to {limit} finding identifiers')
         ids = [text(key, 'finding identifier') for key in ids]
         if len(set(ids)) != len(ids):
             raise InputError('finding identifiers must be unique')
         scan = self.vault.get('scan', scan_id)
         asset = self.vault.get('master', scan['master_id'])
         hits = [find_hit(scan, key) for key in sorted(ids)]
+        return scan, asset, hits
+
+    def _selection(self, scan_id, data):
+        scan, asset, hits = self._chosen(scan_id, data, 6)
         padding = integer(data.get('padding_ms', 120), 'padding_ms', 0, 2000)
         frames = integer(data.get('frames', 3), 'frames', 1, 8)
         return scan, asset, hits, padding, frames
+
+    def markers(self, scan_id, data):
+        scan, asset, hits = self._chosen(scan_id, data, MAX_MARKERS)
+        view = adjudicate(scan, *self.vault.timeline(scan_id))
+        statuses = {item['id']: item['status'] for item in view['hits']}
+        return pack_markers(scan, asset, hits, statuses)
 
     def evidence(self, scan_id, data):
         scan, asset, hits, padding, frames = self._selection(scan_id, data)

@@ -3,6 +3,7 @@
 from urllib.parse import parse_qs
 
 from ..clock import InputError
+from ..exchange import MAX_MARKERS
 
 
 def decode(raw):
@@ -10,6 +11,18 @@ def decode(raw):
     if any(len(values) != 1 for values in result.values()):
         raise InputError('表单字段不能重复。')
     return {name: values[0] for name, values in result.items()}
+
+
+def chosen(raw):
+    """Read a bounded set of repeated checkbox values, one entry per finding."""
+    result = parse_qs(raw, encoding='utf-8', errors='strict', keep_blank_values=True,
+                      max_num_fields=MAX_MARKERS)
+    if set(result) - {'hit'}:
+        raise InputError('标记交换表单只接受候选选择。')
+    values = result.get('hit', [])
+    if len(values) > MAX_MARKERS or any(not value for value in values):
+        raise InputError('候选选择无效。')
+    return values
 
 
 def number(data, key, default=None):
