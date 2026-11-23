@@ -10,6 +10,15 @@ STATUS = {
     'pending': '待审', 'expected': '制作意图覆盖', 'accepted': '人工通过',
     'held': '人工扣留', 'hold': '扣留', 'pass': '已通过',
 }
+VERDICTS = {
+    'same_frame': '同画格同时标', 'timestamp_offset': '同内容·原时标不同',
+    'different_content': '内容不同', 'left_missing': '左侧无画面',
+    'right_missing': '右侧无画面', 'both_missing': '两侧无画面',
+}
+FLAGS = {
+    'left_long_frame': '左侧长格', 'right_long_frame': '右侧长格',
+    'left_hole': '左侧短洞', 'right_hole': '右侧短洞', 'timestamp_offset': '原时标不同',
+}
 
 
 def safe(value):

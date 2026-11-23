@@ -58,6 +58,11 @@
       "responsibility": "同节目时线的版本对照"
     },
     {
+      "id": "matchup",
+      "path": "slatewatch/matchup.py",
+      "responsibility": "跨版节目时点对拍、长格短洞与原时标偏移标记"
+    },
+    {
       "id": "evidence",
       "path": "slatewatch/evidence.py",
       "responsibility": "源时标摘片、补零记录"

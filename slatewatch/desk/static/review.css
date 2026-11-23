@@ -11,9 +11,13 @@
 .striphead p { color: var(--muted); margin: 0; }
 .rule { margin: 0 0 13px; }
 .state { padding: 2px 6px; border-radius: 3px; white-space: nowrap; font-size: 12px; background: #e8ecee; }
-.state.expected, .state.accepted, .state.pass { color: #115c43; background: #dcf1e5; }
-.state.held, .state.hold { color: #8e3126; background: #fce5df; }
-.state.pending { color: #794a00; background: #fff0cb; }
+.state.expected, .state.accepted, .state.pass, .state.same_frame { color: #115c43; background: #dcf1e5; }
+.state.held, .state.hold, .state.left_missing, .state.right_missing, .state.both_missing { color: #8e3126; background: #fce5df; }
+.state.pending, .state.timestamp_offset, .state.different_content { color: #794a00; background: #fff0cb; }
+.flag { padding: 2px 6px; border-radius: 3px; white-space: nowrap; font-size: 12px; color: #8e3126; background: #fce5df; }
+.probe { border-top: 1px solid var(--line); margin-top: 17px; padding-top: 11px; }
+.probe header { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; margin-bottom: 9px; }
+.probe h3 { margin: 0; font: 650 14px var(--mono); }
 .selected { background: #e9f5f2; }
 .finding { border-top: 1px solid var(--line); margin-top: 21px; padding-top: 13px; }
 .finding details { margin: 9px 0; }

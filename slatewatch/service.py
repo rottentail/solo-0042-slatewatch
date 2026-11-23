@@ -5,6 +5,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from .clock import InputError, integer, shape, text
 from .compare import compare
 from .evidence import extract
+from .matchup import DEFAULT_TOLERANCE_MILLI, bundle, parse_points, run
 from .media import inspect
 from .review import adjudicate, find_hit, intent, ruling
 from .rules import canonical, identifier, new_policy
@@ -57,6 +58,27 @@ class Slatewatch:
         later = self.vault.get('scan', text(data['after'], 'after'))
         minimum = integer(data.get('minimum_permille', 300), 'minimum_permille', 1, 1000)
         return compare(earlier, later, minimum)
+
+    def _matchup(self, data):
+        shape(data, ('left', 'right', 'points_us'), ('tolerance_milli',))
+        left = self.vault.get('scan', text(data['left'], 'left'))
+        right = self.vault.get('scan', text(data['right'], 'right'))
+        if left['id'] == right['id']:
+            raise InputError('left and right scans must differ')
+        points = parse_points(data['points_us'])
+        tolerance = integer(data.get('tolerance_milli', DEFAULT_TOLERANCE_MILLI),
+                            'tolerance_milli', 1, 255000)
+        left_master = self.vault.get('master', left['master_id'])
+        right_master = self.vault.get('master', right['master_id'])
+        return run(left, self.vault.object_path(left_master['sha256']),
+                   right, self.vault.object_path(right_master['sha256']), points, tolerance)
+
+    def matchup(self, data):
+        return self._matchup(data)[0]
+
+    def matchup_evidence(self, data):
+        report, frames = self._matchup(data)
+        return bundle(report, frames)
 
     def _selection(self, scan_id, data):
         shape(data, ('hit_ids',), ('padding_ms', 'frames'))

@@ -136,10 +136,13 @@ class Handler(BaseHTTPRequestHandler):
 
     def post(self, app, parts):
         if len(parts) == 1:
-            operations = {'policies': (app.policy, 201), 'scans': (app.scan, 201), 'compare': (app.compare, 200)}
+            operations = {'policies': (app.policy, 201), 'scans': (app.scan, 201),
+                          'compare': (app.compare, 200), 'matchups': (app.matchup, 200)}
             if parts[0] in operations:
                 operation, code = operations[parts[0]]
                 return code, operation(self.json_body()), 'application/json'
+        if parts == ['matchups', 'evidence']:
+            return 200, app.matchup_evidence(self.json_body()), 'application/zip'
         if len(parts) == 3 and parts[0] == 'scans':
             _, key, action = parts
             operations = {'intents': app.add_intent, 'rulings': app.add_ruling, 'seals': app.seal}

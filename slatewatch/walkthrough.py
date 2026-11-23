@@ -118,6 +118,30 @@ def compare(tour):
             'invalid_threshold': tour.call('/compare', {**data, 'minimum_permille': 0}, 400)}
 
 
+def matchup(tour):
+    left, right = tour.scan(), tour.scan('conform')
+    data = {'left': left['id'], 'right': right['id'],
+            'points_us': [0, 1430000, 1500000, 2000000, 3100000, 4002000, 4100000]}
+    report = tour.call('/matchups', data)
+    verdicts = [row['verdict'] for row in report['points']]
+    assert verdicts == ['same_frame', 'timestamp_offset', 'different_content', 'different_content',
+                        'right_missing', 'left_missing', 'both_missing']
+    offset = report['points'][1]
+    assert offset['source_delta_us'] == 1000 and offset['metrics']['luma_shift_milli'] == -30000
+    assert report['points'][3]['flags'] == ['right_long_frame']
+    hole = report['points'][4]['right']['hole']
+    assert (hole['start_us'], hole['end_us']) == (3003000, 3237000)
+    bundle = tour.call('/matchups/evidence', data)
+    with ZipFile(BytesIO(bundle)) as archive:
+        names = archive.namelist()
+        mapping = json.loads(archive.read('matchup.json'))
+        assert 'point-01/left.pgm' in names and 'point-05/right.pgm' not in names
+        assert mapping['points'][4]['files'] == {'left': 'point-05/left.pgm', 'right': None}
+    return {'verdicts': verdicts, 'flagged': report['summary']['flagged'],
+            'same_scan': tour.call('/matchups', {**data, 'right': left['id']}, 400),
+            'empty_points': tour.call('/matchups', {**data, 'points_us': []}, 400)}
+
+
 def evidence(tour):
     record = tour.scan()
     uri = f"/scans/{record['id']}/evidence"
@@ -169,7 +193,8 @@ def verify(tour):
 
 
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'matchup': matchup, 'evidence': evidence, 'publish': seal,
+             'catalog': catalog, 'verify': verify}
 
 
 def main():

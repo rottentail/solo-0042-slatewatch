@@ -5,7 +5,7 @@ from urllib.parse import urlencode, urlsplit
 
 from ..clock import Conflict, InputError, Missing
 from ..media import MAX_ASSET
-from . import compare, forms, library, preview, scans, seals
+from . import compare, forms, library, matchup, preview, scans, seals
 from .render import ASSETS, HERE, page
 from .text import safe
 
@@ -90,6 +90,11 @@ def route(handler, parsed):
             return 200, content, mime, {}
         case 'GET', ['desk', 'compare']:
             return html(compare.show(app, params.get('before', ''), params.get('after', '')))
+        case 'GET', ['desk', 'matchup']:
+            return html(matchup.show(app, cache, params))
+        case 'GET', ['desk', 'matchup', 'evidence']:
+            return 200, app.matchup_evidence(matchup.request_data(params)), 'application/zip', \
+                {'Content-Disposition': 'attachment; filename="slatewatch-matchup.zip"'}
         case 'GET', ['desk', 'seals']:
             return html(seals.index(app))
         case 'GET', ['desk', 'seals', key]:

@@ -1,0 +1,10 @@
+<div class="wrap"><header class="striphead"><h1>画格对拍</h1></header>
+<form method="get" action="/desk/matchup" class="actions">
+  <label>左侧扫描<select name="left" required><option value="">选择扫描</option>$left</select></label>
+  <label>右侧扫描<select name="right" required><option value="">选择扫描</option>$right</select></label>
+  <label>节目时点（微秒，逗号或空格分隔）<input name="points" value="$points" required placeholder="0, 1430000, 3100000"></label>
+  <label>容差（千分灰级）<input name="tolerance_milli" type="number" min="1" max="255000" value="$tolerance" required></label>
+  <button class="primary">对拍</button>
+</form>
+$results
+</div>

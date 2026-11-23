@@ -1,7 +1,7 @@
 """Generate small repeatable synthetic masters with known signal episodes."""
 from array import array
 from fractions import Fraction
-from math import pi, sin
+from math import floor, pi, sin
 from pathlib import Path
 import argparse
 import sys
@@ -10,10 +10,10 @@ import av
 
 SAMPLE_RATE = 8000
 SIZE = (160, 96)
-REELS = ('basalt', 'revision', 'picture-hole', 'no-sound', 'fractional')
+REELS = ('basalt', 'revision', 'picture-hole', 'no-sound', 'fractional', 'conform')
 
 
-def raster(index, dark, still):
+def raster(index, dark, still, lift=0):
     width, height = SIZE
     frame = av.VideoFrame(width, height, 'gray')
     plane = frame.planes[0]
@@ -21,7 +21,7 @@ def raster(index, dark, still):
     raw = bytearray(plane.buffer_size)
     for y in range(height):
         start = y * plane.line_size
-        row = bytes(width) if dark else bytes(40 + (x + y * 2 + phase) % 181 for x in range(width))
+        row = bytes([lift]) * width if dark else bytes(40 + (x + y * 2 + phase) % 181 + lift for x in range(width))
         raw[start:start + width] = row
     plane.update(raw)
     return frame
@@ -45,7 +45,7 @@ def audio_frame(first, count, revision):
 
 
 def make(path, name):
-    fps = Fraction(30000, 1001) if name == 'fractional' else Fraction(25)
+    fps = Fraction(30000, 1001) if name in ('fractional', 'conform') else Fraction(25)
     audio_end = 28000 if name == 'revision' else 25600
     with av.open(str(path), mode='w', format='matroska') as container:
         video = container.add_stream('ffv1', rate=fps)
@@ -57,7 +57,17 @@ def make(path, name):
         next_sample = 0
         for i in range(round(4 * fps)):
             seconds = Fraction(i, fps)
-            if name != 'picture-hole' or not Fraction(2) <= seconds < Fraction(5, 2):
+            if name == 'conform':
+                # Graded 29.97 export of the 25 fps source: content follows programme
+                # time, one frame is held near 2 s, one short hole sits near 3 s.
+                if i == 60 or Fraction(3) <= seconds < Fraction(161, 50):
+                    continue
+                frame = raster(floor(seconds * 25), seconds < Fraction(12, 25),
+                               Fraction(3, 5) <= seconds < Fraction(7, 5), lift=30)
+                frame.pts = i
+                frame.time_base = 1 / fps
+                container.mux(video.encode(frame))
+            elif name != 'picture-hole' or not Fraction(2) <= seconds < Fraction(5, 2):
                 dark = Fraction(0) <= seconds < (Fraction(8, 25) if name == 'revision' else Fraction(12, 25))
                 still = Fraction(3, 5) <= seconds < Fraction(7, 5)
                 frame = raster(i, dark, still)

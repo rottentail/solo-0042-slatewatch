@@ -36,6 +36,7 @@ def run(server, root):
     first = tour.scan()
     second = tour.scan('revision')
     singular = tour.scan('picture-hole', sound='none')
+    graded = tour.scan('conform')
     route = f'/desk/scans/{first["id"]}'
     picture_only = request(origin, f'/desk/scans/{singular["id"]}')[2]
     assert '未选轨'.encode() in picture_only and '画面缺口'.encode() in picture_only
@@ -66,8 +67,22 @@ def run(server, root):
     query = urlencode({'before': first['id'], 'after': second['id']})
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
+    points = '0,1430000,2000000,3100000,4100000'
+    query = urlencode({'left': first['id'], 'right': graded['id'], 'points': points})
+    paired = request(origin, '/desk/matchup?' + query)[2]
+    assert '同画格同时标'.encode() in paired and '原时标不同'.encode() in paired
+    assert '长格'.encode() in paired and '短洞'.encode() in paired and '两侧无画面'.encode() in paired
+    png = re.search(rb'src="(/desk/previews/[^"]+\.png)"', paired)[1]
+    assert request(origin, png.decode())[2].startswith(b'\x89PNG')
+    bundle = request(origin, '/desk/matchup/evidence?' + query)[2]
+    with ZipFile(BytesIO(bundle)) as archive:
+        mapping = json.loads(archive.read('matchup.json'))
+        assert mapping['points'][0]['verdict'] == 'same_frame'
+        assert mapping['points'][2]['flags'] == ['right_long_frame']
+        assert mapping['points'][3]['right']['hole'] == {'start_us': 3003000, 'end_us': 3237000}
+    assert '需同时选定两份扫描'.encode() in request(origin, '/desk/matchup?' + urlencode({'left': first['id']}), expected=400)[2]
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对、画格对拍均通过')
 
 
 def main():
