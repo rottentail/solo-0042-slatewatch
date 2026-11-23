@@ -1,0 +1,10 @@
+<div class="wrap">
+  <p><a href="/desk/scans/$scan?hit=$hit#finding">← 返回复核</a></p>
+  <header class="striphead"><div><p>$kind · 节目区间 <code>$span</code></p><h1>技术证据板</h1></div></header>
+  <p class="muted">帧格 $grid µs · 相邻画格间隔超过 $long_step µs 记为长格。覆盖缺口与长格配对无法支持同一连续镜头的判断，只适合取差的配对形成同位置差分。</p>
+  <section aria-label="事件前后画格" class="frames">$frames</section>
+  <section class="pairs" aria-label="前后帧配对">
+    <h2>前后帧配对</h2>
+    <ol class="pairlist">$pairs</ol>
+  </section>
+</div>

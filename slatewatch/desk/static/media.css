@@ -21,3 +21,11 @@ figcaption { display: grid; }
 figcaption strong { font: 650 13px var(--mono); }
 figcaption small { color: var(--muted); }
 audio { width: min(540px, 100%); }
+.pairs { margin-top: 21px; }
+.pairlist { list-style: none; margin: 0; padding: 0; display: grid; gap: 10px; }
+.pair { border: 1px solid var(--line); border-radius: 5px; background: var(--paper); padding: 10px 12px; }
+.pair header { display: flex; flex-wrap: wrap; gap: 8px 14px; align-items: center; justify-content: space-between; }
+.pair header strong { font: 650 13px var(--mono); }
+.pair p { margin: 6px 0 0; }
+.pair .diff { margin: 8px 0 0; max-width: 320px; }
+.pair .diff img { display: block; width: 100%; aspect-ratio: 16/9; border: 1px solid var(--line); object-fit: contain; background: #22282a; image-rendering: pixelated; }

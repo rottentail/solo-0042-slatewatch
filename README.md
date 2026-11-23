@@ -16,7 +16,7 @@ python -m slatewatch.http --root ./slatewatch-vault
 
 服务默认监听 `127.0.0.1:8974`，可通过 `--port`、`--host` 和 `--slots` 改变监听及并行请求数。它设计给受信任的本地审片工位。保管库含 SQLite 描述符和 SHA-256 寻址的媒体、封包字节对象。迁移数据时，先停止服务再复制整个保管库。
 
-浏览器打开 <http://127.0.0.1:8974/desk>。在「母带与规则」登记媒体和规则后开始扫描。点选时间轴或候选列表中的异常可以播放伴音、查看样本对应的源画格，也可记录制作意图和人工裁决。浏览器画格以 PNG 展示，原 ZIP 仍包含 PGM 和时间映射。伴音未选轨会单独标明，摘片合成的零采样按原轨范围列出。
+浏览器打开 <http://127.0.0.1:8974/desk>。在「母带与规则」登记媒体和规则后开始扫描。点选时间轴或候选列表中的异常可以播放伴音、查看样本对应的源画格，也可记录制作意图和人工裁决。画面候选还可打开技术证据板：它摘取事件前后的实存画格，只对覆盖连续且间隔不超帧格的相邻配对形成同位置差分，跨缺口或长格的配对会标明无法支持同一连续镜头的判断。浏览器画格以 PNG 展示，原 ZIP 仍包含 PGM 和时间映射。伴音未选轨会单独标明，摘片合成的零采样按原轨范围列出。
 
 「版次比对」显示同节目时标上的匹配和各版独有候选。「冻结包」保留冻结当时的结论，并提供独立核验与下载。浏览器预览是当前进程内的临时结果。有长期交接需求时，使用即时证据下载或冻结包。
 
@@ -35,7 +35,7 @@ curl -fsS "$BASE/scans/SCAN_ID/review"
 curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d '{"hit_ids":["HIT_ID"],"padding_ms":80,"frames":3}' -o evidence.zip
 ```
 
-`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
+`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格，`long-frame` 在静止画面中夹入一格持续一秒的黑帧。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
 
 ## 接口
 
@@ -53,6 +53,7 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 | `GET /scans/{id}/review` | 读取按当前意图及裁决投影的复核状态 |
 | `POST /compare` | 以 `before`、`after` 扫描 ID 及可选的 `minimum_permille` 对照共享时线上的候选 |
 | `POST /scans/{id}/evidence` | 按 1 至 6 个 `hit_ids`、可选 `padding_ms` 和 `frames` 生成即时 ZIP。每条证据含时标映射和可用媒体 |
+| `POST /scans/{id}/board` | 以 `hit_id` 和可选 `context`（前后各取 1–4 格，默认 2）生成画面候选的技术证据板 ZIP。`board.json` 保留原画格时标、前后配对结论和差分量，适合取差的配对附同位置差分画格 |
 | `POST /scans/{id}/seals` | 接收同一摘片选项，冻结扫描、裁决及媒体，返回封包描述符 |
 | `GET /seals/{id}`、`/seals/{id}/verify`、`/seals/{id}/bundle` | 读取描述、校验包哈希与文件索引，或下载已校验的 ZIP |
 
@@ -62,4 +63,4 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`board`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。

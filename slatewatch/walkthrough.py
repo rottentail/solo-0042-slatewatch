@@ -132,6 +132,36 @@ def evidence(tour):
     return {'map': mapping, 'invalid_selection': tour.call(uri, {'hit_ids': []}, 400)}
 
 
+def board(tour):
+    def fetch(record, hit, context=2):
+        output = tour.call(f"/scans/{record['id']}/board", {'hit_id': hit['id'], 'context': context})
+        with ZipFile(BytesIO(output)) as archive:
+            mapping = json.loads(archive.read(hit['id'] + '/board.json'))
+            names = set(archive.namelist())
+            for frame in mapping['frames']:
+                assert hit['id'] + '/' + frame['file'] in names
+            for pair in mapping['pairs']:
+                if pair['verdict'] == 'diffable':
+                    assert archive.read(hit['id'] + '/' + pair['diff']).startswith(b'P5\n80 48\n')
+                else:
+                    assert 'diff' not in pair
+        return mapping
+
+    long_record = tour.scan('long-frame')
+    held = fetch(long_record, tour.hit(long_record, 'black'))
+    verdicts = [pair['verdict'] for pair in held['pairs']]
+    assert 'long' in verdicts and 'diffable' in verdicts and 'hole' not in verdicts
+    record = tour.scan()
+    steady = fetch(record, tour.hit(record, 'freeze'))
+    assert all(pair['verdict'] in ('diffable', 'elided') for pair in steady['pairs'])
+    hole_record = tour.scan('picture-hole', sound='none')
+    gapped = fetch(hole_record, tour.hit(hole_record, 'picture_gap'))
+    assert [pair['verdict'] for pair in gapped['pairs']].count('hole') == 1
+    silence = tour.hit(record, 'silence')
+    error = tour.call(f"/scans/{record['id']}/board", {'hit_id': silence['id']}, 400)
+    return {'long_frame_verdicts': verdicts, 'sound_candidate': error}
+
+
 def seal(tour):
     record = tour.scan()
     uri = f"/scans/{record['id']}"
@@ -169,7 +199,8 @@ def verify(tour):
 
 
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'board': board, 'publish': seal,
+             'catalog': catalog, 'verify': verify}
 
 
 def main():

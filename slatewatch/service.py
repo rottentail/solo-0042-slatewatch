@@ -2,6 +2,7 @@
 from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile
 
+from .board import EVENT_KINDS, build
 from .clock import InputError, integer, shape, text
 from .compare import compare
 from .evidence import extract
@@ -85,6 +86,24 @@ class Slatewatch:
                 archive.writestr(f'{prefix}/clock.json', canonical(mapping))
                 for name, body in members.items():
                     archive.writestr(f'{prefix}/{name}', body)
+        return buf.getvalue()
+
+    def board(self, scan_id, data):
+        shape(data, ('hit_id',), ('context',))
+        scan = self.vault.get('scan', scan_id)
+        hit = find_hit(scan, text(data['hit_id'], 'hit_id'))
+        if hit['channel'] is not None or hit['kind'] not in EVENT_KINDS:
+            raise InputError('技术证据板只适用于画面候选')
+        context = integer(data.get('context', 2), 'context', 1, 4)
+        asset = self.vault.get('master', scan['master_id'])
+        files, mapping = build(self.vault.object_path(asset['sha256']), scan, hit, context)
+
+        buf = BytesIO()
+        with ZipFile(buf, 'w', compression=ZIP_DEFLATED) as archive:
+            prefix = mapping['hit_id']
+            archive.writestr(f'{prefix}/board.json', canonical(mapping))
+            for name, body in files.items():
+                archive.writestr(f'{prefix}/{name}', body)
         return buf.getvalue()
 
     def seal(self, scan_id, data):

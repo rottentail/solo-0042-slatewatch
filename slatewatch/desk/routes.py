@@ -5,7 +5,7 @@ from urllib.parse import urlencode, urlsplit
 
 from ..clock import Conflict, InputError, Missing
 from ..media import MAX_ASSET
-from . import compare, forms, library, preview, scans, seals
+from . import board, compare, forms, library, preview, scans, seals
 from .render import ASSETS, HERE, page
 from .text import safe
 
@@ -88,6 +88,15 @@ def route(handler, parsed):
                 raise Missing('没有此项预览材料。')
             content, mime = assets[name]
             return 200, content, mime, {}
+        case 'GET', ['desk', 'boards', key]:
+            mapping, _assets = cache.get(key)
+            return html(board.show(key, mapping))
+        case 'GET', ['desk', 'boards', key, name]:
+            _mapping, assets = cache.get(key)
+            if name not in assets:
+                raise Missing('没有此项证据板材料。')
+            content, mime = assets[name]
+            return 200, content, mime, {}
         case 'GET', ['desk', 'compare']:
             return html(compare.show(app, params.get('before', ''), params.get('after', '')))
         case 'GET', ['desk', 'seals']:
@@ -116,8 +125,11 @@ def scan_action(app, cache, key, operation, data):
             request['channel'] = hit['channel']
         app.add_intent(key, request)
         return redirect(selected_url(key, hit_id))
-    if operation not in ('preview', 'evidence', 'seal'):
+    if operation not in ('preview', 'evidence', 'seal', 'board'):
         raise Missing('工作台没有此操作。')
+    if operation == 'board':
+        token = board.create(app, cache, key, hit_id, forms.number(data, 'context', 2))
+        return redirect(f'/desk/boards/{token}')
     padding, frames = forms.number(data, 'padding_ms', 120), forms.number(data, 'frames', 3)
     if operation == 'preview':
         token = preview.create(app, cache, key, hit_id, padding, frames)

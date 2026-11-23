@@ -1,5 +1,6 @@
 """Render a scan alongside its live adjudication and selected finding."""
 
+from ..board import EVENT_KINDS
 from . import library, timeline
 from .render import fragment, page
 from .text import KINDS, badge, interval, lane, safe
@@ -28,11 +29,14 @@ def details(scan, hit):
     if hit['kind'] in ('black', 'freeze', 'silence'):
         intent_form = fragment('intent', scan=scan['id'], hit=hit['id'],
                                start=hit['start_us'], end=hit['end_us'])
+    board_form = ''
+    if hit['kind'] in EVENT_KINDS:
+        board_form = fragment('boardform', scan=scan['id'], hit=hit['id'])
     ruling = hit['ruling']
     note = f'{safe(ruling["reviewer"])} · {safe(ruling["reason"])}' if ruling else '尚无人工裁决'
     return fragment('finding', scan=scan['id'], hit=hit['id'], title=KINDS[hit['kind']],
                     lane=lane(hit), span=interval(hit), status=badge(hit['status']),
-                    note=note, intent_form=intent_form)
+                    note=note, intent_form=intent_form, board_form=board_form)
 
 
 def show(app, scan_id, selected):
