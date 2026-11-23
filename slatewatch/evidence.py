@@ -29,6 +29,12 @@ class Excerpt:
         self.span = Span(max(0, hit_span.start - padding), min(duration, hit_span.end + padding))
         self.targets = [self.span.start + self.span.duration * (i * 2 + 1) // (2 * samples)
                         for i in range(samples)]
+        self.peak = None
+        if 'peak_us' in finding and self.span.start <= finding['peak_us'] < self.span.end:
+            # Keep the most prominent source frame of a periodic finding in the excerpt.
+            self.peak = finding['peak_us']
+            nearest = min(range(samples), key=lambda i: abs(self.targets[i] - self.peak))
+            self.targets[nearest] = self.peak
         self.pictures = [None] * samples
         self.track = sound
         self.pcm = None
@@ -75,8 +81,11 @@ class Excerpt:
                          'clock_offset_us': round(self.first * SECOND / self.rate),
                          'filled_sample_ranges': [{'first': s.start, 'end': s.end}
                                                   for s in uncovered(self.coverage, Span(self.first, self.end))]}
-        return files, {'hit_id': self.hit['id'], **self.span.as_dict(),
-                       'picture': picture_map, 'sound': sound_map}
+        mapping = {'hit_id': self.hit['id'], **self.span.as_dict(),
+                   'picture': picture_map, 'sound': sound_map}
+        if self.peak is not None:
+            mapping['peak_us'] = self.peak
+        return files, mapping
 
 
 def extract(path, scan, hits, padding_ms, samples):

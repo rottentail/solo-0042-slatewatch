@@ -28,6 +28,11 @@
       "responsibility": "灰阶亮度、纹理变化和显示覆盖"
     },
     {
+      "id": "stripe",
+      "path": "slatewatch/stripe.py",
+      "responsibility": "周期条纹拟合、相位连续与硬切断开"
+    },
+    {
       "id": "sound",
       "path": "slatewatch/sound.py",
       "responsibility": "原采样率覆盖和逐声道窗统计"
@@ -128,6 +133,7 @@
         "scan",
         "media",
         "clock",
+        "stripe",
         "picture",
         "sound",
         "hits",
@@ -195,7 +201,7 @@
       "id": "evidence",
       "name": "异常摘片",
       "entry": "POST /scans/{id}/evidence",
-      "success": "有源时间的画格、波形和补零区间",
+      "success": "有源时间的画格、波形、补零区间与条纹峰值画格",
       "failure": "空摘片清单 400",
       "verification": "python3 -m slatewatch.walkthrough evidence",
       "steps": [
@@ -267,6 +273,32 @@
         "service",
         "store",
         "seal"
+      ]
+    },
+    {
+      "id": "stripes",
+      "name": "周期条纹标注",
+      "entry": "POST /scans",
+      "success": "横竖条纹各成段，方向、周期与峰值原时标画格可查，硬切两侧不合并",
+      "failure": "条纹最短段长越界时 400",
+      "verification": "python3 -m slatewatch.walkthrough stripes",
+      "steps": [
+        "逐帧拟合行、列空间周期",
+        "按方向、周期与相位连续性成段",
+        "摘出峰值画格映射"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "store",
+        "scan",
+        "media",
+        "clock",
+        "picture",
+        "stripe",
+        "hits",
+        "rules",
+        "evidence"
       ]
     }
   ],

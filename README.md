@@ -1,6 +1,6 @@
 # Slatewatch
 
-Slatewatch 是面向录播交付的节目母带技术审片服务。它接收已经剪定的音视频文件，标出黑场、冻帧、单声道静音、削顶和音画覆盖空洞。技术人员可以登记制作意图、提交人工裁决、对照两轮扫描，再把指定异常的画格和波形连同当时的审片结论打成可校验的证据包。
+Slatewatch 是面向录播交付的节目母带技术审片服务。它接收已经剪定的音视频文件，标出黑场、冻帧、滚动或重复的周期条纹、单声道静音、削顶和音画覆盖空洞。技术人员可以登记制作意图、提交人工裁决、对照两轮扫描，再把指定异常的画格和波形连同当时的审片结论打成可校验的证据包。
 
 ## 运行
 
@@ -31,7 +31,17 @@ curl -fsS "$BASE/scans/SCAN_ID/review"
 curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d '{"hit_ids":["HIT_ID"],"padding_ms":80,"frames":3}' -o evidence.zip
 ```
 
-`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
+`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。`stripes` 专门覆盖淡条纹：水平滚动、相隔 1.2 秒硬切的同周期水平滚动、静止的水平重复纹理、静止的垂直重复纹理和垂直滚动各占 1.2 秒，条纹幅度仅约 ±6 灰阶，声轨干净以免干扰判读。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
+
+### 周期条纹
+
+条纹候选（`kind: "stripe"`）从缩小的灰阶画格逐帧拟合空间周期：横向按行均值、纵向按列均值做单频最小二乘，只有该频率解释了足够大的亮度方差、幅度不低于 `stripe_luma_span` 的半个峰峰值、且重复达到三个周期时才记入量测格。淡不淡不是门槛：一两个灰阶的干净条纹照样计入，平滑渐变或杂乱纹理即使对比很强也不会通过。
+
+连续帧只有方向、周期相同且相位步进平稳时才并成一段。静止纹理的相位几乎不动，滚动条纹每帧前进固定相位；两者之间的硬切即使方向、周期完全一致也会断开，因为判据还要相位步进保持“静止”或“移动”的同一状态。任一帧失去周期、覆盖中断或相位跳变同样结束该段，所以硬切两侧的纹理不会被拼成同一段技术干扰。
+
+候选带 `direction`（`horizontal`/`vertical`，指条纹横躺还是竖立）、`period`（缩小栅格上的像素周期，源周期按其缩放比折算）、`purity_permille`（本段末帧的方差占比），以及 `peak_us`——本段中条纹最明显的原时标画格。区间、计数与幅度上下限沿用其它候选的字段。灵敏度、方差占比门槛与最短段长由规则版中的 `stripe_luma_span`、`stripe_bins_permille`、`stripe_min_ms` 给出。
+
+条纹段摘片时，`clock.json` 的 `peak_us` 指向最明显的画格，`picture` 映射中会有一个画格的 `target_us` 正好取该源时刻，便于直接核对方向与周期。
 
 ## 接口
 
@@ -58,4 +68,4 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印可核对的观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。这里依赖真实媒体和产品入口，自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印可核对的观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog`、`verify` 或 `stripes`。`stripes` 用硬切样片核对横竖条纹的方向、区间和原时标画格。这里依赖真实媒体和产品入口，自动测试套件暂缓。

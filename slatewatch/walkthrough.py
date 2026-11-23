@@ -168,8 +168,32 @@ def verify(tour):
     return {'verified': verified, 'tampered': tour.call(uri + '/verify', expected=409)}
 
 
+def stripes(tour):
+    record = tour.scan('stripes')
+    found = [{key: hit[key] for key in
+              ('direction', 'period', 'purity_permille', 'start_us', 'end_us', 'peak_us')}
+             for hit in record['hits'] if hit['kind'] == 'stripe']
+    directions = [item['direction'] for item in found]
+    assert directions.count('horizontal') == 3 and directions.count('vertical') == 2
+    # Adjacent shots share period and direction: only the phase break separates them.
+    first, second = found[0], found[1]
+    assert (first['period'], second['period']) == (8, 8) and first['end_us'] == second['start_us']
+    assert first['peak_us'] != second['peak_us'] and first['purity_permille'] >= 850
+    uri = f"/scans/{record['id']}/evidence"
+    target = next(hit for hit in record['hits'] if hit['kind'] == 'stripe')
+    output = tour.call(uri, {'hit_ids': [target['id']], 'frames': 3})
+    with ZipFile(BytesIO(output)) as archive:
+        mapping = json.loads(archive.read(target['id'] + '/clock.json'))
+    peak_frames = [frame for frame in mapping['picture'] if frame['target_us'] == mapping['peak_us']]
+    assert mapping['peak_us'] == target['peak_us'] and peak_frames and peak_frames[0]['file']
+    return {'stripes': found, 'evidence_peak_us': mapping['peak_us'],
+            'invalid_window': tour.call('/policies', {'label': 'stripe',
+                                                      'thresholds': {'stripe_min_ms': 10}}, 400)}
+
+
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog,
+             'verify': verify, 'stripes': stripes}
 
 
 def main():

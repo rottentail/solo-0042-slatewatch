@@ -4,6 +4,7 @@ from fractions import Fraction
 from .clock import InputError, LIMIT, SECOND, Span, coalesce
 from .hits import candidates
 from .media import WIDTH
+from .stripe import fold, measure
 
 
 def black_ratio(pixels, threshold):
@@ -33,6 +34,7 @@ class PictureMeter:
         self.coverage = []
         self.black_bins = []
         self.freeze_bins = []
+        self.stripe_bins = []
         self.frames = 0
         self.max_step = 0
 
@@ -64,6 +66,8 @@ class PictureMeter:
             if delta <= self.thresholds.freeze_delta_milli and edge <= self.thresholds.freeze_edge_milli:
                 still = delta
         self.freeze_bins.append((span, still))
+        self.stripe_bins.append((span, measure(frame.pixels, self.thresholds.stripe_luma_span,
+                                               self.thresholds.stripe_bins_permille)))
         self.coverage.append(span)
         self.previous = frame.pixels
 
@@ -73,4 +77,8 @@ class PictureMeter:
         self._measure()
         hits = list(candidates(self.black_bins, 'black', self.thresholds.black_min_ms * 1000))
         hits.extend(candidates(self.freeze_bins, 'freeze', self.thresholds.freeze_min_ms * 1000))
-        return coalesce(self.coverage), hits, {'frames': self.frames, 'max_step_us': self.max_step}
+        stripes = list(fold(self.stripe_bins, self.thresholds.stripe_min_ms * 1000))
+        hits.extend(stripes)
+        stats = {'frames': self.frames, 'max_step_us': self.max_step,
+                 'stripe_bins': sum(1 for _, band in self.stripe_bins if band is not None)}
+        return coalesce(self.coverage), hits, stats

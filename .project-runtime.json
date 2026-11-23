@@ -20,6 +20,10 @@
       "command": "python3 -m slatewatch.walkthrough scan"
     },
     {
+      "workflow_id": "stripes",
+      "command": "python3 -m slatewatch.walkthrough stripes"
+    },
+    {
       "workflow_id": "intent",
       "command": "python3 -m slatewatch.walkthrough intent"
     },

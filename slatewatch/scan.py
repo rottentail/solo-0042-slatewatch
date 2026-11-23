@@ -8,7 +8,7 @@ from .picture import PictureMeter
 from .rules import Thresholds, identifier
 from .sound import SoundMeter
 
-MEASUREMENT_VERSION = 1
+MEASUREMENT_VERSION = 2
 
 
 def scan_identity(asset, policy):

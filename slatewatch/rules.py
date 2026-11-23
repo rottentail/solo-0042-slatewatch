@@ -7,7 +7,7 @@ from .clock import InputError, integer, shape, text
 
 PCM_FULL_SCALE = 1 << 15
 
-KINDS = ('black', 'freeze', 'silence', 'clip', 'picture_gap', 'sound_gap')
+KINDS = ('black', 'freeze', 'stripe', 'silence', 'clip', 'picture_gap', 'sound_gap')
 INTENT_KINDS = frozenset(('black', 'freeze', 'silence'))
 CHANNEL_KINDS = frozenset(('silence', 'clip'))
 
@@ -29,6 +29,9 @@ class Thresholds:
     freeze_delta_milli: int = 300
     freeze_edge_milli: int = 400
     freeze_min_ms: int = 500
+    stripe_luma_span: int = 2
+    stripe_bins_permille: int = 850
+    stripe_min_ms: int = 400
     audio_window_ms: int = 50
     silence_rms: int = 80
     silence_min_ms: int = 300
@@ -44,6 +47,8 @@ class Thresholds:
             'black_luma_max': (0, 127), 'black_permille': (500, 1000),
             'black_min_ms': (20, 10000), 'freeze_delta_milli': (0, 25500),
             'freeze_edge_milli': (0, 25500), 'freeze_min_ms': (30, 10000),
+            'stripe_luma_span': (1, 255), 'stripe_bins_permille': (100, 1000),
+            'stripe_min_ms': (30, 10000),
             'audio_window_ms': (10, 500), 'silence_rms': (0, PCM_FULL_SCALE // 16),
             'silence_min_ms': (10, 10000), 'clip_permille': (1, 1000),
             'clip_min_ms': (10, 10000), 'picture_gap_ms': (50, 5000),
