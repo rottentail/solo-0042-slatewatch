@@ -60,6 +60,18 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 输入、未找到和冲突分别返回 400、404、409。工位并发槽位用完返回 503。不同规则或流选择可产生不同扫描，原始母带和既有冻结包可继续读取。
 
+## 离线接收整理
+
+多个工位会各自寄出同一节目的冻结包。`python -m slatewatch.receive` 把收到的包离线整理进一个接收目录：相同字节的成员只保存一份，每个包仍可分别重建或复验，无法采信的材料单列保留。
+
+```sh
+python -m slatewatch.receive organize --root ./receiving incoming/
+python -m slatewatch.receive verify --root ./receiving [SEAL_ID...]
+python -m slatewatch.receive rebuild --root ./receiving SEAL_ID out.zip
+```
+
+`organize` 校验每个包的自含索引（格式版本、包身份、成员清单及成员 SHA-256），通过后把成员按内容寻址写入 `objects/`，把包索引原样存入 `packages/`，并写出 `report.json`。同名不同字节的成员按内容各存一份；同字节成员只存一份，各包自己的源时间说明仍在各自索引里。索引格式过旧或校验失败的包不采信，原样复制到 `rejected/` 并在报告中给出原因。重复寄达的相同包记为重复，不覆盖既有内容。`verify` 复核接收目录中每个包的成员字节与索引，任一失败以退出码 1 报告。`rebuild` 用保存的对象和索引重建可再次通过校验的 ZIP，不覆盖已有文件。
+
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog`、`verify` 或 `receive`。`receive` 走冻结、下载、离线整理、复验与重建的完整接收流程。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。

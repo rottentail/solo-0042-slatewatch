@@ -12,6 +12,7 @@ import wave
 from zipfile import ZipFile
 
 from .http import PREFIX, Server
+from .receive import organize, rebuild_package, verify_package
 from .reels import make
 
 
@@ -168,8 +169,73 @@ def verify(tour):
     return {'verified': verified, 'tampered': tour.call(uri + '/verify', expected=409)}
 
 
+def _mutated(bundle, change):
+    out = BytesIO()
+    with ZipFile(BytesIO(bundle)) as source, ZipFile(out, 'w') as target:
+        for name in source.namelist():
+            target.writestr(name, change(name, source.read(name)))
+    return out.getvalue()
+
+
+def _old_index(name, data):
+    if name != 'index.json':
+        return data
+    return json.dumps({**json.loads(data), 'format': 0}).encode()
+
+
+def _corrupt_scan(name, data):
+    return data + b'x' if name == 'scan.json' else data
+
+
+def _zip_members(source):
+    with ZipFile(source) as archive:
+        return {name: archive.read(name) for name in archive.namelist()}
+
+
+def receive(tour):
+    record = tour.scan()
+    uri = f"/scans/{record['id']}"
+    hit_id = tour.hit(record, 'sound_gap')['id']
+    first = tour.call(uri + '/seals', {'hit_ids': [hit_id], 'padding_ms': 80, 'frames': 3}, 201)
+    tour.call(uri + '/rulings', {'hit_id': hit_id, 'outcome': 'hold', 'reviewer': 'operator',
+                                 'reason': 'empty programme interval'}, 201)
+    second = tour.call(uri + '/seals', {'hit_ids': [hit_id], 'padding_ms': 80, 'frames': 2}, 201)
+    third = tour.call(uri + '/seals', {'hit_ids': [hit_id], 'padding_ms': 160, 'frames': 3}, 201)
+    incoming = tour.directory / 'incoming'
+    incoming.mkdir()
+    bundles = {}
+    for sealed in (first, second, third):
+        bundles[sealed['id']] = tour.call(f"/seals/{sealed['id']}/bundle")
+        (incoming / f"{sealed['id']}.zip").write_bytes(bundles[sealed['id']])
+    (incoming / 'old-format.zip').write_bytes(_mutated(bundles[first['id']], _old_index))
+    (incoming / 'corrupted.zip').write_bytes(_mutated(bundles[first['id']], _corrupt_scan))
+    root = tour.directory / 'receiving'
+    report = organize([incoming], root)
+    accepted = {item['id'] for item in report['accepted']}
+    assert accepted == {first['id'], second['id'], third['id']}
+    reasons = [item['reason'] for item in report['rejected']]
+    assert len(reasons) == 2
+    assert any('older than supported' in reason for reason in reasons)
+    assert any('failed verification' in reason for reason in reasons)
+    sound_member = f'evidence/{hit_id}/sound.wav'
+    shared = {name for entry in report['shared_objects'] for names in entry['names'].values() for name in names}
+    divergent = {entry['name'] for entry in report['divergent_members']}
+    assert sound_member in shared and sound_member in divergent and 'evidence.json' in divergent
+    verified = [verify_package(root, sealed['id']) for sealed in (first, second, third)]
+    assert all(item['status'] == 'verified' for item in verified)
+    rebuilt = tour.directory / 'rebuilt.zip'
+    rebuild_package(root, first['id'], rebuilt)
+    assert _zip_members(rebuilt) == _zip_members(BytesIO(bundles[first['id']]))
+    again = organize([incoming / f"{first['id']}.zip"], root)
+    assert len(again['duplicates']) == 1 and not again['accepted'] and not again['rejected']
+    return {'accepted': len(accepted), 'rejected': reasons, 'shared_objects': len(report['shared_objects']),
+            'divergent_members': sorted(divergent), 'verified': [item['review_status'] for item in verified],
+            'rebuilt_members': len(_zip_members(rebuilt))}
+
+
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify,
+             'receive': receive}
 
 
 def main():
