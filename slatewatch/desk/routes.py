@@ -5,7 +5,7 @@ from urllib.parse import urlencode, urlsplit
 
 from ..clock import Conflict, InputError, Missing
 from ..media import MAX_ASSET
-from . import compare, forms, library, preview, scans, seals
+from . import compare, forms, library, preview, repeat, scans, seals
 from .render import ASSETS, HERE, page
 from .text import safe
 
@@ -77,6 +77,8 @@ def route(handler, parsed):
             return redirect(f'/desk/scans/{record["id"]}')
         case 'GET', ['desk', 'scans', key]:
             return html(scans.show(app, key, params.get('hit', '')))
+        case 'GET', ['desk', 'scans', key, 'repeats']:
+            return html(repeat.show(app, key, params))
         case 'POST', ['desk', 'scans', key, operation]:
             return scan_action(app, cache, key, operation, data)
         case 'GET', ['desk', 'previews', key]:

@@ -9,6 +9,7 @@
     <button formaction="/desk/scans/$scan/evidence">下载即时证据</button>
     <button formaction="/desk/scans/$scan/seal">冻结证据包</button>
   </form>
+  <p><a class="button" href="/desk/scans/$scan/repeats?hit=$hit">回查同内容位置</a></p>
   <details><summary>人工裁决</summary>
     <form method="post" action="/desk/scans/$scan/ruling" class="actions">
       <input name="hit" value="$hit" type="hidden">

@@ -142,9 +142,11 @@ class Handler(BaseHTTPRequestHandler):
                 return code, operation(self.json_body()), 'application/json'
         if len(parts) == 3 and parts[0] == 'scans':
             _, key, action = parts
-            operations = {'intents': app.add_intent, 'rulings': app.add_ruling, 'seals': app.seal}
+            operations = {'intents': (app.add_intent, 201), 'rulings': (app.add_ruling, 201),
+                          'seals': (app.seal, 201), 'repeats': (app.repeats, 200)}
             if action in operations:
-                return 201, operations[action](key, self.json_body()), 'application/json'
+                operation, code = operations[action]
+                return code, operation(key, self.json_body()), 'application/json'
             if action == 'evidence':
                 return 200, app.evidence(key, self.json_body()), 'application/zip'
         raise Missing('route does not exist')

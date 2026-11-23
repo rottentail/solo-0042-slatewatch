@@ -1,0 +1,17 @@
+<div class="wrap">
+  <p><a href="$origin">← 返回复核</a></p>
+  <header class="striphead"><div><p>基准候选 · <code>$span</code></p><h2>$kind</h2></div>$status</header>
+  <p>基准候选的画面内容：<code>$content</code></p>
+  $anchor_note
+  <form method="get" action="/desk/scans/$scan/repeats" class="actions">
+    <input name="hit" value="$hit" type="hidden">
+    <label>画面相似门槛（‰）<input name="minimum_permille" type="number" min="500" max="1000" value="$minimum" required></label>
+    <label>最短复播（毫秒）<input name="minimum_ms" type="number" min="100" value="$length" required></label>
+    <button class="primary">回查相似位置</button>
+  </form>
+  <p class="muted">下列位置只因画面内容相关而列出，各自保留本地候选、审片结论与伴音事实；不会自动视为与基准候选相同的异常。</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th scope="col">关联</th><th scope="col">节目时标</th><th scope="col">画面对齐</th><th scope="col">伴音事实</th><th scope="col">本地候选</th><th scope="col">对齐帧数</th></tr></thead>
+    <tbody>$rows</tbody></table></div>
+  <section class="form-section" aria-labelledby="still"><h2 id="still">相同静帧（不计入复播）</h2>$excluded</section>
+</div>

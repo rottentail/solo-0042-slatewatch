@@ -63,11 +63,21 @@ def run(server, root):
     assert sha256(bundle).hexdigest() == descriptor['sha256']
     with ZipFile(BytesIO(bundle)) as archive:
         assert json.loads(archive.read('review.json'))['status'] == 'pending'
+    repeated = tour.scan('repeat-trailer')
+    repeated_hit = tour.hit(repeated, 'sound_gap')
+    repeated_route = f'/desk/scans/{repeated["id"]}/repeats?' + urlencode({'hit': repeated_hit['id']})
+    repeats = request(origin, repeated_route)[2]
+    assert '同内容' in repeats.decode() and '相同静帧' in repeats.decode()
+    assert '伴音不同' not in repeats.decode()
+    dubbed = tour.scan('dubbed-repeat')
+    dubbed_route = (f'/desk/scans/{dubbed["id"]}/repeats?'
+                    + urlencode({'hit': tour.hit(dubbed, 'clip')['id']}))
+    assert '伴音不同' in request(origin, dubbed_route)[2].decode()
     query = urlencode({'before': first['id'], 'after': second['id']})
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对、同内容回查均通过')
 
 
 def main():

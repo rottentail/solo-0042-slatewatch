@@ -7,6 +7,7 @@ from .compare import compare
 from .evidence import extract
 from .media import inspect
 from .review import adjudicate, find_hit, intent, ruling
+from .repeat import locate
 from .rules import canonical, identifier, new_policy
 from .scan import measure, scan_identity
 from .seal import pack, verify
@@ -72,6 +73,19 @@ class Slatewatch:
         padding = integer(data.get('padding_ms', 120), 'padding_ms', 0, 2000)
         frames = integer(data.get('frames', 3), 'frames', 1, 8)
         return scan, asset, hits, padding, frames
+
+    def repeats(self, scan_id, data):
+        shape(data, ('hit_id',), ('minimum_permille', 'minimum_ms'))
+        view = self.review(scan_id)
+        scan = self.vault.get('scan', scan_id)
+        hit = find_hit(scan, text(data['hit_id'], 'hit_id'))
+        anchor = next(item for item in view['hits'] if item['id'] == hit['id'])
+        asset = self.vault.get('master', scan['master_id'])
+        minimum = integer(data.get('minimum_permille', 900), 'minimum_permille', 500, 1000)
+        extent = scan['extent']['end_us']
+        length = integer(data.get('minimum_ms', 500), 'minimum_ms', 100, extent // 1000)
+        return locate(self.vault.object_path(asset['sha256']), scan, anchor, view['hits'],
+                      minimum, length)
 
     def evidence(self, scan_id, data):
         scan, asset, hits, padding, frames = self._selection(scan_id, data)

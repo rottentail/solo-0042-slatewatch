@@ -58,6 +58,11 @@
       "responsibility": "同节目时线的版本对照"
     },
     {
+      "id": "repeat",
+      "path": "slatewatch/repeat.py",
+      "responsibility": "同内容复播位置回查与本地事实并列"
+    },
+    {
       "id": "evidence",
       "path": "slatewatch/evidence.py",
       "responsibility": "源时标摘片、补零记录"
@@ -194,6 +199,29 @@
         "store",
         "compare",
         "clock"
+      ]
+    },
+    {
+      "id": "repeat",
+      "name": "回查同内容位置",
+      "entry": "POST /scans/{id}/repeats",
+      "success": "复播位置并列各自伴音事实、本地候选和状态，台标静帧单列",
+      "failure": "越卷候选 404，门槛越界 400",
+      "verification": "python3 -m slatewatch.walkthrough repeat",
+      "steps": [
+        "解码并建立内容指纹",
+        "逐帧对齐复播位置并列出本地事实",
+        "单列相同静帧，不合并审片结论"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "store",
+        "repeat",
+        "scan",
+        "media",
+        "clock",
+        "desk"
       ]
     },
     {

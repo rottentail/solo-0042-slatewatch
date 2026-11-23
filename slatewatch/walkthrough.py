@@ -118,6 +118,44 @@ def compare(tour):
             'invalid_threshold': tour.call('/compare', {**data, 'minimum_permille': 0}, 400)}
 
 
+def repeat(tour):
+    record = tour.scan('repeat-trailer')
+    hit = tour.hit(record, 'sound_gap')
+    uri = f"/scans/{record['id']}/repeats"
+    result = tour.call(uri, {'hit_id': hit['id']})
+    positions = result['positions']
+    assert len(positions) == 2 and len(result['excluded']) == 1
+    assert all(item['relation'] == 'picture-repeat' for item in positions)
+    assert all(item['same_anomaly'] is False for item in positions) and result['same_anomaly'] is False
+    assert all(item['sound_relation'] == 'anchor-incomplete' for item in positions)
+    assert any(item['deviation_count'] == 1 for item in positions)
+    assert result['excluded'][0]['kind'] == 'still-picture' and len(result['excluded'][0]['occurrences']) == 7
+    assert len({(item['start_us'], item['end_us']) for item in positions}) == 2
+    # A repeat position is a lead, not a copy of the anchor finding or its verdict.
+    tour.call(f"/scans/{record['id']}/rulings",
+              {'hit_id': hit['id'], 'outcome': 'hold', 'reason': 'missing companion',
+               'reviewer': 'technical QC'}, 201)
+    after = tour.call(uri, {'hit_id': hit['id']})
+    assert after['anchor']['status'] == 'held'
+    local = [finding for item in after['positions'] for finding in item['local']['findings']]
+    assert local and all(item['id'] != hit['id'] for item in local)
+    assert all(item['status'] == 'pending' and item['ruling'] is None for item in local)
+    assert all(item['sound_relation'] == 'anchor-incomplete' for item in after['positions'])
+    still = tour.call(uri, {'hit_id': tour.hit(record, 'freeze')['id']})
+    assert still['anchor']['still'] is not None and not still['positions']
+    dubbed = tour.scan('dubbed-repeat')
+    dubbed_hit = tour.hit(dubbed, 'clip')
+    dubbed_result = tour.call(f"/scans/{dubbed['id']}/repeats", {'hit_id': dubbed_hit['id']})
+    assert dubbed_result['positions'][0]['sound_relation'] == 'differs'
+    return {'positions': [(item['start_us'], item['sound_relation'], item['deviation_count'])
+                          for item in positions],
+            'still_occurrences': len(result['excluded'][0]['occurrences']),
+            'anchor_after_ruling': after['anchor']['status'],
+            'dubbed_sound': dubbed_result['positions'][0]['sound_relation'],
+            'foreign_hit': tour.call(uri, {'hit_id': 'other'}, 404),
+            'invalid_threshold': tour.call(uri, {'hit_id': hit['id'], 'minimum_permille': 400}, 400)}
+
+
 def evidence(tour):
     record = tour.scan()
     uri = f"/scans/{record['id']}/evidence"
@@ -169,7 +207,8 @@ def verify(tour):
 
 
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'repeat': repeat, 'evidence': evidence, 'publish': seal,
+             'catalog': catalog, 'verify': verify}
 
 
 def main():
