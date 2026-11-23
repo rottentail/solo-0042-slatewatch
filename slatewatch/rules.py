@@ -7,7 +7,7 @@ from .clock import InputError, integer, shape, text
 
 PCM_FULL_SCALE = 1 << 15
 
-KINDS = ('black', 'freeze', 'silence', 'clip', 'picture_gap', 'sound_gap')
+KINDS = ('black', 'freeze', 'silence', 'clip', 'picture_gap', 'sound_gap', 'duplicate')
 INTENT_KINDS = frozenset(('black', 'freeze', 'silence'))
 CHANNEL_KINDS = frozenset(('silence', 'clip'))
 
@@ -34,6 +34,9 @@ class Thresholds:
     silence_min_ms: int = 300
     clip_permille: int = 100
     clip_min_ms: int = 100
+    duplicate_corr_permille: int = 980
+    duplicate_lag_ms: int = 12
+    duplicate_min_ms: int = 400
     picture_gap_ms: int = 250
     sound_gap_ms: int = 100
 
@@ -46,13 +49,18 @@ class Thresholds:
             'freeze_edge_milli': (0, 25500), 'freeze_min_ms': (30, 10000),
             'audio_window_ms': (10, 500), 'silence_rms': (0, PCM_FULL_SCALE // 16),
             'silence_min_ms': (10, 10000), 'clip_permille': (1, 1000),
-            'clip_min_ms': (10, 10000), 'picture_gap_ms': (50, 5000),
+            'clip_min_ms': (10, 10000), 'duplicate_corr_permille': (500, 1000),
+            'duplicate_lag_ms': (0, 40), 'duplicate_min_ms': (10, 10000),
+            'picture_gap_ms': (50, 5000),
             'sound_gap_ms': (10, 5000),
         }
         values = {key: integer(value, key, *limits[key]) for key, value in data.items()}
         result = cls(**values)
-        if result.silence_min_ms < result.audio_window_ms or result.clip_min_ms < result.audio_window_ms:
+        if result.silence_min_ms < result.audio_window_ms or result.clip_min_ms < result.audio_window_ms \
+                or result.duplicate_min_ms < result.audio_window_ms:
             raise InputError('minimum sound event length must cover a full sound window')
+        if result.duplicate_lag_ms * 2 >= result.audio_window_ms:
+            raise InputError('channel copy lag search must keep half a sound window of overlap')
         return result
 
 

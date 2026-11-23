@@ -32,7 +32,7 @@ def draw(scan, selected):
     sound = scan['tracks']['sound']
     if sound:
         sources += [(f'伴音 {i}', scan['coverage']['sound']) for i in range(1, sound['channels'] + 1)]
-        if any(hit['kind'] == 'sound_gap' for hit in scan['hits']):
+        if any(hit['kind'] in ('sound_gap', 'duplicate') for hit in scan['hits']):
             sources.append(('伴音', scan['coverage']['sound']))
     else:
         sources.append(('伴音', None))

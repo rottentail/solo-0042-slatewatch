@@ -6,6 +6,7 @@
 .key.coverage, .covered { background: #3c7775; }
 .key.hit, .mark { background: #e2a23a; }
 .key.hole, .mark.picture_gap, .mark.sound_gap { background: #eb756a; }
+.mark.duplicate { background: #9a7fd4; }
 .ruler { display: flex; justify-content: space-between; margin-left: 68px; gap: 3px; font: 11px/1.6 var(--mono); color: #c8d3d4; }
 .lane { display: grid; grid-template-columns: 63px minmax(0, 1fr); gap: 5px; align-items: center; margin: 5px 0; }
 .strip { position: relative; height: 19px; border: 1px solid #647073; background: #343e40; }

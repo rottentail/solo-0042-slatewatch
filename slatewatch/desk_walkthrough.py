@@ -36,9 +36,17 @@ def run(server, root):
     first = tour.scan()
     second = tour.scan('revision')
     singular = tour.scan('picture-hole', sound='none')
+    doubled = tour.scan('patched')
     route = f'/desk/scans/{first["id"]}'
     picture_only = request(origin, f'/desk/scans/{singular["id"]}')[2]
     assert '未选轨'.encode() in picture_only and '画面缺口'.encode() in picture_only
+
+    copy_hit = next(hit for hit in doubled['hits'] if hit['kind'] == 'duplicate')
+    doubled_page = request(origin, f'/desk/scans/{doubled["id"]}?hit={copy_hit["id"]}')[2]
+    assert '假双声道'.encode() in doubled_page and 'mark duplicate'.encode() in doubled_page
+    _preview, _, copy_preview = request(origin, f'/desk/scans/{doubled["id"]}/preview',
+                                        {'hit': copy_hit['id'], 'padding_ms': 80, 'frames': 3})
+    assert '2 声道'.encode() in copy_preview
 
     hit = tour.hit(first, 'sound_gap')
     details = request(origin, route + '?' + urlencode({'hit': hit['id']}))[2]

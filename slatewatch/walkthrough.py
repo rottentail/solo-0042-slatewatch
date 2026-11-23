@@ -80,6 +80,26 @@ def scan(tour):
     return {'kinds': kinds, 'hit_count': len(record['hits']), 'missing_policy': error}
 
 
+def double(tour):
+    record = tour.scan('patched')
+    copies = [hit for hit in record['hits'] if hit['kind'] == 'duplicate']
+    spans = [(hit['start_us'], hit['end_us']) for hit in copies]
+    assert spans == [(1600000, 2400000), (2600000, 3200000)], spans
+    silent = [(hit['start_us'], hit['end_us']) for hit in record['hits'] if hit['kind'] == 'silence']
+    assert silent == [(1200000, 1600000)] * 2, silent
+    holes = [(hit['start_us'], hit['end_us']) for hit in record['hits'] if hit['kind'] == 'sound_gap']
+    assert holes == [(2400000, 2600000)], holes
+    uri = f"/scans/{record['id']}"
+    output = tour.call(uri + '/evidence', {'hit_ids': [copies[0]['id']], 'padding_ms': 80, 'frames': 3})
+    with ZipFile(BytesIO(output)) as archive:
+        mapping = json.loads(archive.read(copies[0]['id'] + '/clock.json'))
+        with wave.open(BytesIO(archive.read(copies[0]['id'] + '/sound.wav')), 'rb') as audio:
+            assert audio.getnchannels() == mapping['sound']['channels'] == 2
+    review = tour.call(uri + '/review')
+    assert sum(hit['kind'] == 'duplicate' for hit in review['hits']) == 2
+    return {'copies': spans, 'silent_stretch': silent[0], 'coverage_hole': holes[0]}
+
+
 def intent(tour):
     record = tour.scan()
     hit = tour.hit(record, 'black')
@@ -168,8 +188,9 @@ def verify(tour):
     return {'verified': verified, 'tampered': tour.call(uri + '/verify', expected=409)}
 
 
-WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'double': double, 'intent': intent,
+             'review': review, 'compare': compare, 'evidence': evidence, 'publish': seal,
+             'catalog': catalog, 'verify': verify}
 
 
 def main():

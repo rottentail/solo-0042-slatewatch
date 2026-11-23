@@ -2,13 +2,14 @@
 from dataclasses import asdict
 
 from .clock import Span, uncovered
+from .duplicate import DuplicateMeter
 from .hits import Run, bind_hits, hit
 from .media import Picture, decode
 from .picture import PictureMeter
 from .rules import Thresholds, identifier
 from .sound import SoundMeter
 
-MEASUREMENT_VERSION = 1
+MEASUREMENT_VERSION = 2
 
 
 def scan_identity(asset, policy):
@@ -20,16 +21,23 @@ def measure(asset, path, policy):
     tracks = asset['media']
     picture = PictureMeter(tracks['picture'], rules)
     sound = SoundMeter(tracks['sound'], rules) if tracks['sound'] else None
+    double = None
+    if tracks['sound'] and tracks['sound']['channels'] == 2:
+        double = DuplicateMeter(tracks['sound'], rules)
     for entry in decode(path, tracks):
         if isinstance(entry, Picture):
             picture.push(entry)
         else:
             sound.push(entry)
+            if double is not None:
+                double.push(entry)
     picture_coverage, findings, picture_stats = picture.finish()
     sound_coverage, sound_stats = [], None
     if sound is not None:
         sound_coverage, sound_findings, sound_stats = sound.finish()
         findings.extend(sound_findings)
+    if double is not None:
+        findings.extend(double.finish())
     extent = Span(0, max(picture_coverage[-1].end, sound_coverage[-1].end if sound_coverage else 0))
     lanes = [('picture_gap', picture_coverage, rules.picture_gap_ms)]
     if sound is not None:
