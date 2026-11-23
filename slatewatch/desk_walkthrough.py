@@ -45,9 +45,23 @@ def run(server, root):
     assert '节目时间轴'.encode() in details and hit['id'].encode() in details
     preview, _, page = request(origin, route + '/preview', {'hit': hit['id'], 'padding_ms': 80, 'frames': 3})
     assert '补零区间'.encode() in page and '源采样'.encode() in page
+    assert '原轨证据图'.encode() in page and b'/desk/static/waveform.js' in page
+    assert b'data-hit-start="2000000"' in page and b'data-hit-end="2200000"' in page
+    assert b'data-jump-sample="16000"' in page and b'data-jump-sample="17600"' in page
+    assert b'href="#waveform"' in page and b'data-target-us="1980000"' in page
     png = re.search(rb'src="(/desk/previews/[^"]+\.png)"', page)[1]
     assert request(origin, png.decode())[2].startswith(b'\x89PNG')
     assert request(origin, preview + '/sound.wav')[2].startswith(b'RIFF')
+    assert request(origin, '/desk/static/waveform.js')[1] == 'text/javascript'
+    mapping = json.loads(request(origin, preview + '/clock.json')[2])
+    assert mapping['sound']['filled_sample_ranges'] == [{'end': 17600, 'first': 16000}]
+    assert (mapping['sound']['first_source_sample'], mapping['sound']['sample_rate']) == (15360, 8000)
+    quiet = tour.hit(first, 'silence')
+    _, _, quiet_page = request(origin, route + '/preview', {'hit': quiet['id'], 'padding_ms': 300, 'frames': 2})
+    assert b'data-jump-sample="16000"' in quiet_page and '16800'.encode() in quiet_page
+    singular_hit = tour.hit(singular, 'picture_gap')
+    _, _, no_sound = request(origin, f'/desk/scans/{singular["id"]}/preview', {'hit': singular_hit['id']})
+    assert '未选伴音轨'.encode() in no_sound and b'waveform.js' not in no_sound
 
     seal, _, frozen = request(origin, route + '/seal', {'hit': hit['id']})
     assert '待审'.encode() in frozen
@@ -67,7 +81,7 @@ def run(server, root):
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：实测时间轴、证据画格与 WAV、可放缩原轨证据图、裁决、冻结校验、版次比对均通过')
 
 
 def main():
