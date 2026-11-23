@@ -66,6 +66,14 @@ def run(server, root):
     query = urlencode({'before': first['id'], 'after': second['id']})
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
+    delivery_query = urlencode({'scan_id': first['id'], 'channel': 1, 'window_ms': 250, 'hop_ms': 250})
+    delivery_page = request(origin, '/desk/delivery?' + delivery_query)[2]
+    for marker in ('滚动交付检查', '实测完整', '仅知下界', '无实测', '阻塞送审', '源采样区间'):
+        assert marker.encode() in delivery_page, marker
+    # The real silence episode stays measured; the internal hole is reported as a lower bound.
+    assert '断流不按安静计入'.encode() in delivery_page
+    sound_only = request(origin, f'/desk/delivery?scan_id={singular["id"]}', expected=400)[2]
+    assert '未选伴音轨'.encode() in sound_only
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
     print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
 

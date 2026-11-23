@@ -83,6 +83,11 @@ class Handler(BaseHTTPRequestHandler):
             raise HttpError(400, 'expected JSON object')
         return value
 
+    def optional_json(self):
+        if int(self.headers.get('Content-Length', 0)) == 0:
+            return {}
+        return self.json_body()
+
     def route_request(self):
         parsed = urlsplit(self.path)
         if not parsed.path.startswith(PREFIX + '/'):
@@ -147,6 +152,8 @@ class Handler(BaseHTTPRequestHandler):
                 return 201, operations[action](key, self.json_body()), 'application/json'
             if action == 'evidence':
                 return 200, app.evidence(key, self.json_body()), 'application/zip'
+            if action == 'delivery':
+                return 200, app.delivery(key, self.optional_json()), 'application/json'
         raise Missing('route does not exist')
 
     def run_request(self):

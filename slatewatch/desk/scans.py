@@ -48,5 +48,5 @@ def show(app, scan_id, selected):
     active = hit['id'] if hit else ''
     return page('审片', 'scan', 'scan', sidebar=library.sidebar(app.vault, scan_id),
                 master=safe(master['label']), policy=safe(library.policy_name(app.vault, scan)), state=badge(view['status']),
-                source=safe(master['sha256'][:12]), clip=timeline.draw(scan, active),
+                source=safe(master['sha256'][:12]), scan_id=safe(scan_id), clip=timeline.draw(scan, active),
                 table=rows(scan_id, view['hits'], active), detail=details(scan, hit))

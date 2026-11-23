@@ -5,7 +5,7 @@ from urllib.parse import urlencode, urlsplit
 
 from ..clock import Conflict, InputError, Missing
 from ..media import MAX_ASSET
-from . import compare, forms, library, preview, scans, seals
+from . import compare, delivery, forms, library, preview, scans, seals
 from .render import ASSETS, HERE, page
 from .text import safe
 
@@ -90,6 +90,8 @@ def route(handler, parsed):
             return 200, content, mime, {}
         case 'GET', ['desk', 'compare']:
             return html(compare.show(app, params.get('before', ''), params.get('after', '')))
+        case 'GET', ['desk', 'delivery']:
+            return html(delivery.show(app, params.get('scan_id', ''), params))
         case 'GET', ['desk', 'seals']:
             return html(seals.index(app))
         case 'GET', ['desk', 'seals', key]:

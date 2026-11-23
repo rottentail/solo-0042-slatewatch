@@ -52,14 +52,28 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 | `POST /scans/{id}/rulings` | 用 `hit_id`、`outcome`、`reason` 和 `reviewer` 操作单个候选。`outcome` 为 `accept`、`hold` 或 `reset` |
 | `GET /scans/{id}/review` | 读取按当前意图及裁决投影的复核状态 |
 | `POST /compare` | 以 `before`、`after` 扫描 ID 及可选的 `minimum_permille` 对照共享时线上的候选 |
+| `POST /scans/{id}/delivery` | 按所选声道做等长滑动窗滚动交付检查，见下 |
 | `POST /scans/{id}/evidence` | 按 1 至 6 个 `hit_ids`、可选 `padding_ms` 和 `frames` 生成即时 ZIP。每条证据含时标映射和可用媒体 |
 | `POST /scans/{id}/seals` | 接收同一摘片选项，冻结扫描、裁决及媒体，返回封包描述符 |
 | `GET /seals/{id}`、`/seals/{id}/verify`、`/seals/{id}/bundle` | 读取描述、校验包哈希与文件索引，或下载已校验的 ZIP |
 
 上传限制为 48 MiB，源时长限 120 秒。允许的容器、编码、轨道与采样范围定义在 `slatewatch/media.py`。`coverage.sound: null` 表示未选伴音，带缺口的已选伴音有实际覆盖区间。波形证据对未覆盖采样补零，`clock.json` 单列补零区间，供复核时区别源内数字静音。画格是为判读技术信号生成的灰阶缩略图。
 
+## 滚动交付检查
+
+`POST /scans/{id}/delivery` 面向交付方按等长滑动时间段复核所选声道（`channel` 从 1 起）。可选参数为 `window_ms`（50–10000，默认 250）、`hop_ms`（不大于窗长，默认等于窗长）、`min_measured_permille`（1–1000，默认 900）、`clip_permille`（默认沿用规则版）与 `peak_code_limit`（1–32768，默认 32767）。窗端点吸附到原采样网格，响应里的 `first_source_sample`/`end_source_sample` 可直接回到原 PCM 采样。
+
+每窗同时报告峰值代码、RMS、数字静音比例与满幅采样比例，因此异常短峰不会被长段平均吞掉。静音与满幅比例的分母是窗内**实测采样数**，覆盖洞补零不按安静计入。每窗给出三种状态：
+
+- `measured`：整窗都有实测，量测为精确值，只有精确窗才会按限值判 `clip_ratio` 或 `peak_code` 违规；
+- `bounded`：窗内含覆盖洞、实测占比达到下限要求，量测只知下界（`bounds: lower_bound`），真实值可能更高；
+- `blank`：整窗无实测（断流），不产出任何量测。
+
+实测占比低于 `min_measured_permille` 的窗带 `coverage_hole` 原因，空白窗带 `unmeasured_window` 原因；二者与精确窗的限值违规一样令 `blocking: true`，并汇总在 `blocked_window_indexes` 中，即真正阻塞送审的段落。`hole_sample_ranges` 与 `covered_sample_ranges` 用采样区间标出洞与实测出处。浏览器在「滚动交付」页按相同口径展示，未选伴音的扫描拒绝该检查。
+
+
 输入、未找到和冲突分别返回 400、404、409。工位并发槽位用完返回 503。不同规则或流选择可产生不同扫描，原始母带和既有冻结包可继续读取。
 
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`delivery`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV、滚动交付页和冻结包。自动测试套件暂缓。

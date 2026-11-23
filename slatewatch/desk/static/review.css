@@ -15,6 +15,16 @@
 .state.held, .state.hold { color: #8e3126; background: #fce5df; }
 .state.pending { color: #794a00; background: #fff0cb; }
 .selected { background: #e9f5f2; }
+.dstate { padding: 2px 6px; border-radius: 3px; white-space: nowrap; font-size: 12px; }
+.dstate.measured { color: #115c43; background: #dcf1e5; }
+.dstate.bounded { color: #794a00; background: #fff0cb; }
+.dstate.blank { color: #8e3126; background: #fce5df; }
+tr.measured td, tr.measured th { background: rgba(220, 241, 229, 0.25); }
+tr.bounded td, tr.bounded th { background: rgba(255, 240, 203, 0.35); }
+tr.blank td, tr.blank th { background: rgba(252, 229, 223, 0.4); }
+.blocker { color: #8e3126; font-weight: 600; }
+.passline { color: #115c43; font-weight: 600; }
+.blocking small { display: block; margin-top: 3px; font-weight: 400; }
 .finding { border-top: 1px solid var(--line); margin-top: 21px; padding-top: 13px; }
 .finding details { margin: 9px 0; }
 .finding summary { cursor: pointer; width: fit-content; }

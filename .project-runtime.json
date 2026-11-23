@@ -43,6 +43,10 @@
       "command": "python3 -m slatewatch.walkthrough publish"
     },
     {
+      "workflow_id": "delivery",
+      "command": "python3 -m slatewatch.walkthrough delivery"
+    },
+    {
       "workflow_id": "catalog",
       "command": "python3 -m slatewatch.walkthrough catalog"
     },

@@ -4,6 +4,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 from .clock import InputError, integer, shape, text
 from .compare import compare
+from .delivery import check as delivery_check
 from .evidence import extract
 from .media import inspect
 from .review import adjudicate, find_hit, intent, ruling
@@ -57,6 +58,11 @@ class Slatewatch:
         later = self.vault.get('scan', text(data['after'], 'after'))
         minimum = integer(data.get('minimum_permille', 300), 'minimum_permille', 1, 1000)
         return compare(earlier, later, minimum)
+
+    def delivery(self, scan_id, data):
+        scan = self.vault.get('scan', scan_id)
+        asset = self.vault.get('master', scan['master_id'])
+        return delivery_check(scan, self.vault.object_path(asset['sha256']), data or {})
 
     def _selection(self, scan_id, data):
         shape(data, ('hit_ids',), ('padding_ms', 'frames'))

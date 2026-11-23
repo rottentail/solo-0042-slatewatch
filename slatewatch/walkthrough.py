@@ -147,6 +147,51 @@ def seal(tour):
     return {'sealed_then': first['review_status'], 'sealed_now': second['review_status'], 'missing_finding': error}
 
 
+def delivery(tour):
+    record = tour.scan()
+    uri = f"/scans/{record['id']}/delivery"
+    left = tour.call(uri, {'channel': 1, 'window_ms': 250, 'hop_ms': 250})
+    by_index = {window['index']: window for window in left['windows']}
+    # Real digital silence is measured, not confused with coverage holes.
+    silent = by_index[5]
+    assert silent['state'] == 'measured' and silent['metrics']['silence_permille'] == 1000
+    assert silent['metrics']['bounds'] == 'exact' and not silent['blocking']
+    # The internal hole (samples 16000..17600) leaves only a lower bound and blocks.
+    holed = by_index[8]
+    assert holed['state'] == 'bounded' and holed['metrics']['bounds'] == 'lower_bound'
+    assert holed['measured_permille'] == 200 and holed['hole_sample_ranges'] == [
+        {'start_us': 16000, 'end_us': 17600}]
+    assert holed['blocking'] and holed['reasons'] == ['coverage_hole']
+    # Holes never enter the silence denominator: the measured fragment is a tone.
+    assert holed['metrics']['silence_permille'] == 125
+    # Audio ending before the picture leaves fully blank windows, each blocking.
+    blanks = [w for w in left['windows'] if w['state'] == 'blank']
+    assert blanks and all(w['blocking'] and w['reasons'] == ['unmeasured_window'] for w in blanks)
+    assert all(w['metrics'] is None and w['measured_permille'] == 0 for w in blanks)
+    # Every window maps back to the original sample grid at the native rate.
+    for window in left['windows']:
+        assert window['end_source_sample'] - window['first_source_sample'] == left['window_samples']
+        assert window['start_us'] == round(window['first_source_sample'] * 1_000_000 / left['sample_rate'])
+    # The right channel carries the short full-scale peak; per-window peak keeps it visible.
+    right = tour.call(uri, {'channel': 2, 'window_ms': 250})
+    peak = next(w for w in right['windows'] if w['metrics'] and w['metrics']['peak_code'] == 32767)
+    assert peak['state'] == 'measured' and 'clip_ratio' in peak['reasons'] and 'peak_code' in peak['reasons']
+    # A short peak cannot be swallowed: a tight peak limit blocks the exact window containing it.
+    tight = tour.call(uri, {'channel': 1, 'peak_code_limit': 4000})
+    assert any(w['blocking'] and w['reasons'] == ['peak_code'] and w['metrics']['peak_code'] >= 4000
+               for w in tight['windows'])
+    # Overlapping sliding windows advance by the hop, not the window length.
+    sliding = tour.call(uri, {'channel': 1, 'window_ms': 250, 'hop_ms': 100})
+    assert [w['start_us'] for w in sliding['windows'][:3]] == [0, 100000, 200000]
+    invalid_channel = tour.call(uri, {'channel': 3}, 400)
+    invalid_hop = tour.call(uri, {'window_ms': 50, 'hop_ms': 51}, 400)
+    picture_only = tour.scan('picture-hole', sound='none')
+    no_sound = tour.call(f"/scans/{picture_only['id']}/delivery", {}, 400)
+    return {'states': left['state_counts'], 'blocked': left['blocked_window_indexes'],
+            'right_peak_window': peak['index'], 'sliding_windows': len(sliding['windows']),
+            'invalid_channel': invalid_channel, 'invalid_hop': invalid_hop, 'no_sound': no_sound}
+
+
 def catalog(tour):
     record = tour.scan('picture-hole', sound='none')
     observed = tour.call(f"/scans/{record['id']}")
@@ -169,7 +214,8 @@ def verify(tour):
 
 
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'publish': seal, 'delivery': delivery,
+             'catalog': catalog, 'verify': verify}
 
 
 def main():

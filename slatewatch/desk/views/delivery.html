@@ -1,0 +1,20 @@
+<div class="wrap"><header class="striphead"><div><p>按所选声道的等长滑动伴音窗 · 原采样率 $rate Hz</p><h1>滚动交付检查</h1></div></header>
+<form method="get" action="/desk/delivery" class="actions">
+  <label>扫描<select name="scan_id" required>$scans</select></label>
+  <label>声道<select name="channel">
+    $channel_options
+  </select></label>
+  <label>窗长（毫秒）<input name="window_ms" type="number" min="50" max="10000" value="$window_ms" required></label>
+  <label>步长（毫秒）<input name="hop_ms" type="number" min="10" max="10000" value="$hop_ms" required></label>
+  <button class="primary">运行检查</button>
+</form>
+$header
+<p class="muted">$summary</p>
+<div class="table-wrap"><table><thead><tr>
+  <th scope="col">窗序</th><th scope="col">实测状态</th><th scope="col">节目时标</th><th scope="col">实测占比</th>
+  <th scope="col">峰值代码</th><th scope="col">RMS</th><th scope="col">数字静音*</th><th scope="col">满幅比例</th><th scope="col">量测边界</th>
+  <th scope="col">源采样区间</th><th scope="col">覆盖洞（采样）</th><th scope="col">送审结论</th>
+</tr></thead>
+<tbody>$rows</tbody></table></div>
+<p class="muted">* 数字静音与满幅比例只按窗内实测采样计算；覆盖洞补零不计入静音。「仅知下界」表示窗内含覆盖洞，真实值可能更高；「无实测」表示该窗完全断流。源采样区间可回到原 PCM 网格复核。</p>
+</div>

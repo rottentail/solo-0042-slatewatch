@@ -10,6 +10,7 @@ HERE = Path(__file__).parent
 PAGES = (
     ('scan', '审片', '/desk'),
     ('intake', '母带与规则', '/desk/intake'),
+    ('delivery', '滚动交付', '/desk/delivery'),
     ('compare', '版次比对', '/desk/compare'),
     ('seals', '冻结包', '/desk/seals'),
 )
