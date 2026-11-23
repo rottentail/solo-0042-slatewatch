@@ -1,0 +1,26 @@
+<section class="chapters" aria-labelledby="chapter-head">
+  <header class="striphead">
+    <div><p>章节参考轨 · 首个画面位于整卷 <code>$head</code></p><h2 id="chapter-head">章节表 <code>$sheet</code></h2></div>
+  </header>
+  $unresolved
+  <h3>已确定章节</h3>
+  <div class="table-wrap"><table>
+    <thead><tr><th scope="col">章节</th><th scope="col">节目时标</th><th scope="col">时标原点</th><th scope="col">关联异常</th><th scope="col">可取的异常（可回到异常）</th></tr></thead>
+    <tbody>$determined</tbody>
+  </table></div>
+  <h3>候选范围章节</h3>
+  <p class="muted">画面起点与整卷零点两种读法都落在可取画面上，章节只能落在一个候选范围，需制作确认原点后再确定。</p>
+  <div class="table-wrap"><table>
+    <thead><tr><th scope="col">章节</th><th scope="col">候选时标范围</th><th scope="col">时标原点</th><th scope="col">关联异常</th><th scope="col">范围内可取的异常</th></tr></thead>
+    <tbody>$candidates</tbody>
+  </table></div>
+  <details><summary>手动关联章节与异常</summary>
+    $link_forms
+  </details>
+  <details><summary>重新导入章节表</summary>
+    <form method="post" action="/desk/scans/$scan/chapters" class="actions">
+      <label class="grow">章节表 JSON<textarea name="sheet_json" rows="6" required spellcheck="false"></textarea></label>
+      <button type="submit">导入</button>
+    </form>
+  </details>
+</section>

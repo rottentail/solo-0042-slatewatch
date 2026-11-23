@@ -78,12 +78,30 @@ class Vault:
 
     def timeline(self, scan_id):
         with self.connect() as connection:
-            rows = connection.execute('SELECT seq, kind, document FROM review_events WHERE scan_id=? ORDER BY seq',
-                                      (scan_id,)).fetchall()
+            rows = connection.execute(
+                "SELECT seq, kind, document FROM review_events WHERE scan_id=? AND kind IN ('intent','ruling') ORDER BY seq",
+                (scan_id,)).fetchall()
         intents, rulings = [], []
         for seq, kind, document in rows:
             (intents if kind == 'intent' else rulings).append({'seq': seq, **json.loads(document)})
         return intents, rulings
+
+    def chapters(self, scan_id):
+        """Return the latest chapter import and the link events for its sheet."""
+        with self.connect() as connection:
+            rows = connection.execute(
+                'SELECT seq, kind, document FROM review_events WHERE scan_id=? ORDER BY seq', (scan_id,)
+            ).fetchall()
+        latest = None
+        links = []
+        for seq, kind, document in rows:
+            record = {'seq': seq, **json.loads(document)}
+            if kind == 'chapter_import':
+                latest = record
+                links = []
+            elif kind == 'chapter_link' and latest is not None and record['sheet_id'] == latest['sheet_id']:
+                links.append(record)
+        return latest, links
 
     def object_path(self, digest):
         return self.objects / digest

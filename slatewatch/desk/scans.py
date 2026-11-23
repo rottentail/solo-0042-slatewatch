@@ -1,5 +1,6 @@
 """Render a scan alongside its live adjudication and selected finding."""
 
+from . import chapters as chapter_desk
 from . import library, timeline
 from .render import fragment, page
 from .text import KINDS, badge, interval, lane, safe
@@ -49,4 +50,5 @@ def show(app, scan_id, selected):
     return page('审片', 'scan', 'scan', sidebar=library.sidebar(app.vault, scan_id),
                 master=safe(master['label']), policy=safe(library.policy_name(app.vault, scan)), state=badge(view['status']),
                 source=safe(master['sha256'][:12]), clip=timeline.draw(scan, active),
-                table=rows(scan_id, view['hits'], active), detail=details(scan, hit))
+                table=rows(scan_id, view['hits'], active), detail=details(scan, hit),
+                chapters=chapter_desk.panel(app, scan_id))

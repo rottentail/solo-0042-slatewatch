@@ -1,0 +1,8 @@
+<section class="chapters" aria-labelledby="chapter-empty">
+  <header class="striphead"><div><p>章节参考轨</p><h2 id="chapter-empty">导入制作章节表</h2></div></header>
+  <p class="muted">章节时标可能从节目画面起点或播放器整卷零点计算。导入后，片头只有伴音、画面随后才开始的区间会让两种读法分开：能唯一定位的章节列为已确定，两种读法都可取的章节只给候选范围。</p>
+  <form method="post" action="/desk/scans/$scan/chapters" class="actions">
+    <label class="grow">章节表 JSON<textarea name="sheet_json" rows="8" required spellcheck="false" placeholder='{"label":"章节表","chapters":[{"title":"开场","picture_time_us":1600000,"reel_time_us":900000}]}'></textarea></label>
+    <button class="primary" type="submit">导入章节表</button>
+  </form>
+</section>

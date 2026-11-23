@@ -2,7 +2,8 @@
 from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from .clock import InputError, integer, shape, text
+from .chapters import carry_links, link_event, parse_sheet, project
+from .clock import InputError, Missing, Span, integer, shape, text
 from .compare import compare
 from .evidence import extract
 from .media import inspect
@@ -50,6 +51,72 @@ class Slatewatch:
     def review(self, scan_id):
         scan = self.vault.get('scan', scan_id)
         return adjudicate(scan, *self.vault.timeline(scan_id))
+
+    def import_chapters(self, scan_id, data):
+        shape(data, ('sheet',), ('links',))
+        scan = self.vault.get('scan', scan_id)
+        sheet = self.vault.put('sheet', parse_sheet(data['sheet']))
+        projection = project(scan, sheet)
+        links = data.get('links', [])
+        active, unresolved = carry_links(scan, sheet, links)
+        event = {
+            'sheet_id': sheet['id'], 'head_offset_us': projection['head_offset_us'],
+            'chapters': [*projection['determined'], *projection['candidates']],
+            'determined_sequences': [chapter['seq'] for chapter in projection['determined']],
+            'candidate_sequences': [chapter['seq'] for chapter in projection['candidates']],
+            'links': active, 'unresolved_links': unresolved,
+        }
+        return self.vault.append(scan_id, 'chapter_import', event)
+
+    def chapter_track(self, scan_id):
+        scan = self.vault.get('scan', scan_id)
+        event, manual_links = self.vault.chapters(scan_id)
+        if event is None:
+            return {'scan_id': scan_id, 'sheet_id': None, 'chapters': [], 'unresolved_links': []}
+        # Unresolved links carried from another scan are kept visible on their chapter;
+        # they are never silently reattached to this scan's findings.
+        unresolved = {link['chapter_seq']: link for link in event['unresolved_links']}
+        by_chapter = {**unresolved, **{link['chapter_seq']: link
+                                       for link in [*event['links'], *manual_links]}}
+        hit_index = {hit['id']: hit for hit in scan['hits']}
+        chapters = []
+        for chapter in event['chapters']:
+            record = {key: value for key, value in chapter.items()}
+            record['state'] = 'determined' if chapter['seq'] in event['determined_sequences'] else 'candidate'
+            link = by_chapter.get(chapter['seq'])
+            record['link'] = None
+            record['available_hits'] = self._overlapping_hits(scan, chapter, record['state'])
+            if link is not None and link['hit_id'] is not None:
+                hit = hit_index.get(link['hit_id'])
+                record['link'] = {'hit_id': link['hit_id'], 'status': 'active' if hit else 'unresolved'}
+                if hit:
+                    record['link']['hit'] = hit
+            chapters.append(record)
+        return {'scan_id': scan_id, 'sheet_id': event['sheet_id'],
+                'head_offset_us': event['head_offset_us'], 'chapters': chapters,
+                'unresolved_links': event['unresolved_links']}
+
+    def link_chapter(self, scan_id, data):
+        scan = self.vault.get('scan', scan_id)
+        event, _manual = self.vault.chapters(scan_id)
+        if event is None:
+            raise Missing('import a chapter table before linking its chapters')
+        record = link_event(scan, event, data)
+        return self.vault.append(scan_id, 'chapter_link', record)
+
+    @staticmethod
+    def _overlapping_hits(scan, chapter, state):
+        """Findings a reviewer can actually jump to from a chapter position."""
+        if state == 'determined':
+            target = Span(chapter['time_us'], chapter['time_us'] + 1)
+        else:
+            target = Span(chapter['range']['start_us'], chapter['range']['end_us'])
+        result = []
+        for hit in scan['hits']:
+            if target.intersect(Span(hit['start_us'], hit['end_us'])):
+                result.append({'id': hit['id'], 'kind': hit['kind'], 'channel': hit['channel'],
+                               'start_us': hit['start_us'], 'end_us': hit['end_us']})
+        return result
 
     def compare(self, data):
         shape(data, ('before', 'after'), ('minimum_permille',))

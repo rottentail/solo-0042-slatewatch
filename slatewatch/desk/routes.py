@@ -5,6 +5,7 @@ from urllib.parse import urlencode, urlsplit
 
 from ..clock import Conflict, InputError, Missing
 from ..media import MAX_ASSET
+from . import chapters as chapter_desk
 from . import compare, forms, library, preview, scans, seals
 from .render import ASSETS, HERE, page
 from .text import safe
@@ -78,6 +79,8 @@ def route(handler, parsed):
         case 'GET', ['desk', 'scans', key]:
             return html(scans.show(app, key, params.get('hit', '')))
         case 'POST', ['desk', 'scans', key, operation]:
+            if operation in ('chapters', 'chapter-link'):
+                return chapter_action(app, key, operation, data)
             return scan_action(app, cache, key, operation, data)
         case 'GET', ['desk', 'previews', key]:
             mapping, _assets = cache.get(key)
@@ -127,6 +130,17 @@ def scan_action(app, cache, key, operation, data):
         record = app.seal(key, request)
         return redirect(f'/desk/seals/{record["id"]}')
     return 200, app.evidence(key, request), 'application/zip', {'Content-Disposition': 'attachment; filename="slatewatch-evidence.zip"'}
+
+
+def chapter_action(app, key, operation, data):
+    if operation == 'chapters':
+        app.import_chapters(key, {'sheet': chapter_desk.parse_sheet_form(data)})
+    else:
+        request = {'chapter_seq': forms.number(data, 'chapter_seq')}
+        if data.get('hit_id'):
+            request['hit_id'] = data['hit_id']
+        app.link_chapter(key, request)
+    return redirect(f'/desk/scans/{key}#chapters')
 
 
 def handle(handler, parsed):

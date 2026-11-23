@@ -19,6 +19,15 @@
 .finding details { margin: 9px 0; }
 .finding summary { cursor: pointer; width: fit-content; }
 .finding input[type="number"] { width: 112px; }
+.chapters { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 16px; }
+.chapters h3 { font-size: 15px; margin: 16px 0 7px; }
+.chapters textarea { width: min(680px, 100%); font: 12px/1.5 var(--mono); }
+.chapters .grow { flex: 1 1 320px; }
+.block { display: block; margin-top: 3px; }
+.hitlinks { margin: 0; padding-left: 16px; display: grid; gap: 3px; }
+.chapter-link { border-bottom: 1px dashed var(--line); padding: 7px 0; }
+.unresolved { border-left: 4px solid #be5144; background: #fbe9e6; padding: 9px 12px; margin: 10px 0; border-radius: 3px; }
+.unresolved ul { margin: 6px 0 0; padding-left: 18px; display: grid; gap: 4px; }
 @media (max-width: 720px) {
   .workspace { display: block; }
   .sidebar { border-right: 0; border-bottom: 1px solid var(--line); }

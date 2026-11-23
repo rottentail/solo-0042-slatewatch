@@ -168,8 +168,78 @@ def verify(tour):
     return {'verified': verified, 'tampered': tour.call(uri + '/verify', expected=409)}
 
 
+def _chapter_sheet():
+    # Programme clock zero is the player reel zero; the first picture starts at the
+    # head offset (1.0s headline, 0.4s headtrim). A picture reading is already on the
+    # programme clock, a reel reading only becomes playable once it clears the head.
+    return {'label': '制作部章节表', 'chapters': [
+        {'title': '片头标志', 'picture_time_us': 1600000, 'reel_time_us': 900000},
+        {'title': '正片开场', 'picture_time_us': 1300000, 'reel_time_us': 2500000},
+        {'title': '静帧段落', 'origin': 'picture', 'picture_time_us': 2600000},
+        {'title': '片尾', 'origin': 'reel', 'reel_time_us': 4200000},
+    ]}
+
+
+def chapters(tour):
+    full = tour.scan('headline')
+    trimmed = tour.scan('headtrim')
+    sheet = _chapter_sheet()
+    full_uri = f"/scans/{full['id']}"
+    freeze = next(hit for hit in full['hits'] if hit['kind'] == 'freeze')
+
+    imported = tour.call(full_uri + '/chapters', {'sheet': sheet}, 201)
+    track = tour.call(full_uri + '/chapters/track')
+    by_seq = {chapter['seq']: chapter for chapter in track['chapters']}
+    # Chapter 1: the reel reading (0.9s) is inside the 1.0s audio-only head, so only the
+    # picture reading is playable and the chapter is determined.
+    assert by_seq[1]['state'] == 'determined' and by_seq[1]['origin'] == 'picture'
+    assert by_seq[1]['time_us'] == 1600000
+    # Chapter 2: both readings are playable picture, so it can only be shown as a range.
+    assert by_seq[2]['state'] == 'candidate'
+    assert by_seq[2]['range'] == {'start_us': 1300000, 'end_us': 1500000}
+    # Declared-origin rows are always determined.
+    assert by_seq[3]['state'] == 'determined' and by_seq[3]['origin'] == 'picture'
+    assert by_seq[4]['state'] == 'determined' and by_seq[4]['origin'] == 'reel'
+    # A determined chapter can navigate back to the actual selectable freeze anomaly.
+    assert any(item['id'] == freeze['id'] for item in by_seq[3]['available_hits'])
+
+    tour.call(full_uri + '/chapter-link',
+              {'chapter_seq': 3, 'hit_id': freeze['id']}, 201)
+    linked = tour.call(full_uri + '/chapters/track')
+    link = next(chapter for chapter in linked['chapters'] if chapter['seq'] == 3)['link']
+    assert link['status'] == 'active' and link['hit_id'] == freeze['id']
+    foreign_hit = next(hit for hit in trimmed['hits'] if hit['kind'] == 'freeze')['id']
+    bad_link = tour.call(full_uri + '/chapter-link', {'chapter_seq': 3, 'hit_id': foreign_hit}, 404)
+
+    # On the trimmed reel the head is only 0.4s, so chapter 1's reel reading is now playable
+    # too; the previously determined chapter must be presented as a candidate range.
+    tour.call(f"/scans/{trimmed['id']}/chapters", {'sheet': sheet}, 201)
+    moved_view = tour.call(f"/scans/{trimmed['id']}/chapters/track")
+    assert next(chapter for chapter in moved_view['chapters'] if chapter['seq'] == 1)['state'] == 'candidate'
+
+    # Re-import the identical sheet into the trimmed programme, carrying the old association.
+    carried = tour.call(f"/scans/{trimmed['id']}/chapters",
+                        {'sheet': sheet, 'links': [
+                            {'chapter_seq': 3, 'hit_id': freeze['id'], 'from_scan_id': full['id']}]}, 201)
+    assert carried['links'] == [] and carried['unresolved_links'][0]['hit_id'] == freeze['id']
+    moved = tour.call(f"/scans/{trimmed['id']}/chapters/track")
+    moved_link = next(chapter for chapter in moved['chapters'] if chapter['seq'] == 3)['link']
+    assert moved_link['status'] == 'unresolved' and moved_link['hit_id'] == freeze['id']
+
+    # A row whose only reading sits in the head is rejected rather than placed on nothing.
+    head_only = {'chapters': [{'title': '卷零点', 'origin': 'reel', 'reel_time_us': 100000}]}
+    rejected = tour.call(full_uri + '/chapters', {'sheet': head_only}, 400)
+    return {'import_event': imported['seq'], 'determined': [1, 3, 4], 'candidate': [2],
+            'foreign_scan_link': bad_link, 'unresolved_on_trim': moved['unresolved_links'],
+            'head_only_rejected': rejected['error'][:24]}
+
+
+
+
+
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog,
+             'verify': verify, 'chapters': chapters}
 
 
 def main():

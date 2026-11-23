@@ -67,7 +67,34 @@ def run(server, root):
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+
+    headline = tour.scan('headline')
+    head_route = f'/desk/scans/{headline["id"]}'
+    empty = request(origin, head_route)[2]
+    assert '导入制作章节表'.encode() in empty and '章节参考轨'.encode() in empty
+    sheet = {
+        'label': '制作部章节表',
+        'chapters': [
+            {'title': '片头标志', 'picture_time_us': 1600000, 'reel_time_us': 900000},
+            {'title': '正片开场', 'picture_time_us': 1300000, 'reel_time_us': 2500000},
+            {'title': '静帧段落', 'origin': 'picture', 'picture_time_us': 2600000},
+        ],
+    }
+    _, _, imported = request(origin, head_route + '/chapters', {'sheet_json': json.dumps(sheet, ensure_ascii=False)})
+    assert '已确定章节'.encode() in imported and '候选范围章节'.encode() in imported
+    assert '片头标志'.encode() in imported and '节目画面起点'.encode() in imported
+    assert '候选范围（画面/整卷两读均可取）'.encode() in imported
+    # The determined chapter offers a real selectable anomaly link back to the finding page.
+    freeze = next(hit for hit in headline['hits'] if hit['kind'] == 'freeze')
+    assert f'/desk/scans/{headline["id"]}?hit={freeze["id"]}'.encode() in imported
+    _, _, linked = request(origin, head_route + '/chapter-link',
+                           {'chapter_seq': 3, 'hit_id': freeze['id']})
+    assert '旧关联已失效'.encode() not in linked
+    # A foreign-scan finding cannot be attached from the browser either.
+    foreign = next(hit for hit in second['hits'] if hit['kind'] == 'freeze')['id']
+    assert request(origin, head_route + '/chapter-link',
+                   {'chapter_seq': 3, 'hit_id': foreign}, expected=404)[1].startswith('text/html')
+    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对、章节参考轨均通过')
 
 
 def main():

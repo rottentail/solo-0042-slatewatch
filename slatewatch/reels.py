@@ -10,7 +10,10 @@ import av
 
 SAMPLE_RATE = 8000
 SIZE = (160, 96)
-REELS = ('basalt', 'revision', 'picture-hole', 'no-sound', 'fractional')
+REELS = ('basalt', 'revision', 'picture-hole', 'no-sound', 'fractional', 'headline', 'headtrim')
+# Audio-only head length before the first programme picture, in reel seconds.
+HEAD_SECONDS = {'headline': Fraction(1), 'headtrim': Fraction(2, 5)}
+PICTURE_FRAMES = 100
 
 
 def raster(index, dark, still):
@@ -44,7 +47,49 @@ def audio_frame(first, count, revision):
     return frame
 
 
+def make_head(path, name):
+    """A reel whose first pictures arrive after an audio-only head.
+
+    Sound starts at the reel zero; picture PTS begins at ``head`` so the head
+    is measurable sound coverage with no playable picture. A later freeze sits
+    fully inside the picture programme so chapter links can point at a real hit.
+    ``headtrim`` keeps the same picture programme but trims the head, which moves
+    the picture origin relative to the player's reel zero.
+    """
+    fps = Fraction(25)
+    head = HEAD_SECONDS[name]
+    with av.open(str(path), mode='w', format='matroska') as container:
+        video = container.add_stream('ffv1', rate=fps)
+        video.width, video.height = SIZE
+        video.pix_fmt = 'gray'
+        audio = container.add_stream('pcm_s16le', rate=SAMPLE_RATE)
+        audio.layout = 'stereo'
+        next_sample = 0
+        audio_end = round((head + 4) * SAMPLE_RATE)
+        for i in range(PICTURE_FRAMES):
+            picture_seconds = Fraction(i, fps)
+            reel_seconds = head + picture_seconds
+            # Freeze the picture between programme 1.2s and 2.0s (reel head+).
+            still = Fraction(6, 5) <= picture_seconds < Fraction(2)
+            frame = raster(i, dark=False, still=still)
+            frame.pts = round(reel_seconds * fps)
+            frame.time_base = 1 / fps
+            container.mux(video.encode(frame))
+            while next_sample < audio_end and Fraction(next_sample, SAMPLE_RATE) <= reel_seconds:
+                container.mux(audio.encode(audio_frame(next_sample, 160, False)))
+                next_sample += 160
+        # Drain any audio samples remaining in the head/tail after the last frame.
+        while next_sample < audio_end:
+            container.mux(audio.encode(audio_frame(next_sample, 160, False)))
+            next_sample += 160
+        container.mux(video.encode())
+        container.mux(audio.encode())
+    return Path(path)
+
+
 def make(path, name):
+    if name in HEAD_SECONDS:
+        return make_head(path, name)
     fps = Fraction(30000, 1001) if name == 'fractional' else Fraction(25)
     audio_end = 28000 if name == 'revision' else 25600
     with av.open(str(path), mode='w', format='matroska') as container:

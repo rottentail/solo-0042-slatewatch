@@ -132,6 +132,8 @@ class Handler(BaseHTTPRequestHandler):
                 return 200, app.verify(key), 'application/json'
             if group == 'seals' and action == 'bundle':
                 return 200, app.download(key), 'application/zip'
+        if len(parts) == 4 and parts[0] == 'scans' and parts[2] == 'chapters' and parts[3] == 'track':
+            return 200, app.chapter_track(parts[1]), 'application/json'
         raise Missing('route does not exist')
 
     def post(self, app, parts):
@@ -147,6 +149,10 @@ class Handler(BaseHTTPRequestHandler):
                 return 201, operations[action](key, self.json_body()), 'application/json'
             if action == 'evidence':
                 return 200, app.evidence(key, self.json_body()), 'application/zip'
+            if action == 'chapter-link':
+                return 201, app.link_chapter(key, self.json_body()), 'application/json'
+            if action == 'chapters':
+                return 201, app.import_chapters(key, self.json_body()), 'application/json'
         raise Missing('route does not exist')
 
     def run_request(self):
