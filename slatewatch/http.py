@@ -128,6 +128,8 @@ class Handler(BaseHTTPRequestHandler):
             group, key, action = parts
             if group == 'scans' and action == 'review':
                 return 200, app.review(key), 'application/json'
+            if group == 'scans' and action == 'incidents':
+                return 200, app.incidents(key), 'application/json'
             if group == 'seals' and action == 'verify':
                 return 200, app.verify(key), 'application/json'
             if group == 'seals' and action == 'bundle':

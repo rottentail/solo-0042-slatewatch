@@ -155,6 +155,31 @@ def catalog(tour):
     return {'coverage': observed['coverage'], 'unknown_scan': tour.call('/scans/unknown', expected=404)}
 
 
+def incidents(tour):
+    record = tour.scan('ad-switch')
+    result = tour.call(f"/scans/{record['id']}/incidents")
+    segments = [(s['start_us'], s['end_us'], s['support']) for s in result['segments']]
+    expected = [(1000000, 1400000, 'sound'), (2000000, 2200000, 'sound'), (2200000, 2300000, 'joint'),
+                (2300000, 2600000, 'picture'), (3000000, 3060000, 'sound'), (3200000, 4000000, 'sound')]
+    assert segments == expected and result['sound_selected']
+    hits = {hit['id'] for hit in record['hits']}
+    zero, joint, thin = result['segments'][0], result['segments'][2], result['segments'][4]
+    assert {item['channel'] for item in zero['evidence']} == {1, 2}
+    assert all(item['measured'] and item['kind'] == 'silence' for item in zero['evidence'])
+    assert {item['lane'] for item in joint['evidence']} == {'picture', 'sound'}
+    thin_basis, = thin['evidence']
+    assert thin_basis['below_threshold'] and thin_basis['hit_ids'] == []
+    assert all(key in hits for s in result['segments'] for item in s['evidence'] for key in item['hit_ids'])
+    muted = tour.scan('ad-switch', sound='none')
+    silent = tour.call(f"/scans/{muted['id']}/incidents")
+    assert not silent['sound_selected'] and silent['tracks']['sound'] is None
+    assert [(s['start_us'], s['end_us'], s['support']) for s in silent['segments']] == [(2200000, 2600000, 'picture')]
+    assert all(s['lanes']['sound'] == 'unmeasured' for s in silent['segments'])
+    return {'segments': segments, 'zero_sound_channels': sorted(item['channel'] for item in zero['evidence']),
+            'thin_hole_us': thin_basis['end_us'] - thin_basis['start_us'],
+            'unselected_sound_lane': silent['segments'][0]['lanes']['sound']}
+
+
 def verify(tour):
     record = tour.scan()
     sealed = tour.call(f"/scans/{record['id']}/seals", tour.selection(record), 201)
@@ -169,7 +194,8 @@ def verify(tour):
 
 
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog,
+             'incidents': incidents, 'verify': verify}
 
 
 def main():

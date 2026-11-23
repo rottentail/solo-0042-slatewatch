@@ -66,8 +66,17 @@ def run(server, root):
     query = urlencode({'before': first['id'], 'after': second['id']})
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
+    switch = tour.scan('ad-switch')
+    incident_page = request(origin, f'/desk/scans/{switch["id"]}')[2]
+    assert '事故时间线'.encode() in incident_page and '共同中断'.encode() in incident_page
+    assert '仅伴音'.encode() in incident_page and '低于候选门槛'.encode() in incident_page
+    gap = tour.hit(switch, 'picture_gap')
+    assert f'?hit={gap["id"]}'.encode() in incident_page
+    muted = tour.scan('ad-switch', sound='none')
+    muted_page = request(origin, f'/desk/scans/{muted["id"]}')[2]
+    assert '伴音未选轨，伴音侧全程未实测'.encode() in muted_page
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：实测时间轴、事故时间线、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
 
 
 def main():

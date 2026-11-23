@@ -5,6 +5,7 @@ from zipfile import ZIP_DEFLATED, ZipFile
 from .clock import InputError, integer, shape, text
 from .compare import compare
 from .evidence import extract
+from .incidents import timeline as incident_timeline
 from .media import inspect
 from .review import adjudicate, find_hit, intent, ruling
 from .rules import canonical, identifier, new_policy
@@ -50,6 +51,9 @@ class Slatewatch:
     def review(self, scan_id):
         scan = self.vault.get('scan', scan_id)
         return adjudicate(scan, *self.vault.timeline(scan_id))
+
+    def incidents(self, scan_id):
+        return incident_timeline(self.vault.get('scan', scan_id))
 
     def compare(self, data):
         shape(data, ('before', 'after'), ('minimum_permille',))

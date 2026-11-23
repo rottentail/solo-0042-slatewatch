@@ -15,6 +15,21 @@
 .state.held, .state.hold { color: #8e3126; background: #fce5df; }
 .state.pending { color: #794a00; background: #fff0cb; }
 .selected { background: #e9f5f2; }
+.incidents { margin: 0 0 19px; }
+.incident-lane { margin: 0 0 10px; }
+.incident-lane span:first-child { color: var(--muted); font-size: 12px; }
+.incident-lane .strip { background: #e9eeef; border-color: var(--line); }
+.seg { display: block; position: absolute; inset-block: 3px; min-width: 2px; border-radius: 2px; }
+.seg.joint { background: #be5144; }
+.seg.picture { background: #e2a23a; }
+.seg.sound { background: #3c7775; }
+.support, .lane-state { padding: 2px 6px; border-radius: 3px; white-space: nowrap; font-size: 12px; }
+.support.joint { color: #8e3126; background: #fce5df; }
+.support.picture { color: #794a00; background: #fff0cb; }
+.support.sound { color: #134b47; background: #d8ecea; }
+.lane-state.interrupted { color: #8e3126; background: #fce5df; }
+.lane-state.clear { color: #115c43; background: #dcf1e5; }
+.lane-state.unmeasured { color: #56636b; background: #e8ecee; }
 .finding { border-top: 1px solid var(--line); margin-top: 21px; padding-top: 13px; }
 .finding details { margin: 9px 0; }
 .finding summary { cursor: pointer; width: fit-content; }

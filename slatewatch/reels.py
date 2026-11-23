@@ -10,7 +10,10 @@ import av
 
 SAMPLE_RATE = 8000
 SIZE = (160, 96)
-REELS = ('basalt', 'revision', 'picture-hole', 'no-sound', 'fractional')
+REELS = ('basalt', 'revision', 'picture-hole', 'no-sound', 'fractional', 'ad-switch')
+PICTURE_HOLES = {'picture-hole': (Fraction(2), Fraction(5, 2)), 'ad-switch': (Fraction(11, 5), Fraction(13, 5))}
+SOUND_HOLES = {'ad-switch': ((16000, 18400), (24000, 24480))}
+DEFAULT_SOUND_HOLES = ((16000, 17600),)
 
 
 def raster(index, dark, still):
@@ -27,13 +30,7 @@ def raster(index, dark, still):
     return frame
 
 
-def audio_frame(first, count, revision):
-    values = array('h')
-    for sample in range(first, first + count):
-        tone = round(8000 * sin(2 * pi * 500 * sample / SAMPLE_RATE))
-        left = 0 if 9600 <= sample < 14400 else tone
-        right = 32767 if 20000 <= sample < 22000 and not revision else -tone
-        values.extend((left, right))
+def pcm_frame(first, count, values):
     frame = av.AudioFrame(format='s16', layout='stereo', samples=count)
     if sys.byteorder != 'little':
         values.byteswap()
@@ -42,6 +39,25 @@ def audio_frame(first, count, revision):
     frame.time_base = Fraction(1, SAMPLE_RATE)
     frame.pts = first
     return frame
+
+
+def audio_frame(first, count, revision):
+    values = array('h')
+    for sample in range(first, first + count):
+        tone = round(8000 * sin(2 * pi * 500 * sample / SAMPLE_RATE))
+        left = 0 if 9600 <= sample < 14400 else tone
+        right = 32767 if 20000 <= sample < 22000 and not revision else -tone
+        values.extend((left, right))
+    return pcm_frame(first, count, values)
+
+
+def switch_audio_frame(first, count):
+    values = array('h')
+    for sample in range(first, first + count):
+        tone = round(8000 * sin(2 * pi * 500 * sample / SAMPLE_RATE))
+        level = 0 if 8000 <= sample < 11200 else tone
+        values.extend((level, -level))
+    return pcm_frame(first, count, values)
 
 
 def make(path, name):
@@ -55,18 +71,23 @@ def make(path, name):
         if audio:
             audio.layout = 'stereo'
         next_sample = 0
+        picture_hole = PICTURE_HOLES.get(name)
+        sound_holes = SOUND_HOLES.get(name, DEFAULT_SOUND_HOLES)
         for i in range(round(4 * fps)):
             seconds = Fraction(i, fps)
-            if name != 'picture-hole' or not Fraction(2) <= seconds < Fraction(5, 2):
-                dark = Fraction(0) <= seconds < (Fraction(8, 25) if name == 'revision' else Fraction(12, 25))
-                still = Fraction(3, 5) <= seconds < Fraction(7, 5)
+            if picture_hole is None or not picture_hole[0] <= seconds < picture_hole[1]:
+                dark = name != 'ad-switch' and Fraction(0) <= seconds < (
+                    Fraction(8, 25) if name == 'revision' else Fraction(12, 25))
+                still = name != 'ad-switch' and Fraction(3, 5) <= seconds < Fraction(7, 5)
                 frame = raster(i, dark, still)
                 frame.pts = i
                 frame.time_base = 1 / fps
                 container.mux(video.encode(frame))
             while audio and next_sample < audio_end and Fraction(next_sample, SAMPLE_RATE) <= seconds:
-                if not 16000 <= next_sample < 17600:
-                    container.mux(audio.encode(audio_frame(next_sample, 160, name == 'revision')))
+                if not any(start <= next_sample < end for start, end in sound_holes):
+                    frame = switch_audio_frame(next_sample, 160) if name == 'ad-switch' \
+                        else audio_frame(next_sample, 160, name == 'revision')
+                    container.mux(audio.encode(frame))
                 next_sample += 160
         container.mux(video.encode())
         if audio:
