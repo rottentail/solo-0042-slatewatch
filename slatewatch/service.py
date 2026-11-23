@@ -3,6 +3,7 @@ from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from .clock import InputError, integer, shape, text
+from .clockcheck import evaluate
 from .compare import compare
 from .evidence import extract
 from .media import inspect
@@ -57,6 +58,12 @@ class Slatewatch:
         later = self.vault.get('scan', text(data['after'], 'after'))
         minimum = integer(data.get('minimum_permille', 300), 'minimum_permille', 1, 1000)
         return compare(earlier, later, minimum)
+
+    def clockcheck(self, data):
+        shape(data, ('before', 'after', 'anchors'), ('tolerance_us',))
+        earlier = self.vault.get('scan', text(data['before'], 'before'))
+        later = self.vault.get('scan', text(data['after'], 'after'))
+        return self.vault.put('clockcheck', evaluate(earlier, later, data))
 
     def _selection(self, scan_id, data):
         shape(data, ('hit_ids',), ('padding_ms', 'frames'))

@@ -58,6 +58,11 @@
       "responsibility": "同节目时线的版本对照"
     },
     {
+      "id": "clockcheck",
+      "path": "slatewatch/clockcheck.py",
+      "responsibility": "基于场景锚点判定两台采集机的起点差、比例差、剪接跳变或证据不足"
+    },
+    {
       "id": "evidence",
       "path": "slatewatch/evidence.py",
       "responsibility": "源时标摘片、补零记录"
@@ -194,6 +199,27 @@
         "store",
         "compare",
         "clock"
+      ]
+    },
+    {
+      "id": "clockcheck",
+      "name": "时钟自检",
+      "entry": "POST /clockchecks",
+      "success": "四类结论与未证实范围、可复跑锚点依据均可按描述符读取",
+      "failure": "锚点落在画面覆盖外或字段非法时 400",
+      "verification": "python3 -m slatewatch.walkthrough clockcheck",
+      "steps": [
+        "校验两侧扫描与场景锚点的覆盖归属",
+        "精确有理数拟合单段或两段直线并按容差判定",
+        "标出锚点外与覆盖空洞等未证实范围并冻结描述符"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "store",
+        "clockcheck",
+        "clock",
+        "rules"
       ]
     },
     {

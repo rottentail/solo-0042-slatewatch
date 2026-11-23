@@ -5,6 +5,7 @@ from urllib.parse import urlencode, urlsplit
 
 from ..clock import Conflict, InputError, Missing
 from ..media import MAX_ASSET
+from . import clockcheck as clockcheck_desk
 from . import compare, forms, library, preview, scans, seals
 from .render import ASSETS, HERE, page
 from .text import safe
@@ -24,12 +25,6 @@ def allow_origin(handler):
     origin = urlsplit(received or '')
     if origin.scheme not in ('http', 'https') or origin.netloc != host or origin.path or origin.query or origin.fragment:
         raise InputError('请从当前审片台地址提交。')
-
-
-def read_form(handler):
-    if handler.headers.get_content_type() != 'application/x-www-form-urlencoded':
-        raise InputError('预期审片表单。')
-    return forms.decode(handler.body(16 * 1024).decode('ascii'))
 
 
 def selected_url(scan_id, hit_id):
@@ -59,7 +54,10 @@ def route(handler, parsed):
         allow_origin(handler)
         if parts == ['desk', 'upload']:
             return upload(handler, app, params)
-        data = read_form(handler)
+        raw = handler.body(16 * 1024).decode('utf-8')
+        # The clock self-check carries repeated anchor rows, which the bounded
+        # single-field form decoder rejects; that page parses the raw body itself.
+        data = raw if parts == ['desk', 'clockcheck'] else forms.decode(raw)
     match method, parts:
         case 'GET', [''] | ['desk']:
             latest = scans.home(app.vault)
@@ -90,6 +88,10 @@ def route(handler, parsed):
             return 200, content, mime, {}
         case 'GET', ['desk', 'compare']:
             return html(compare.show(app, params.get('before', ''), params.get('after', '')))
+        case 'GET', ['desk', 'clockcheck']:
+            return html(clockcheck_desk.show(app, params.get('before', ''), params.get('after', '')))
+        case 'POST', ['desk', 'clockcheck']:
+            return html(clockcheck_desk.submit(app, raw))
         case 'GET', ['desk', 'seals']:
             return html(seals.index(app))
         case 'GET', ['desk', 'seals', key]:

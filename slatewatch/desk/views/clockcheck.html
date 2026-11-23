@@ -1,0 +1,17 @@
+<div class="wrap">
+  <header class="striphead"><h1>时钟自检</h1>
+    <p class="muted">两台采集机的节目版本不能只凭容器时长对比。请在两侧素材中各挑几个能人工认出的同一场景，填入各自容器时标（整数微秒），由工作台判断时钟关系。</p>
+  </header>
+  $note
+  <form method="post" action="/desk/clockcheck" class="actions clock-form">
+    <label>前版扫描（采集机甲）<select name="before" required><option value="">选择扫描</option>$left</select></label>
+    <label>后版扫描（采集机乙）<select name="after" required><option value="">选择扫描</option>$right</select></label>
+    <label>判定容差（微秒，默认 5000）<input name="tolerance_us" inputmode="numeric" pattern="[0-9]{1,8}" placeholder="5000"></label>
+    <div class="table-wrap"><table>
+      <thead><tr><th>场景锚点名称</th><th>前版时标（微秒）</th><th>后版时标（微秒）</th></tr></thead>
+      <tbody>$anchor_rows</tbody>
+    </table></div>
+    <p class="muted">至少填写第一行；其余留空行会被忽略。锚点必须落在对应素材的画面覆盖内，落在缺画格区间会被拒绝。</p>
+    <button class="primary">执行时钟自检</button>
+  </form>
+</div>

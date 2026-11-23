@@ -12,7 +12,7 @@ import wave
 from zipfile import ZipFile
 
 from .http import PREFIX, Server
-from .reels import make
+from .reels import clock_anchors, make
 
 
 class Tour:
@@ -118,6 +118,62 @@ def compare(tour):
             'invalid_threshold': tour.call('/compare', {**data, 'minimum_permille': 0}, 400)}
 
 
+def clockcheck(tour):
+    base = tour.scan('clock-a', sound='none')
+    companions = {
+        'clock-b-offset': 'constant_offset',
+        'clock-b-rate': 'rate_difference',
+        'clock-b-cut': 'cut_jump',
+    }
+    observed = {}
+    scans = {}
+    for reel, expected in companions.items():
+        other = tour.scan(reel, sound='none')
+        scans[reel] = other
+        payload = {'before': base['id'], 'after': other['id'], 'anchors': clock_anchors(reel)}
+        result = tour.call('/clockchecks', payload, 201)
+        assert result['verdict'] == expected, (reel, result['verdict'])
+        # Re-running the identical check returns the same immutable descriptor.
+        assert tour.call('/clockchecks', payload, 201)['id'] == result['id']
+        assert tour.call(f"/clockchecks/{result['id']}") == result
+        observed[reel] = {
+            'verdict': result['verdict'],
+            'rate_permille': [segment['rate_permille'] for segment in result['segments']],
+            'origin_offset_us': result['segments'][0]['origin_offset_us'],
+            'start_delta_us': result['container_origins_us']['start_delta_us'],
+            'unproven_before': result['unproven_ranges']['before'],
+        }
+    assert observed['clock-b-offset']['origin_offset_us'] == 40_000
+    assert observed['clock-b-offset']['rate_permille'] == [1000]
+    assert observed['clock-b-rate']['rate_permille'] == [1041]
+    cut = tour.call('/clockchecks', {
+        'before': base['id'], 'after': scans['clock-b-cut']['id'],
+        'anchors': clock_anchors('clock-b-cut'),
+    }, 201)
+    assert cut['cut']['jump_us'] == -800_000 and len(cut['segments']) == 2
+    assert all(segment['rate_permille'] == 1000 for segment in cut['segments'])
+    offset_scan = scans['clock-b-offset']
+    single = tour.call('/clockchecks', {
+        'before': base['id'], 'after': offset_scan['id'], 'anchors': clock_anchors('clock-b-offset')[:1],
+    }, 201)
+    assert single['verdict'] == 'inconclusive' and single['reason']
+    noisy = [dict(anchor) for anchor in clock_anchors('clock-b-offset')]
+    noisy[2]['after_us'] += 200_000
+    unresolved = tour.call('/clockchecks', {
+        'before': base['id'], 'after': offset_scan['id'], 'anchors': noisy,
+    }, 201)
+    assert unresolved['verdict'] == 'inconclusive' and unresolved['segments'][0]['max_abs_residual_us'] > 5000
+    bad_anchor = [dict(anchor) for anchor in clock_anchors('clock-b-offset')]
+    bad_anchor[0]['before_us'] = base['extent']['end_us']
+    rejected = tour.call('/clockchecks', {
+        'before': base['id'], 'after': offset_scan['id'], 'anchors': bad_anchor,
+    }, 400)
+    observed['single_anchor'] = single['verdict']
+    observed['noisy_anchors'] = unresolved['verdict']
+    observed['out_of_coverage'] = rejected
+    return observed
+
+
 def evidence(tour):
     record = tour.scan()
     uri = f"/scans/{record['id']}/evidence"
@@ -169,7 +225,8 @@ def verify(tour):
 
 
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'clockcheck': clockcheck, 'evidence': evidence, 'publish': seal,
+             'catalog': catalog, 'verify': verify}
 
 
 def main():

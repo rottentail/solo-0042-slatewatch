@@ -118,6 +118,16 @@ def thumbnail(frame):
     return b''.join(raw[y * plane.line_size:y * plane.line_size + WIDTH] for y in range(HEIGHT))
 
 
+def frame_duration(frame, packet):
+    """Display duration in the frame's time base, across supported PyAV versions."""
+    duration = getattr(frame, 'duration', None)
+    if duration:
+        return duration
+    if packet.duration is None:
+        return 0
+    return round(Fraction(packet.duration * packet.time_base, frame.time_base))
+
+
 def decode(path, manifest):
     """Yield lightweight pictures and native-rate PCM in decode order."""
     video = manifest['picture']
@@ -144,7 +154,7 @@ def decode(path, manifest):
                         count += 1
                         if count > MAX_FRAMES:
                             raise InputError('too many decoded pictures')
-                        duration = round((frame.duration or 0) * frame.time_base * SECOND)
+                        duration = round(frame_duration(frame, packet) * frame.time_base * SECOND)
                         yield Picture(when, duration, thumbnail(frame))
                     else:
                         if frame.sample_rate != audio['rate'] or len(frame.layout.channels) != audio['channels']:

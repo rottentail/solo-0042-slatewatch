@@ -35,7 +35,7 @@ curl -fsS "$BASE/scans/SCAN_ID/review"
 curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d '{"hit_ids":["HIT_ID"],"padding_ms":80,"frames":3}' -o evidence.zip
 ```
 
-`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
+`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。`clock-a` 与 `clock-b-offset`、`clock-b-rate`、`clock-b-cut` 是两台采集机的同源素材：分别只有容器起点差、时钟比例差，以及前段对齐、中段剪掉一块后的跳变。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
 
 ## 接口
 
@@ -52,6 +52,7 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 | `POST /scans/{id}/rulings` | 用 `hit_id`、`outcome`、`reason` 和 `reviewer` 操作单个候选。`outcome` 为 `accept`、`hold` 或 `reset` |
 | `GET /scans/{id}/review` | 读取按当前意图及裁决投影的复核状态 |
 | `POST /compare` | 以 `before`、`after` 扫描 ID 及可选的 `minimum_permille` 对照共享时线上的候选 |
+| `POST /clockchecks`、`GET /clockchecks/{id}` | 两台采集机素材的时钟自检：给两版扫描 ID、1–12 个场景锚点（`label`、`before_us`、`after_us`）和可选 `tolerance_us`，判定常量起点差、时钟比例差、中段剪接跳变或证据不足，并列出未证实范围 |
 | `POST /scans/{id}/evidence` | 按 1 至 6 个 `hit_ids`、可选 `padding_ms` 和 `frames` 生成即时 ZIP。每条证据含时标映射和可用媒体 |
 | `POST /scans/{id}/seals` | 接收同一摘片选项，冻结扫描、裁决及媒体，返回封包描述符 |
 | `GET /seals/{id}`、`/seals/{id}/verify`、`/seals/{id}/bundle` | 读取描述、校验包哈希与文件索引，或下载已校验的 ZIP |
@@ -62,4 +63,17 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`clockcheck`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV、冻结包和时钟自检页。自动测试套件暂缓。
+
+## 时钟自检
+
+两台采集机的节目版本即使容器时长相同，也不能直接拿到共享时线上对比。「时钟自检」入口要求值班员在两侧素材中各认出同一个场景，登记至少一个、通常三至五个场景锚点（整数微秒，左闭右开）。锚点必须落在对应扫描的画面覆盖内，缺画格区间内的锚点会被拒绝。
+
+判定全部使用精确有理数，返回可复跑的依据：每个锚点的两侧时标、最小二乘直线的时钟比例（‰）、外推起点差和逐锚点残差。结论有四种：
+
+- `constant_offset` 常量起点差：一条比例为 1 的直线即可在容差内解释全部锚点，容器起点差单列在 `container_origins_us`；
+- `rate_difference` 时钟比例差：一条直线可拟合，但斜率偏离 1 超过 1‰；
+- `cut_jump` 中段跳变：至少四个锚点支持两段比例为 1 的直线，第二段相对第一段存在超出容差的跳变，分界、跳变量和两侧锚点间隔一并返回；
+- `inconclusive` 证据不足：锚点太少（少于两个），或没有任何模型能在容差内成立。结论中保留尝试过的直线和残差，并写明原因。
+
+锚点之外的素材首尾、以及锚点支撑范围内的画面覆盖空洞，都会在 `unproven_ranges` 中按两侧时标单独标出，不会被当作已对齐。相同输入重复提交返回同一不可变描述符，可按 ID 复核。

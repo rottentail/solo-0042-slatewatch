@@ -13,6 +13,7 @@ import re
 from zipfile import ZipFile
 
 from .http import Server
+from .reels import clock_anchors
 from .walkthrough import Tour
 
 
@@ -66,8 +67,19 @@ def run(server, root):
     query = urlencode({'before': first['id'], 'after': second['id']})
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
+    clock_base = tour.scan('clock-a', sound='none')
+    clock_cut = tour.scan('clock-b-cut', sound='none')
+    entry = request(origin, '/desk/clockcheck')[2]
+    assert '时钟自检'.encode() in entry and '场景锚点'.encode() in entry
+    form = [('before', clock_base['id']), ('after', clock_cut['id']), ('tolerance_us', '5000')]
+    for anchor in clock_anchors('clock-b-cut'):
+        form.extend((('label', anchor['label']), ('before_us', anchor['before_us']),
+                     ('after_us', anchor['after_us'])))
+    verdict_page = request(origin, '/desk/clockcheck', form)[2]
+    assert '中段跳变'.encode() in verdict_page and '未证实范围'.encode() in verdict_page
+    assert '判定依据'.encode() in verdict_page and 'anchor-0'.encode() in verdict_page
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对、时钟自检均通过')
 
 
 def main():

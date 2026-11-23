@@ -55,3 +55,17 @@ dd { margin: 0 0 9px; overflow-wrap: anywhere; }
   .wrap { padding-inline: 14px; }
   th, td { padding: 7px; }
 }
+
+/* clock self-check */
+.clock-form { display: block; }
+.clock-form .table-wrap { margin: 12px 0; }
+.clock-form input { min-width: 180px; }
+.verdict { padding: 14px 18px; border-radius: 6px; border: 1px solid var(--line); background: var(--paper); margin: 14px 0; }
+.verdict.constant_offset, .verdict.cut_jump { border-left: 5px solid #208269; }
+.verdict.rate_difference { border-left: 5px solid #166ecc; }
+.verdict.inconclusive { border-left: 5px solid #b07900; }
+.warn { display: block; padding: 10px 12px; border-left: 4px solid #b07900; background: #fff0cb; }
+.model { background: var(--paper); border: 1px solid var(--line); border-radius: 6px; padding: 12px 16px; margin: 12px 0; }
+.model h3 { margin: 0 0 8px; font-size: 15px; }
+.ranges { margin: 0; padding-left: 18px; }
+.ranges li { margin: 4px 0; }

@@ -10,7 +10,14 @@ import av
 
 SAMPLE_RATE = 8000
 SIZE = (160, 96)
-REELS = ('basalt', 'revision', 'picture-hole', 'no-sound', 'fractional')
+REELS = ('basalt', 'revision', 'picture-hole', 'no-sound', 'fractional',
+         'clock-a', 'clock-b-offset', 'clock-b-rate', 'clock-b-cut')
+CLOCK_FPS = Fraction(25)
+CLOCK_FRAMES = 100
+CLOCK_OFFSET_US = 40_000
+# Shared scene anchors: frame indices on clock-a, spanning the whole programme.
+# None falls inside the block removed by clock-b-cut, and none is the final frame.
+CLOCK_ANCHOR_FRAMES = (0, 24, 48, 74, 90)
 
 
 def raster(index, dark, still):
@@ -44,7 +51,98 @@ def audio_frame(first, count, revision):
     return frame
 
 
+def clock_time_us(frame_index, rate):
+    """Display timestamp in microseconds, matching media.timestamp's rounding."""
+    return round(Fraction(frame_index, rate) * 1_000_000)
+
+
+def clock_raster(index):
+    """Distinct scene states so duty officers can locate the same scene twice."""
+    frame = av.VideoFrame(SIZE[0], SIZE[1], 'gray')
+    plane = frame.planes[0]
+    level = 40 + (index * 37) % 181
+    raw = bytearray(plane.buffer_size)
+    for y in range(SIZE[1]):
+        start = y * plane.line_size
+        row = bytes((level + x // 8 + y // 8) % 256 for x in range(SIZE[0]))
+        raw[start:start + SIZE[0]] = row
+    plane.update(raw)
+    return frame
+
+
+def mux_clock(path, name):
+    """Two-capture-machine family: same scenes, offset clocks, drift, or a cut.
+
+    MP4 keeps a delayed first presentation timestamp on the programme clock,
+    while the Matroska muxer folds it into the container origin.  Companions
+    therefore start their clock at CLOCK_OFFSET_US so the offset stays visible
+    as frame timestamps that a duty officer can anchor against clock-a.
+    """
+    rate = CLOCK_FPS
+    with av.open(str(path), mode='w', format='mp4') as container:
+        video = container.add_stream('h264', rate=rate)
+        video.width, video.height = SIZE
+        video.pix_fmt = 'yuv420p'
+        video.time_base = Fraction(1, 1_000_000)
+        if name == 'clock-a':
+            for index in range(CLOCK_FRAMES):
+                frame = clock_raster(index).reformat(format='yuv420p')
+                frame.pts = clock_time_us(index, rate)
+                frame.time_base = Fraction(1, 1_000_000)
+                container.mux(video.encode(frame))
+        elif name == 'clock-b-offset':
+            for index in range(CLOCK_FRAMES):
+                frame = clock_raster(index).reformat(format='yuv420p')
+                frame.pts = clock_time_us(index, rate) + CLOCK_OFFSET_US
+                frame.time_base = Fraction(1, 1_000_000)
+                container.mux(video.encode(frame))
+        elif name == 'clock-b-rate':
+            drift_rate = CLOCK_FPS * 24 // 25
+            for index in range(CLOCK_FRAMES):
+                frame = clock_raster(index).reformat(format='yuv420p')
+                frame.pts = clock_time_us(index, drift_rate) + CLOCK_OFFSET_US
+                frame.time_base = Fraction(1, 1_000_000)
+                container.mux(video.encode(frame))
+        else:  # clock-b-cut: frames 40..59 of clock-a are removed, later clocks shift.
+            kept = [index for index in range(CLOCK_FRAMES) if not 40 <= index < 60]
+            cut_us = clock_time_us(20, rate)
+            for index in kept:
+                frame = clock_raster(index).reformat(format='yuv420p')
+                source_us = clock_time_us(index, rate)
+                shown_us = source_us + CLOCK_OFFSET_US if index < 40 else source_us - cut_us + CLOCK_OFFSET_US
+                frame.pts, frame.time_base = shown_us, Fraction(1, 1_000_000)
+                container.mux(video.encode(frame))
+        container.mux(video.encode())
+    return Path(path)
+
+
+def clock_anchors(name):
+    """Re-runnable scene anchor pairs between clock-a and one of its companions.
+
+    Timestamps are programme-clock values after the shared container origin is
+    removed, matching the scan's half-open ``[start_us, end_us)`` coordinates.
+    """
+    base = [clock_time_us(index, CLOCK_FPS) for index in CLOCK_ANCHOR_FRAMES]
+    if name == 'clock-a':
+        after = base
+    elif name == 'clock-b-offset':
+        # Identical frame clocks: only the container origin (the start offset)
+        # separates the two capture machines.
+        after = base
+    elif name == 'clock-b-rate':
+        drift_rate = CLOCK_FPS * 24 // 25
+        after = [clock_time_us(index, drift_rate) for index in CLOCK_ANCHOR_FRAMES]
+    else:
+        cut_us = clock_time_us(20, CLOCK_FPS)
+        after = [value if index < 40 else value - cut_us for index, value in
+                 zip(CLOCK_ANCHOR_FRAMES, base)]
+    return [{'label': f'anchor-{position}', 'before_us': before, 'after_us': later}
+            for position, (before, later) in enumerate(zip(base, after))]
+
+
 def make(path, name):
+    if name.startswith('clock-'):
+        return mux_clock(path.with_suffix('.mp4'), name)
     fps = Fraction(30000, 1001) if name == 'fractional' else Fraction(25)
     audio_end = 28000 if name == 'revision' else 25600
     with av.open(str(path), mode='w', format='matroska') as container:

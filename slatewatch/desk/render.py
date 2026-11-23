@@ -11,6 +11,7 @@ PAGES = (
     ('scan', '审片', '/desk'),
     ('intake', '母带与规则', '/desk/intake'),
     ('compare', '版次比对', '/desk/compare'),
+    ('clockcheck', '时钟自检', '/desk/clockcheck'),
     ('seals', '冻结包', '/desk/seals'),
 )
 ASSETS = {'shell.css', 'review.css', 'media.css', 'intake.js'}
