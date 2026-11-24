@@ -1,0 +1,8 @@
+<section aria-labelledby="rehearsal">
+  <h2 id="rehearsal">静音配方预演</h2>
+  <p class="muted">以当前扫描的母带、选轨和规则为基准读入一次伴音，此后可离线调整音窗、静音门槛和最短事件，并查看候选合并、拆开或不再成立的原因。预演材料只供本次编辑使用，结果不进入正式扫描列表。</p>
+  <form method="post" action="/desk/scans/$scan/rehearsal" class="actions">
+    <input type="hidden" name="prepare" value="1">
+    <button>准备预演材料</button>
+  </form>
+</section>

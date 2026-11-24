@@ -18,7 +18,19 @@
       <label>最短黑场（毫秒）<input name="black_min_ms" type="number" min="20" max="10000" placeholder="300"></label>
       <label>最短冻帧（毫秒）<input name="freeze_min_ms" type="number" min="30" max="10000" placeholder="500"></label>
       <label>最短伴音缺口（毫秒）<input name="sound_gap_ms" type="number" min="10" max="5000" placeholder="100"></label>
+      <label>静音音窗（毫秒）<input name="audio_window_ms" type="number" min="10" max="500" placeholder="50"></label>
+      <label>静音门槛（RMS）<input name="silence_rms" type="number" min="0" max="2048" placeholder="80"></label>
+      <label>最短静音事件（毫秒）<input name="silence_min_ms" type="number" min="10" max="10000" placeholder="300"></label>
       <button>登记</button>
+    </form>
+    <p class="muted">要按母带试算音窗、静音门槛和最短事件，请先完成扫描，再在扫描页使用「静音配方预演」；预演确认后才会在此登记规则并生成正式扫描。</p>
+  </section>
+  <section class="form-section">
+    <h2>静音配方预演</h2>
+    <p class="muted">选择一卷已有扫描作为基准，读入一次母带伴音后即可离线调整音窗、静音门槛和最短事件。预演材料只供本次编辑，结果不进入正式扫描列表。</p>
+    <form method="post" action="/desk/rehearsals/prepare" class="actions">
+      <label>基准扫描<select name="scan" required><option value="">选择扫描</option>$scans</select></label>
+      <button>准备预演材料</button>
     </form>
   </section>
   <section class="form-section"><h2>开始扫描</h2>

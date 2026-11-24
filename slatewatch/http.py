@@ -119,11 +119,15 @@ class Handler(BaseHTTPRequestHandler):
     def get(self, app, parts):
         if parts == ['health']:
             return 200, {'status': 'ready'}, 'application/json'
+        if parts == ['scans']:
+            return 200, app.vault.recent('scan'), 'application/json'
         if len(parts) == 2:
             group, key = parts
             types = {'masters': 'master', 'policies': 'policy', 'scans': 'scan', 'seals': 'seal'}
             if group in types:
                 return 200, app.vault.get(types[group], key), 'application/json'
+            if group == 'rehearsals':
+                return 200, app.rehearsal_session(key), 'application/json'
         if len(parts) == 3:
             group, key, action = parts
             if group == 'scans' and action == 'review':
@@ -135,6 +139,12 @@ class Handler(BaseHTTPRequestHandler):
         raise Missing('route does not exist')
 
     def post(self, app, parts):
+        if len(parts) == 1 and parts[0] == 'rehearsals':
+            return 201, app.prepare_rehearsal_request(self.json_body()), 'application/json'
+        if len(parts) == 2 and parts[0] == 'rehearsals':
+            return 200, app.rehearse(parts[1], self.json_body()), 'application/json'
+        if len(parts) == 3 and parts[0] == 'rehearsals' and parts[2] in ('confirm', 'apply'):
+            return 201, app.confirm_rehearsal(parts[1], self.json_body()), 'application/json'
         if len(parts) == 1:
             operations = {'policies': (app.policy, 201), 'scans': (app.scan, 201), 'compare': (app.compare, 200)}
             if parts[0] in operations:
@@ -147,6 +157,12 @@ class Handler(BaseHTTPRequestHandler):
                 return 201, operations[action](key, self.json_body()), 'application/json'
             if action == 'evidence':
                 return 200, app.evidence(key, self.json_body()), 'application/zip'
+            if action == 'rehearsals':
+                if self.headers.get('Content-Length', '0') != '0':
+                    self.body(JSON_LIMIT)
+                return 201, app.prepare_rehearsal(key), 'application/json'
+            if action == 'rehearse':
+                return 200, app.try_rehearse(key, self.json_body()), 'application/json'
         raise Missing('route does not exist')
 
     def run_request(self):

@@ -2,10 +2,12 @@
 from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from .clock import InputError, integer, shape, text
+from .clock import Conflict, InputError, Missing, integer, shape, text
 from .compare import compare
 from .evidence import extract
 from .media import inspect
+from .rehearse import (TUNING, RehearsalCache, describe as describe_rehearsal,
+                       prepare as prepare_rehearsal_session)
 from .review import adjudicate, find_hit, intent, ruling
 from .rules import canonical, identifier, new_policy
 from .scan import measure, scan_identity
@@ -16,6 +18,7 @@ from .store import Vault
 class Slatewatch:
     def __init__(self, root):
         self.vault = Vault(root)
+        self.rehearsals = RehearsalCache()
 
     def master(self, data, label, picture, sound):
         name = text(label, 'label')
@@ -38,6 +41,63 @@ class Slatewatch:
             return existing
         path = self.vault.object_path(asset['sha256'])
         return self.vault.put('scan', measure(asset, path, policy))
+
+    def prepare_rehearsal(self, scan_id):
+        return prepare_rehearsal_session(self.vault, scan_id, self.rehearsals)
+
+    def prepare_rehearsal_request(self, data):
+        shape(data, (), ('scan_id', 'master_id', 'policy_id'))
+        if data.get('scan_id'):
+            return self.prepare_rehearsal(text(data['scan_id'], 'scan_id'))
+        if data.get('master_id') and data.get('policy_id'):
+            scan = self.scan({'master_id': text(data['master_id'], 'master_id'),
+                              'policy_id': text(data['policy_id'], 'policy_id')})
+            return self.prepare_rehearsal(scan['id'])
+        raise InputError('provide scan_id or master_id and policy_id')
+
+    def try_rehearse(self, scan_id, data):
+        session = self.prepare_rehearsal(scan_id)
+        record = self.rehearse(session['token'], data)
+        return {'token': session['token'], **record}
+
+    def rehearsal_session(self, token):
+        return describe_rehearsal(self.rehearsals.get(token))
+
+    def rehearse(self, token, data):
+        session = self.rehearsals.get(token)
+        return self.rehearsals.record(session, data)
+
+    def confirm_rehearsal(self, token, data):
+        shape(data, (), ('rehearsal_id', 'label', 'policy_label', *TUNING))
+        session = self.rehearsals.get(token)
+        if data.get('rehearsal_id'):
+            wanted = text(data['rehearsal_id'], 'rehearsal_id')
+            rehearsal = next((item for item in session.rehearsals if item['id'] == wanted), None)
+            if rehearsal is None:
+                raise Missing('此预演不存在或已过期。')
+        elif any(key in data for key in TUNING):
+            rehearsal = self.rehearsals.record(
+                session, {key: data[key] for key in TUNING if key in data})
+        else:
+            raise InputError('provide rehearsal_id or tuning parameters')
+        label = data.get('label') or data.get('policy_label') or f'静音配方 {rehearsal["id"]}'
+        thresholds = {**session.policy['thresholds'], **rehearsal['parameters']}
+        policy = self.policy({'label': label, 'thresholds': thresholds})
+        master_path = self.vault.object_path(session.master['sha256'])
+        if not master_path.is_file():
+            raise Conflict('母带文件当前不可读，请恢复共享母带连接后再确认预演。')
+        scan = self.scan({'master_id': session.master_id, 'policy_id': policy['id']})
+        official = [{key: value for key, value in hit.items() if key != 'id'}
+                    for hit in scan['hits'] if hit['kind'] == 'silence']
+        if official != rehearsal['candidates']:
+            raise Conflict('预演结果与正式扫描不一致，请重新预演。')
+        return {'policy': policy, 'scan': scan,
+                'confirmed': {'master_id': session.master_id,
+                              'master_sha256': session.master['sha256'],
+                              'sound_track': session.track,
+                              'baseline_policy_id': session.policy['id'],
+                              'rehearsal_id': rehearsal['id'],
+                              'parameters': rehearsal['parameters']}}
 
     def add_intent(self, scan_id, data):
         scan = self.vault.get('scan', scan_id)

@@ -1,0 +1,14 @@
+<section id="$anchor">
+  <h2>预演 $title</h2>
+  <p class="muted">参数变化：$changes</p>
+  <p class="muted">未覆盖齐的音窗（按规不计）：$partial</p>
+  <div class="table-wrap"><table><thead><tr><th scope="col">异常</th><th scope="col">轨道</th><th scope="col">节目时标</th><th scope="col">音窗数</th><th scope="col">窗值范围</th></tr></thead>
+  <tbody>$rows</tbody></table></div>
+  <h3>候选变动说明（相对基准）</h3>
+  <ul class="rehearsal-events">$events</ul>
+  <form method="post" action="/desk/rehearsals/$token/confirm" class="actions">
+    <input type="hidden" name="rehearsal_id" value="$run_id">
+    <label>正式规则名称<input name="label" required maxlength="120" value="$label"></label>
+    <button>确认并登记正式扫描</button>
+  </form>
+</section>

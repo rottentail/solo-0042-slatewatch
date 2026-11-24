@@ -23,6 +23,10 @@
       "command": "python3 -m slatewatch.walkthrough scan"
     },
     {
+      "workflow_id": "rehearse",
+      "command": "python3 -m slatewatch.walkthrough rehearse"
+    },
+    {
       "workflow_id": "intent",
       "command": "python3 -m slatewatch.walkthrough intent"
     },

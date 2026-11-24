@@ -168,13 +168,93 @@ def verify(tour):
     return {'verified': verified, 'tampered': tour.call(uri + '/verify', expected=409)}
 
 
-WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
+def rehearse(tour):
+    master = tour.master('silence-lab')
+    policy = tour.policy()
+    scan = tour.call('/scans', {'master_id': master['id'], 'policy_id': policy['id']}, 201)
+    silences = [(hit['start_us'], hit['end_us']) for hit in scan['hits'] if hit['kind'] == 'silence']
+    assert silences == [(1000000, 2000000), (2050000, 3000000),
+                        (3200000, 3500000), (4500000, 7000000)]
+    session = tour.call(f"/scans/{scan['id']}/rehearsals", {}, 201)
+    token = session['token']
+    assert session['master']['id'] == master['id']
+    assert session['policy']['id'] == policy['id']
+    assert session['tuning'] == {'audio_window_ms': 50, 'silence_rms': 80, 'silence_min_ms': 300}
+    scan_ids_before = {item['id'] for item in tour.call('/scans')}
+
+    first = tour.call(f'/rehearsals/{token}',
+                      {'audio_window_ms': 70, 'silence_rms': 2048, 'silence_min_ms': 300})
+    assert [(hit['start_us'], hit['end_us']) for hit in first['candidates']] == [
+        (1050000, 2940000), (4550000, 7000000)]
+    assert first['partial_windows'] == [
+        {'start_us': 2940000, 'end_us': 3010000}, {'start_us': 3150000, 'end_us': 3220000}]
+    first_relations = {event['relation'] for event in first['explanation']}
+    assert first_relations == {'merged', 'dropped'}
+    merged = next(event for event in first['explanation'] if event['relation'] == 'merged')
+    assert len(merged['before']) == 2 and len(merged['after']) == 1
+    dropped = next(event for event in first['explanation'] if event['relation'] == 'dropped')
+    assert dropped['before'][0]['start_us'] == 3200000 and dropped['after'] == []
+    assert any('不足最短事件' in reason for reason in dropped['reasons'])
+
+    second = tour.call(f'/rehearsals/{token}',
+                       {'audio_window_ms': 30, 'silence_rms': 40, 'silence_min_ms': 200})
+    assert [(hit['start_us'], hit['end_us']) for hit in second['candidates']] == [
+        (1020000, 1980000), (2010000, 3000000), (3210000, 3480000),
+        (4500000, 5490000), (6000000, 6990000), (7500000, 7770000)]
+    assert second['partial_windows'] == [{'start_us': 3180000, 'end_us': 3210000}]
+    second_relations = {event['relation'] for event in second['explanation']}
+    assert second_relations == {'split', 'introduced'}
+    split = next(event for event in second['explanation'] if event['relation'] == 'split')
+    assert len(split['after']) == 2 and any('超过静音门槛' in r for r in split['reasons'])
+
+    # Unconfirmed rehearsals must not show up in the official scan list.
+    assert {item['id'] for item in tour.call('/scans')} == scan_ids_before
+
+    # Another workstation window registers a different rule meanwhile.
+    tour.policy(silence_rms=1)
+    confirmed = tour.call(f'/rehearsals/{token}/confirm',
+                          {'rehearsal_id': second['id'], 'label': '静音配方·30ms'}, 201)
+    thresholds = confirmed['policy']['thresholds']
+    assert (thresholds['audio_window_ms'], thresholds['silence_rms'],
+            thresholds['silence_min_ms']) == (30, 40, 200)
+    assert thresholds['clip_min_ms'] == 100 and thresholds['black_min_ms'] == 300
+    official = confirmed['scan']
+    assert confirmed['confirmed']['baseline_policy_id'] == policy['id']
+    assert confirmed['confirmed']['master_id'] == master['id']
+    assert confirmed['confirmed']['rehearsal_id'] == second['id']
+    official_silence = [{k: v for k, v in hit.items() if k != 'id'}
+                        for hit in official['hits'] if hit['kind'] == 'silence']
+    assert official_silence == second['candidates']
+    # The same master + rule combination resolves to the same immutable scan.
+    again = tour.call('/scans', {'master_id': master['id'], 'policy_id': confirmed['policy']['id']}, 201)
+    assert again['id'] == official['id']
+    listed_after = tour.call('/scans')
+    assert {item['id'] for item in listed_after} == scan_ids_before | {official['id']}
+    described = tour.call(f'/rehearsals/{token}')
+    assert len(described['rehearsals']) == 2
+
+    errors = {
+        'bad_window': tour.call(f'/rehearsals/{token}', {'audio_window_ms': 7}, 400),
+        'window_over_clip_min': tour.call(f'/rehearsals/{token}', {'audio_window_ms': 120}, 400),
+        'unknown_session': tour.call('/rehearsals/does-not-exist', {'silence_rms': 40}, 404),
+        'unknown_rehearsal': tour.call(f'/rehearsals/{token}/confirm',
+                                       {'rehearsal_id': 'rehearsal-99', 'label': 'x'}, 404),
+    }
+    no_sound = tour.scan('picture-hole', sound='none')
+    errors['no_sound'] = tour.call(f"/scans/{no_sound['id']}/rehearsals", {}, 400)
+    return {'first': sorted(first_relations), 'second': sorted(second_relations),
+            'confirmed_scan': official['id'], 'errors': errors}
+
+
+WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'rehearse': rehearse,
+             'intent': intent, 'review': review,
              'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+WORKFLOW_ALIASES = {'rehearsal': rehearse, 'silence': rehearse}
 
 
 def main():
     parser = argparse.ArgumentParser(description='Observe a Slatewatch workflow over a loopback connection')
-    parser.add_argument('workflow', choices=(*WORKFLOWS, 'all'))
+    parser.add_argument('workflow', choices=(*WORKFLOWS, *WORKFLOW_ALIASES, 'all'))
     selection = parser.parse_args().workflow
     with TemporaryDirectory(prefix='slatewatch-demo-') as directory:
         root = Path(directory)
@@ -183,8 +263,12 @@ def main():
             runner.start()
             try:
                 tour = Tour(server.server_address, root)
-                for key in WORKFLOWS if selection == 'all' else (selection,):
-                    print(json.dumps({'workflow': key, 'observed': WORKFLOWS[key](tour)}, ensure_ascii=False))
+                if selection == 'all':
+                    steps = WORKFLOWS
+                else:
+                    steps = {selection: WORKFLOWS.get(selection) or WORKFLOW_ALIASES[selection]}
+                for key, step in steps.items():
+                    print(json.dumps({'workflow': key, 'observed': step(tour)}, ensure_ascii=False))
             finally:
                 server.shutdown()
                 runner.join()

@@ -35,7 +35,7 @@ curl -fsS "$BASE/scans/SCAN_ID/review"
 curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d '{"hit_ids":["HIT_ID"],"padding_ms":80,"frames":3}' -o evidence.zip
 ```
 
-`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
+`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。`silence-lab` 为静音配方预演布置了四段真实静音床、一个 10 毫秒短音、一段低嗡声和一个 200 毫秒伴音断流，适合连试两组互非整倍数的合法音窗。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
 
 ## 接口
 
@@ -48,6 +48,10 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 | `GET /masters/{id}` | 读取已登记流描述及来源 |
 | `POST /policies`、`GET /policies/{id}` | 用 `label` 和可选 `thresholds` 生成规则版，或读取旧版。刻度及默认值见 `slatewatch/rules.py` |
 | `POST /scans`、`GET /scans/{id}` | 以 `master_id` 和 `policy_id` 获取覆盖区间、候选及固定规则，也可读取已存扫描 |
+| `POST /scans/{id}/rehearsals` | 以该扫描的母带、选轨和基准规则准备静音预演材料；解码一次后把原轨 PCM 有界缓存在当前进程，返回 `token` |
+| `GET /rehearsals/{token}`、`POST /rehearsals/{token}` | 读取预演会话，或用 `audio_window_ms`、`silence_rms`、`silence_min_ms`（均可只给要改的项）离线试算；返回候选、`partial_windows` 及合并、拆开、不再成立、新成立说明 |
+| `POST /rehearsals/{token}/confirm` | 以 `rehearsal_id` 和 `label` 按当时母带、选轨、基准规则与该次参数登记规则版并生成正式扫描；与预演不一致返回 409 |
+| `POST /rehearsals`、`POST /scans/{id}/rehearse` | 分别为按 `scan_id`（或 `master_id` 与 `policy_id`）准备会话、以及准备后直接试算一次的便捷入口 |
 | `POST /scans/{id}/intents` | 用 `kind`、`start_us`、`end_us`、`reason` 和可选 `channel` 登记有意的黑场、冻帧或静音 |
 | `POST /scans/{id}/rulings` | 用 `hit_id`、`outcome`、`reason` 和 `reviewer` 操作单个候选。`outcome` 为 `accept`、`hold` 或 `reset` |
 | `GET /scans/{id}/review` | 读取按当前意图及裁决投影的复核状态 |
@@ -58,8 +62,10 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 上传限制为 48 MiB，源时长限 120 秒。允许的容器、编码、轨道与采样范围定义在 `slatewatch/media.py`。`coverage.sound: null` 表示未选伴音，带缺口的已选伴音有实际覆盖区间。波形证据对未覆盖采样补零，`clock.json` 单列补零区间，供复核时区别源内数字静音。画格是为判读技术信号生成的灰阶缩略图。
 
+静音配方可在扫描页（或「母带与规则」页的预演入口）离线编辑：准备时按基准扫描固定当时的母带摘要、选轨、基准规则和三个静音刻度，并把原轨 PCM 读入有界进程缓存；共享盘断开后仍可反复调整音窗、静音门槛和最短事件。预演复用正式扫描的 `SoundMeter`，覆盖不齐的音窗一律剔除、绝不补零计算，响应逐条说明候选相对基准为何合并、拆开、不再成立或新成立。预演会话只存在于本次进程内存，不写入保管库，因此不会出现在工作台侧栏、规则页扫描下拉或版次比对的正式扫描列表。母带恢复可读后，确认会按会话固定的组合登记规则版并跑一次正式扫描，且核对正式静音候选与该次预演完全一致；期间即使另一窗口登记了新规则也不会被采用。同一母带与规则组合由扫描身份去重，重复确认返回同一条正式扫描。准备材料不替换母带，也不放宽上传、轨道或时长限制。
+
 输入、未找到和冲突分别返回 400、404、409。工位并发槽位用完返回 503。不同规则或流选择可产生不同扫描，原始母带和既有冻结包可继续读取。
 
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`rehearse`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。

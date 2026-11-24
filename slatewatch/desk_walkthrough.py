@@ -67,7 +67,41 @@ def run(server, root):
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+
+    lab = tour.master('silence-lab')
+    lab_policy = tour.policy()
+    lab_scan = tour.call('/scans', {'master_id': lab['id'], 'policy_id': lab_policy['id']}, 201)
+    intake_page = request(origin, '/desk/intake')[2]
+    assert '静音配方预演'.encode() in intake_page and lab_scan['id'].encode() in intake_page
+    via_intake, _, via_intake_page = request(origin, '/desk/rehearsals/prepare',
+                                             {'scan': lab_scan['id']})
+    assert via_intake.startswith('/desk/rehearsals/') and '基准静音候选'.encode() in via_intake_page
+    route = f'/desk/scans/{lab_scan["id"]}'
+    lab_page = request(origin, route)[2]
+    assert '静音配方预演'.encode() in lab_page and '准备预演材料'.encode() in lab_page
+    prepared, _, prepared_page = request(origin, route + '/rehearsal', {'prepare': '1'})
+    token = prepared.rsplit('/', 1)[1]
+    assert '基准静音候选'.encode() in prepared_page
+    assert '不进入正式扫描列表'.encode() in prepared_page
+    tuned, _, tuned_page = request(origin, f'/desk/rehearsals/{token}', {
+        'audio_window_ms': '70', 'silence_rms': '2048', 'silence_min_ms': '300'})
+    assert '合并'.encode() in tuned_page and '不再成立'.encode() in tuned_page
+    assert '未覆盖齐的音窗'.encode() in tuned_page
+    split_page = request(origin, f'/desk/rehearsals/{token}', {
+        'audio_window_ms': '30', 'silence_rms': '40', 'silence_min_ms': '200'})[2]
+    assert '拆开'.encode() in split_page and '新成立'.encode() in split_page
+    confirmed, _, confirmed_page = request(origin, f'/desk/rehearsals/{token}/confirm', {
+        'rehearsal_id': 'rehearsal-2', 'label': '静音配方·工作台确认'})
+    assert confirmed.startswith('/desk/scans/')
+    assert token.encode() not in confirmed_page
+    assert '静音配方·工作台确认'.encode() in confirmed_page
+    official_id = confirmed.rsplit('/', 1)[1]
+    assert tour.call(f'/scans/{official_id}')['policy_id'] != lab_policy['id']
+    expired = request(origin, f'/desk/rehearsals/{token}', expected=200)[2]
+    assert '预演 rehearsal-2'.encode() in expired
+    missing_session = request(origin, '/desk/rehearsals/no-such-session', expected=404)[2]
+    assert '预演材料已过期'.encode() in missing_session
+    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对、静音预演与确认均通过')
 
 
 def main():

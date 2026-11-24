@@ -21,5 +21,8 @@ def number(data, key, default=None):
 
 def policy(app, data):
     return app.policy({'label': data.get('label', ''), 'thresholds': {
-        key: number(data, key) for key in ('black_min_ms', 'freeze_min_ms', 'sound_gap_ms') if data.get(key)
+        key: number(data, key)
+        for key in ('black_min_ms', 'freeze_min_ms', 'sound_gap_ms',
+                    'audio_window_ms', 'silence_rms', 'silence_min_ms')
+        if data.get(key)
     }})

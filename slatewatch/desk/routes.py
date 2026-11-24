@@ -5,7 +5,7 @@ from urllib.parse import urlencode, urlsplit
 
 from ..clock import Conflict, InputError, Missing
 from ..media import MAX_ASSET
-from . import compare, forms, library, preview, scans, seals
+from . import compare, forms, library, preview, rehearsal, scans, seals
 from .render import ASSETS, HERE, page
 from .text import safe
 
@@ -88,6 +88,21 @@ def route(handler, parsed):
                 raise Missing('没有此项预览材料。')
             content, mime = assets[name]
             return 200, content, mime, {}
+        case 'GET', ['desk', 'rehearsals', token]:
+            return html(rehearsal.show(app, token, params.get('run', '')))
+        case 'POST', ['desk', 'rehearsals', 'prepare']:
+            session = app.prepare_rehearsal(data.get('scan', ''))
+            return redirect(f'/desk/rehearsals/{session["token"]}')
+        case 'POST', ['desk', 'rehearsals', token]:
+            tuning = {key: forms.number(data, key)
+                      for key in ('audio_window_ms', 'silence_rms', 'silence_min_ms')
+                      if data.get(key)}
+            record = app.rehearse(token, tuning)
+            return redirect(f'/desk/rehearsals/{token}?run={record["id"]}#run-{record["id"]}')
+        case 'POST', ['desk', 'rehearsals', token, 'confirm']:
+            result = app.confirm_rehearsal(token, {
+                'rehearsal_id': data.get('rehearsal_id', ''), 'label': data.get('label', '')})
+            return redirect(f'/desk/scans/{result["scan"]["id"]}')
         case 'GET', ['desk', 'compare']:
             return html(compare.show(app, params.get('before', ''), params.get('after', '')))
         case 'GET', ['desk', 'seals']:
@@ -102,6 +117,9 @@ def route(handler, parsed):
 
 def scan_action(app, cache, key, operation, data):
     hit_id = data.get('hit', '')
+    if operation == 'rehearsal':
+        session = app.prepare_rehearsal(key)
+        return redirect(f'/desk/rehearsals/{session["token"]}')
     if operation == 'ruling':
         app.add_ruling(key, {'hit_id': hit_id, 'outcome': data.get('outcome'), 'reason': data.get('reason'),
                              'reviewer': data.get('reviewer')})

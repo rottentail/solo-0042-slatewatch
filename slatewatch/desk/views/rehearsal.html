@@ -1,0 +1,20 @@
+<div class="wrap">
+  <header class="striphead"><div><p>静音配方预演 · 母带 $source</p><h1>$master</h1></div></header>
+  <p class="muted rule">基准规则 · $policy · <a href="/desk/scans/$scan">返回基准扫描</a></p>
+  <p class="muted">预演材料只保留在本机内存、仅供本次编辑使用，不替换母带；预演结果不进入正式扫描列表，确认后才登记规则并生成正式扫描。未覆盖齐的音窗按规剔除，不以补零计算。</p>
+  <section aria-labelledby="baseline">
+    <h2 id="baseline">基准静音候选</h2>
+    <div class="table-wrap"><table><thead><tr><th scope="col">异常</th><th scope="col">轨道</th><th scope="col">节目时标</th><th scope="col">音窗数</th><th scope="col">窗值范围</th></tr></thead>
+    <tbody>$baseline_rows</tbody></table></div>
+  </section>
+  <section aria-labelledby="tune" class="form-section">
+    <h2 id="tune">离线调整</h2>
+    <form method="post" action="/desk/rehearsals/$token" class="actions">
+      <label>音窗（毫秒）<input name="audio_window_ms" type="number" min="10" max="500" value="$window" required></label>
+      <label>静音门槛<input name="silence_rms" type="number" min="0" max="2048" value="$rms" required></label>
+      <label>最短事件（毫秒）<input name="silence_min_ms" type="number" min="10" max="10000" value="$min_ms" required></label>
+      <button class="primary">试算</button>
+    </form>
+  </section>
+  $runs
+</div>

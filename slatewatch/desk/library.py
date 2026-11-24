@@ -40,4 +40,5 @@ def intake(vault):
     return page('母带与规则', 'intake', 'intake',
                 masters=options(((m['id'], m['label']) for m in masters)),
                 policies=options(((p['id'], p['label']) for p in policies)),
+                scans=scan_choices(vault),
                 pending='' if masters and policies else ' disabled')

@@ -35,6 +35,12 @@ def details(scan, hit):
                     note=note, intent_form=intent_form)
 
 
+def rehearsal_entry(scan):
+    if not scan['tracks']['sound']:
+        return ''
+    return fragment('rehearsal_entry', scan=scan['id'])
+
+
 def show(app, scan_id, selected):
     scan = app.vault.get('scan', scan_id)
     master = app.vault.get('master', scan['master_id'])
@@ -49,4 +55,5 @@ def show(app, scan_id, selected):
     return page('审片', 'scan', 'scan', sidebar=library.sidebar(app.vault, scan_id),
                 master=safe(master['label']), policy=safe(library.policy_name(app.vault, scan)), state=badge(view['status']),
                 source=safe(master['sha256'][:12]), clip=timeline.draw(scan, active),
-                table=rows(scan_id, view['hits'], active), detail=details(scan, hit))
+                table=rows(scan_id, view['hits'], active), detail=details(scan, hit),
+                rehearsal=rehearsal_entry(scan))

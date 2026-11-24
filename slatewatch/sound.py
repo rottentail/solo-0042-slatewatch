@@ -53,16 +53,24 @@ class SoundMeter:
             window.covered += end - current
             current = end
 
-    def _bins(self, channel, kind):
+    def window_values(self, channel):
+        """Yield each window span and RMS, or None when coverage is incomplete."""
         for key, window in sorted(self.windows.items()):
             span = Span(key * self.step, (key + 1) * self.step)
             value = None
             if window.covered == window.end_sample - window.start_sample:
+                value = isqrt(window.energy[channel] // window.covered)
+            yield span, value
+
+    def _bins(self, channel, kind):
+        for span, rms in self.window_values(channel):
+            value = None
+            if rms is not None:
                 if kind == 'silence':
-                    rms = isqrt(window.energy[channel] // window.covered)
                     if rms <= self.thresholds.silence_rms:
                         value = rms
                 else:
+                    window = self.windows[span.start // self.step]
                     permille = window.clipped[channel] * 1000 // window.covered
                     if permille >= self.thresholds.clip_permille:
                         value = permille
