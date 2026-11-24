@@ -11,9 +11,15 @@
 .striphead p { color: var(--muted); margin: 0; }
 .rule { margin: 0 0 13px; }
 .state { padding: 2px 6px; border-radius: 3px; white-space: nowrap; font-size: 12px; background: #e8ecee; }
-.state.expected, .state.accepted, .state.pass { color: #115c43; background: #dcf1e5; }
-.state.held, .state.hold { color: #8e3126; background: #fce5df; }
-.state.pending { color: #794a00; background: #fff0cb; }
+.state.expected, .state.accepted, .state.pass, .state.regenerable { color: #115c43; background: #dcf1e5; }
+.state.held, .state.hold, .state.insufficient { color: #8e3126; background: #fce5df; }
+.state.pending, .state.verify_only { color: #794a00; background: #fff0cb; }
+.conditions { list-style: none; padding: 0; margin: 9px 0; display: grid; gap: 6px; }
+.conditions li { padding: 8px 12px; border-left: 4px solid var(--line); background: var(--paper); overflow-wrap: anywhere; }
+.conditions li.ok { border-color: #208269; }
+.conditions li.bad { border-color: #be5144; }
+.conditions li.ok::before { content: "✓ "; color: #208269; font-weight: 700; }
+.conditions li.bad::before { content: "✗ "; color: #be5144; font-weight: 700; }
 .selected { background: #e9f5f2; }
 .finding { border-top: 1px solid var(--line); margin-top: 21px; padding-top: 13px; }
 .finding details { margin: 9px 0; }

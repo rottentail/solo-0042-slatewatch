@@ -2,15 +2,37 @@
 
 from io import BytesIO
 import json
+import re
 from struct import pack
 from zipfile import ZipFile
 from zlib import compress, crc32
 
-from ..clock import InputError
+from ..clock import InputError, Missing
 from ..media import HEIGHT, WIDTH
 from .cache import PREVIEW_LIMIT
 from .render import page
 from .text import interval, safe, timestamp
+
+# A preview is identified by its exact selection: scan, finding, padding and frame count.
+# The token travels in the preview URL so an evicted entry can still be diagnosed.
+TOKEN = re.compile(r'(scan-[0-9a-f]{24})\.(hit-[0-9a-f]{24})\.([0-9]{1,4})\.([0-9]{1,2})')
+
+
+def token_for(scan_id, hit_id, padding_ms, frames):
+    return f'{scan_id}.{hit_id}.{padding_ms}.{frames}'
+
+
+def parse_token(token):
+    match = TOKEN.fullmatch(token)
+    if not match:
+        if re.fullmatch(r'[0-9a-f]{32}', token):
+            raise Missing('此预览链接来自旧版，未携带摘片参数，无法核对恢复条件，请从候选复核页重新摘片。')
+        raise Missing('预览链接不完整，无法核对恢复条件。')
+    scan_id, hit_id, padding, frames = match.groups()
+    padding, frames = int(padding), int(frames)
+    if not 0 <= padding <= 2000 or not 1 <= frames <= 8:
+        raise Missing('预览链接中的摘片参数超出允许范围。')
+    return scan_id, hit_id, padding, frames
 
 
 def png(pgm):
@@ -28,6 +50,12 @@ def png(pgm):
 
 
 def create(app, cache, scan_id, hit_id, padding, frames):
+    key = token_for(scan_id, hit_id, padding, frames)
+    try:
+        cache.get(key)
+        return key
+    except Missing:
+        pass
     selection = {'hit_ids': [hit_id], 'padding_ms': padding, 'frames': frames}
     raw = app.evidence(scan_id, selection)
     with ZipFile(BytesIO(raw)) as archive:
@@ -39,12 +67,13 @@ def create(app, cache, scan_id, hit_id, padding, frames):
         if mapping['sound']:
             assets['sound.wav'] = (archive.read(f'{hit_id}/sound.wav'), 'audio/wav')
     mapping['scan_id'] = scan_id
-    return cache.put(mapping, assets)
+    return cache.put(key, mapping, assets)
 
 
 def show(key, mapping):
+    _scan_id, _hit_id, padding, frames = parse_token(key)
     base = f'/desk/previews/{key}'
-    frames = []
+    shots = []
     for item in mapping['picture']:
         label = timestamp(item['target_us'])
         if item['file']:
@@ -54,7 +83,7 @@ def show(key, mapping):
         else:
             picture = '<div class="missing-frame">无画格覆盖</div>'
             fact = '此采样点无源帧'
-        frames.append(f'<figure>{picture}<figcaption><strong>{label}</strong><small>{fact}</small></figcaption></figure>')
+        shots.append(f'<figure>{picture}<figcaption><strong>{label}</strong><small>{fact}</small></figcaption></figure>')
     track = mapping['sound']
     sound = '<p class="muted">未选伴音轨</p>'
     if track is not None:
@@ -63,5 +92,5 @@ def show(key, mapping):
                  f'<p>{track["sample_rate"]} Hz · {track["channels"]} 声道 · 源采样 '
                  f'[{track["first_source_sample"]}, {track["end_source_sample"]})</p>'
                  f'<p>补零区间 <code>{filled or "无"}</code></p>')
-    return page('证据预览', 'scan', 'preview', scan=safe(mapping['scan_id']),
-                hit=safe(mapping['hit_id']), span=interval(mapping), frames=''.join(frames), sound=sound)
+    return page('证据预览', 'scan', 'preview', scan=safe(mapping['scan_id']), padding=padding, frames=frames,
+                hit=safe(mapping['hit_id']), span=interval(mapping), shots=''.join(shots), sound=sound)

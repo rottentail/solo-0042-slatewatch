@@ -2,7 +2,7 @@
 from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile
 
-from .clock import InputError, integer, shape, text
+from .clock import InputError, Missing, integer, shape, text
 from .compare import compare
 from .evidence import extract
 from .media import inspect
@@ -37,6 +37,8 @@ class Slatewatch:
         if existing:
             return existing
         path = self.vault.object_path(asset['sha256'])
+        if not path.exists():
+            raise Missing('master bytes are not in the vault')
         return self.vault.put('scan', measure(asset, path, policy))
 
     def add_intent(self, scan_id, data):
@@ -68,6 +70,8 @@ class Slatewatch:
             raise InputError('finding identifiers must be unique')
         scan = self.vault.get('scan', scan_id)
         asset = self.vault.get('master', scan['master_id'])
+        if not self.vault.object_path(asset['sha256']).exists():
+            raise Missing('master bytes are not in the vault')
         hits = [find_hit(scan, key) for key in sorted(ids)]
         padding = integer(data.get('padding_ms', 120), 'padding_ms', 0, 2000)
         frames = integer(data.get('frames', 3), 'frames', 1, 8)

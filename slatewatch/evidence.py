@@ -21,12 +21,17 @@ def write_wav(values, rate, channels):
     return buf.getvalue()
 
 
+def excerpt_span(finding, duration, padding_ms):
+    """Programme span covered by an excerpt; recovery checks rely on the same formula."""
+    hit_span = Span.parse(finding)
+    padding = padding_ms * 1000
+    return Span(max(0, hit_span.start - padding), min(duration, hit_span.end + padding))
+
+
 class Excerpt:
     def __init__(self, finding, duration, sound, padding_ms, samples):
         self.hit = finding
-        hit_span = Span.parse(finding)
-        padding = padding_ms * 1000
-        self.span = Span(max(0, hit_span.start - padding), min(duration, hit_span.end + padding))
+        self.span = excerpt_span(finding, duration, padding_ms)
         self.targets = [self.span.start + self.span.duration * (i * 2 + 1) // (2 * samples)
                         for i in range(samples)]
         self.pictures = [None] * samples

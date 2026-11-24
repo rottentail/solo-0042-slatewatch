@@ -5,7 +5,7 @@ from urllib.parse import urlencode, urlsplit
 
 from ..clock import Conflict, InputError, Missing
 from ..media import MAX_ASSET
-from . import compare, forms, library, preview, scans, seals
+from . import compare, forms, library, preview, recover, scans, seals
 from .render import ASSETS, HERE, page
 from .text import safe
 
@@ -80,7 +80,10 @@ def route(handler, parsed):
         case 'POST', ['desk', 'scans', key, operation]:
             return scan_action(app, cache, key, operation, data)
         case 'GET', ['desk', 'previews', key]:
-            mapping, _assets = cache.get(key)
+            try:
+                mapping, _assets = cache.get(key)
+            except Missing:
+                return recover.miss(app, key)
             return html(preview.show(key, mapping))
         case 'GET', ['desk', 'previews', key, name]:
             _mapping, assets = cache.get(key)

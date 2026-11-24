@@ -1,0 +1,18 @@
+<div class="wrap">
+  <p>$back</p>
+  <header class="striphead"><div><p>临时预览已不在此进程的缓存中</p><h1>预览恢复</h1></div>$badge</header>
+  <section aria-label="预览身份">
+    <h2>预览身份</h2>
+    <dl>
+      <dt>扫描</dt><dd><code>$scan_id</code></dd>
+      <dt>候选</dt><dd><code>$hit_id</code>$hit_detail</dd>
+      <dt>摘片参数</dt><dd>留边 $padding_ms 毫秒 · 画格 $frames 张</dd>
+    </dl>
+    <p class="muted">预览以扫描、候选、留边和画格数四者为唯一身份。同一候选换用其他留边或画格数即另一条预览；任何其他预览或冻结包都不会被当作此预览展示。</p>
+  </section>
+  <section aria-label="恢复条件核对">
+    <h2>恢复条件核对</h2>
+    <ul class="conditions">$conditions</ul>
+  </section>
+  $conclusion
+</div>

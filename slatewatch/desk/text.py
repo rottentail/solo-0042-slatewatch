@@ -10,6 +10,7 @@ STATUS = {
     'pending': '待审', 'expected': '制作意图覆盖', 'accepted': '人工通过',
     'held': '人工扣留', 'hold': '扣留', 'pass': '已通过',
 }
+RECOVERY = {'regenerable': '可再生成', 'verify_only': '只能验证旧内容', 'insufficient': '材料不足'}
 
 
 def safe(value):

@@ -2,7 +2,6 @@
 
 from collections import OrderedDict
 from threading import Lock
-from uuid import uuid4
 
 from ..clock import InputError, Missing
 
@@ -16,12 +15,14 @@ class PreviewCache:
         self.total = 0
         self.lock = Lock()
 
-    def put(self, mapping, assets):
+    def put(self, key, mapping, assets):
         size = sum(len(data) for data, _mime in assets.values())
         if size > PREVIEW_LIMIT:
             raise InputError('摘片超过浏览器预览容量，请下载完整证据包。')
-        key = uuid4().hex
         with self.lock:
+            old = self.entries.pop(key, None)
+            if old is not None:
+                self.total -= old[2]
             while self.entries and (len(self.entries) >= 12 or self.total + size > CACHE_LIMIT):
                 _old, (_mapping, _assets, old_size) = self.entries.popitem(last=False)
                 self.total -= old_size
@@ -32,7 +33,7 @@ class PreviewCache:
     def get(self, key):
         with self.lock:
             if key not in self.entries:
-                raise Missing('此预览已过期，请从审片记录重新摘片。')
+                raise Missing('此预览已过期，请重新打开预览地址核对恢复条件。')
             self.entries.move_to_end(key)
             mapping, assets, _size = self.entries[key]
             return mapping, assets

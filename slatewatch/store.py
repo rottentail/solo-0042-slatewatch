@@ -64,10 +64,13 @@ class Vault:
         return record
 
     def recent(self, kind, limit=35):
+        sql = 'SELECT document FROM descriptors WHERE kind=? ORDER BY rowid DESC'
+        params = (kind,)
+        if limit is not None:
+            sql += ' LIMIT ?'
+            params = (kind, limit)
         with self.connect() as connection:
-            rows = connection.execute(
-                'SELECT document FROM descriptors WHERE kind=? ORDER BY rowid DESC LIMIT ?', (kind, limit)
-            ).fetchall()
+            rows = connection.execute(sql, params).fetchall()
         return [json.loads(row[0]) for row in rows]
 
     def append(self, scan_id, kind, record):
