@@ -1,0 +1,211 @@
+{
+  "ok": true,
+  "case_id": "R044",
+  "check_count": 38,
+  "checks": [
+    {
+      "name": "hash picture-team/frames/F021.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F022.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F023.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F024.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F025.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F026.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F027.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F028.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F029.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F047.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F048.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F049.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F050.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F055.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F056.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F057.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "hash picture-team/frames/F058.png",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "wav hash",
+      "ok": true,
+      "detail": "SHA-256 matches ledger"
+    },
+    {
+      "name": "pack hash packs/picture-team-pack.zip",
+      "ok": true,
+      "detail": "ZIP SHA-256 matches ledger"
+    },
+    {
+      "name": "pack hash packs/sound-team-pack.zip",
+      "ok": true,
+      "detail": "ZIP SHA-256 matches ledger"
+    },
+    {
+      "name": "standard wav chunks",
+      "ok": true,
+      "detail": "chunks=['fmt ', 'data']"
+    },
+    {
+      "name": "no custom metadata",
+      "ok": true,
+      "detail": "only fmt/data are present"
+    },
+    {
+      "name": "wav sample count",
+      "ok": true,
+      "detail": "32000 samples"
+    },
+    {
+      "name": "zero fill region",
+      "ok": true,
+      "detail": "[16400,17200) all zero"
+    },
+    {
+      "name": "true attack measurable",
+      "ok": true,
+      "detail": "attack=45399423.8, baseline=35522.7"
+    },
+    {
+      "name": "true ring measurable",
+      "ok": true,
+      "detail": "ring=4004361.2"
+    },
+    {
+      "name": "patch edge click measurable",
+      "ok": true,
+      "detail": "edge_attack=31699962.9"
+    },
+    {
+      "name": "patch edge lacks strike ring",
+      "ok": true,
+      "detail": "edge_body=38527.2, true_ring=4004361.2"
+    },
+    {
+      "name": "second full strike measurable",
+      "ok": true,
+      "detail": "attack=40432536.8, ring=3980040.2"
+    },
+    {
+      "name": "picture pack has frames",
+      "ok": true,
+      "detail": "23 members"
+    },
+    {
+      "name": "picture pack has no audio/coordinator material",
+      "ok": true,
+      "detail": "no WAV/JSON/coordinator members"
+    },
+    {
+      "name": "sound pack has WAV and form",
+      "ok": true,
+      "detail": "4 members"
+    },
+    {
+      "name": "sound pack has no picture/coordinator material",
+      "ok": true,
+      "detail": "no picture/PDF/HTML/JSON/return members"
+    },
+    {
+      "name": "picture pack has no sound return/conclusion",
+      "ok": true,
+      "detail": "text members contain no sound-side anchors"
+    },
+    {
+      "name": "sound pack has no picture return/conclusion",
+      "ok": true,
+      "detail": "text members contain no picture-side anchors"
+    },
+    {
+      "name": "one repair order",
+      "ok": true,
+      "detail": "[\"RO-R044-01\"]"
+    },
+    {
+      "name": "one verification case",
+      "ok": true,
+      "detail": "[\"VC-R044-02\"]"
+    },
+    {
+      "name": "hold reasons",
+      "ok": true,
+      "detail": "missing_evidence,similar_but_mismatched"
+    }
+  ],
+  "measurements": {
+    "baseline_energy": 35522.6775,
+    "true_attack_energy": 45399423.796875,
+    "true_ring_energy": 4004361.243333333,
+    "patch_edge_attack_energy": 31699962.916666668,
+    "patch_edge_body_energy": 38527.24642857143,
+    "second_attack_energy": 40432536.765625,
+    "second_ring_energy": 3980040.17
+  },
+  "independent_rerun": [
+    "python3 -m slatewatch.handoff_lab build --root <clean-dir>",
+    "python3 -m slatewatch.handoff_lab reconcile --root <clean-dir>",
+    "python3 -m slatewatch.handoff_lab verify --root <clean-dir>"
+  ]
+}

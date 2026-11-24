@@ -1,0 +1,99 @@
+{
+  "case_id": "R044",
+  "schema_version": 1,
+  "generated_by": "python -m slatewatch.handoff_lab build",
+  "address_conventions": {
+    "wav_first_sample_address": 0,
+    "sample_to_source_us": "address * 125",
+    "frame_to_source_us": "source_frame_index * 40000",
+    "frame_display_interval": "[frame_start_us, frame_start_us + 40000)"
+  },
+  "wav": {
+    "relative_path": "sound-team/alignment-call.wav",
+    "sha256": "54894606dcb7ce14291a857f863220d228070c9ccf24b73c97ca585ae961be54",
+    "format": "RIFF/WAVE PCM16 mono 8000 Hz",
+    "channels": 1,
+    "sample_rate": 8000,
+    "total_samples": 32000,
+    "custom_metadata_chunks": [],
+    "wav_origin_source_sample": 0
+  },
+  "picture_frames": {
+    "picture-team/frames/F021.png": "142ee8df0c9e98cbeec24f5bbae3c42d27fcd05c624db67e5bd4d37cd83623e9",
+    "picture-team/frames/F022.png": "61fd09b8a8c7d0364709fa1f3a1ba7eff8a566e44e1d57acd22ec69526f8fa30",
+    "picture-team/frames/F023.png": "2ab402acccc03e7d1b58ef8b29a04ee5de51bea7164b4eb660ca1f5919c7b888",
+    "picture-team/frames/F024.png": "18f07f3f512f5f24e785e16f40235f40c59c6cc2491dccece0e9241af6fc5a41",
+    "picture-team/frames/F025.png": "8422fcee3d1dd09f877e786540f7cae7a81f33b02ce74d0df3799997d33e08db",
+    "picture-team/frames/F026.png": "302c54f17a25453252184e77922c6c1e2ea67bb5a0c190d0011f254d717398e9",
+    "picture-team/frames/F027.png": "58ce1cd16a5ed58ede7a9dd8706b373d6ea58144a712d4f34729b7fbeeb6275f",
+    "picture-team/frames/F028.png": "9aed29080522e41860ce4df4386dbf471c8b18f9eb1199ca6cd858f951d3f24c",
+    "picture-team/frames/F029.png": "8d19fb84732cdd0eddc92504f5dcdda8d3827a7581f9d53689d4d157cc2acd87",
+    "picture-team/frames/F047.png": "00aee445bc45b9b24c124c0dbd76df740a0ba85be4f5fa50e5f2369d05e92c79",
+    "picture-team/frames/F048.png": "136d1316a4973abd1379f2a6f8c9a0caf09fbe052e9bb2914393808a1ed54a6a",
+    "picture-team/frames/F049.png": "eda885370d23297be5fbd5eaf2d1df9d1bb2a4acc9b41ce05f684fb453b27883",
+    "picture-team/frames/F050.png": "ba2581c131fc099aa69ed4b0a6cf2c8ec046641a43eec92ba330981429262753",
+    "picture-team/frames/F055.png": "bc3e8de12ac6dd7b4a7d030a27ab1958650704039a82ec030ba3c0b640c287b7",
+    "picture-team/frames/F056.png": "f3693fdf81b684aea1f93ae733186c0117b2f7ab4b527001293ac212ad071017",
+    "picture-team/frames/F057.png": "8451bef0708b2ff1523c10ea49423f8699fa73327dae8457f0668d6885effbf8",
+    "picture-team/frames/F058.png": "2b6546cf3878a4a7f5d5f283b6fa9c8f1c87f4855b214f828e534d7d58b38d86"
+  },
+  "picture_gaps": [
+    {
+      "first_frame": 51,
+      "end_exclusive_frame": 55,
+      "interval_us": [
+        2040000,
+        2200000
+      ],
+      "reason": "generated picture decode hole"
+    }
+  ],
+  "audio_patch_ranges": [
+    {
+      "first_wav_sample": 16400,
+      "end_exclusive_wav_sample": 17200,
+      "wav_interval_us": [
+        2050000,
+        2150000
+      ],
+      "boundary_addresses": [
+        16400,
+        17200
+      ],
+      "provenance": "coordinator-known zero fill for an audio coverage hole"
+    }
+  ],
+  "sealed_signal_anchors": {
+    "confirmed_delay": {
+      "picture_frame": 25,
+      "picture_time_us": 1000000,
+      "sound_address": 8960,
+      "sound_time_us": 1120000,
+      "delta_sound_minus_picture_us": 120000
+    },
+    "second_cluster": {
+      "missing_contact_frame": 52,
+      "picture_bracket": [
+        "F050",
+        "F055"
+      ],
+      "patch_edge_address": 17200,
+      "full_strike_address": 17680
+    }
+  },
+  "rules": {
+    "alignment_tolerance_us": 80000,
+    "require_exact_picture_frame_for_repair": true,
+    "reject_patch_boundary_addresses": true
+  },
+  "packs": {
+    "picture": {
+      "relative_path": "packs/picture-team-pack.zip",
+      "sha256": "462e4c1a7084eac63810efc201b0563695c02d73cba7d58df5669e092893eb00"
+    },
+    "sound": {
+      "relative_path": "packs/sound-team-pack.zip",
+      "sha256": "dcbb1338ddb84ea7e3d5ec616ebd1b5c98b042e4d1494a36f2495386606ccaa4"
+    }
+  }
+}

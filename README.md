@@ -60,6 +60,16 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 输入、未找到和冲突分别返回 400、404、409。工位并发槽位用完返回 503。不同规则或流选择可产生不同扫描，原始母带和既有冻结包可继续读取。
 
+## 外部班组交接演练
+
+需要把画面方和伴音方材料物理隔离时，可运行标准库交接实验室：
+
+```sh
+python3 -m slatewatch.handoff_lab all --root handoff/case-r044
+```
+
+它生成可打印画格/PDF、只含标准 `fmt `/`data` chunk 的普通 WAV、可填写 CSV/Markdown 回报、两个互不包含对方材料的 ZIP，以及交付方汇合后的一件返修单和一个待核查夹。完整演练说明、样本地址约定和确定性复跑步骤见 [`handoff/README.md`](handoff/README.md)。
+
 ## 复核运行
 
 `python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。

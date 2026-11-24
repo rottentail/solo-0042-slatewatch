@@ -1,0 +1,63 @@
+{
+  "verification_case_id": "VC-R044-02",
+  "case_id": "R044",
+  "status": "held_needs_verification",
+  "do_not_issue_repair_yet": true,
+  "held_reports": [
+    {
+      "report_id": "P-R044-02",
+      "reason_code": "missing_evidence",
+      "detail": "No unique exact contact frame; F051-F054 picture hole lies inside the action.",
+      "bracket_frame_ids": [
+        "F050",
+        "F055"
+      ],
+      "bracket_time_us": [
+        2000000,
+        2240000
+      ]
+    },
+    {
+      "report_id": "A-R044-02",
+      "reason_code": "similar_but_mismatched",
+      "detail": "Reported strike-like click is on/within 2 samples of a coordinator-known zero-fill boundary.",
+      "address": 17200,
+      "mapped_time_us": 2150000,
+      "patch_flag": {
+        "reason": "patch_boundary",
+        "patch": {
+          "first_wav_sample": 16400,
+          "end_exclusive_wav_sample": 17200,
+          "wav_interval_us": [
+            2050000,
+            2150000
+          ],
+          "boundary_addresses": [
+            16400,
+            17200
+          ],
+          "provenance": "coordinator-known zero fill for an audio coverage hole"
+        }
+      }
+    }
+  ],
+  "corroborating_report": {
+    "report_id": "A-R044-03",
+    "address": 17680,
+    "mapped_time_us": 2210000,
+    "note": "Full strike exists after the patch edge, but picture side still lacks an exact contact frame."
+  },
+  "appearance_only_mispair_example": {
+    "picture_frame": "F050",
+    "picture_time_us": 2000000,
+    "sound_address": 17200,
+    "sound_time_us": 2150000,
+    "apparent_delta_us": 150000,
+    "why_invalid": "F050 is only the last pre-hole approach frame and 17200 is an audio fill boundary; neither is an exact event anchor."
+  },
+  "next_checks": [
+    "Re-decode the original picture stream around source frames 51-54; do not infer the contact from adjacent paper poses.",
+    "Check source audio coverage for samples 16400-17200 and compare the boundary click at 17200 with the full strike at 17680.",
+    "Only after both exact anchors exist, decide whether this is a second fault or the same systematic offset."
+  ]
+}

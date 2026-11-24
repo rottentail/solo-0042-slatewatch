@@ -1,0 +1,29 @@
+{
+  "repair_order_id": "RO-R044-01",
+  "case_id": "R044",
+  "status": "issued_single_repair",
+  "created_for": "confirmed_audio_late_alignment_fault",
+  "picture_evidence": {
+    "report_id": "P-R044-01",
+    "frame_id": "F025",
+    "frame_time_us": 1000000,
+    "png": "picture-team/frames/F025.png",
+    "sha256": "8422fcee3d1dd09f877e786540f7cae7a81f33b02ce74d0df3799997d33e08db"
+  },
+  "sound_evidence": {
+    "report_id": "A-R044-01",
+    "wav": "sound-team/alignment-call.wav",
+    "wav_sha256": "54894606dcb7ce14291a857f863220d228070c9ccf24b73c97ca585ae961be54",
+    "address_zero_based_sample": 8960,
+    "sound_time_us_on_coordinator_origin": 1120000
+  },
+  "measurement": {
+    "delta_sound_minus_picture_us": 120000,
+    "tolerance_us": 80000,
+    "sample_delta": 960
+  },
+  "instruction": "Advance/move the sound earlier by 960 zero-based WAV-equivalent samples at 8000 Hz (120 ms), or apply the equivalent picture-late correction chosen by post production. Recheck both similar strikes after repair.",
+  "not_included": [
+    "VC-R044-02"
+  ]
+}

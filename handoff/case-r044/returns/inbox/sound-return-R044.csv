@@ -1,0 +1,4 @@
+report_id,listener,wav_sha256,address_zero_based_sample,channel,observation_code,listening_text,confidence,review_date
+A-R044-01,External Listening Desk / deterministic exercise return,54894606dcb7ce14291a857f863220d228070c9ccf24b73c97ca585ae961be54,8960,mono,confirmed_strike,Sharp attack with low wooden body and decaying ring; two careful passes agree at this sample.,high,2026-11-24
+A-R044-02,External Listening Desk / deterministic exercise return,54894606dcb7ce14291a857f863220d228070c9ccf24b73c97ca585ae961be54,17200,mono,strike_like_click,Very short hard click at a silent-to-resumed edge. Attack resembles a strike but body and ring are missing.,medium,2026-11-24
+A-R044-03,External Listening Desk / deterministic exercise return,54894606dcb7ce14291a857f863220d228070c9ccf24b73c97ca585ae961be54,17680,mono,confirmed_strike,"Second full attack with low body and ring, 480 samples (60 ms) after the short edge click.",high,2026-11-24

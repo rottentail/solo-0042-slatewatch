@@ -1,0 +1,31 @@
+{
+  "case_id": "R044",
+  "status": "reconciled",
+  "repair_order_ids": [
+    "RO-R044-01"
+  ],
+  "verification_case_ids": [
+    "VC-R044-02"
+  ],
+  "decisions": [
+    {
+      "cluster": "confirmed_delay",
+      "disposition": "issue_single_repair",
+      "repair_order_id": "RO-R044-01",
+      "delta_us": 120000
+    },
+    {
+      "cluster": "second_hole_and_patch_cluster",
+      "disposition": "hold_for_verification",
+      "verification_case_id": "VC-R044-02",
+      "reason_codes": [
+        "missing_evidence",
+        "similar_but_mismatched"
+      ]
+    }
+  ],
+  "return_hashes": {
+    "picture": "c5e547c44a19c11c535a67b4ed963502419be2cc75710756f5e90fe40eef1934",
+    "sound": "7314bffa1441584e2eb87f8e2b790b3e338497d6c460811a5a24b6ad7211e213"
+  }
+}

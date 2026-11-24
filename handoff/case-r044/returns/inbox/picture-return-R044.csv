@@ -1,0 +1,3 @@
+report_id,reviewer,frame_id_first,frame_id_last,exact_frame_id,observation_code,observation_text,confidence,review_date
+P-R044-01,External Picture Desk / deterministic exercise return,F025,F025,F025,contact_confirmed,Hammer base and anvil edge meet in this paper frame; impact burst is visible.,high,2026-11-24
+P-R044-02,External Picture Desk / deterministic exercise return,F050,F055,,frame_gap_no_exact_contact,Roll numbering jumps F050 to F055. Approaching pose before gap and rebound pose after gap; unique contact frame is absent.,high,2026-11-24
