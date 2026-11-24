@@ -63,3 +63,13 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 ## 复核运行
 
 `python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+
+## 声音窗格内部核验
+
+声音测量把「样本归入哪个测量窗」（`sound.WindowGrid`）与「规则怎样把有证据的窗合成候选」（`sound.window_reading`、`sound.channel_hits`）分成两个内部边界，扫描仍只使用相位零的窗格，候选标识和取证地址不变。维护核验不增加任何用户配置：
+
+```sh
+python -m slatewatch.soundcheck all
+```
+
+`media` 构造一段 44.1 kHz 双声道母带：解码包边界跨过 50 ms 窗、一处覆盖空洞只漏掉单个窗的部分样本、左右声道在不同样本段削顶。整段只解码一遍，同一批原采样同时喂入相位零和半窗偏移两套窗格，再由独立重算的逐窗统计核对两套窗的真实覆盖、RMS、削顶千分率和候选。`rules` 不读取媒体，直接用手工构造的窗输入核对完整窗才可判定、缺窗断开候选、通道不串和最短事件边界。

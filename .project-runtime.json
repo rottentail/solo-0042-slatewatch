@@ -53,6 +53,10 @@
     {
       "workflow_id": "desk",
       "command": "python3 -m slatewatch.desk_walkthrough"
+    },
+    {
+      "workflow_id": "soundcheck",
+      "command": "python3 -m slatewatch.soundcheck all"
     }
   ]
 }
