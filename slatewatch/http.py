@@ -9,7 +9,8 @@ from threading import BoundedSemaphore
 from urllib.parse import parse_qs, urlsplit
 
 from .clock import Conflict, InputError, Missing
-from .desk.cache import PreviewCache
+from .desk.cache import PreviewCache, open_store
+from .desk import preview as preview_views
 from .desk import routes as desk
 from .media import MAX_ASSET
 from .rules import canonical
@@ -29,9 +30,14 @@ class HttpError(Exception):
 class Server(ThreadingHTTPServer):
     daemon_threads = False
 
-    def __init__(self, address, root, slots=2):
+    def __init__(self, address, root, slots=2, preview_mode=None, preview_ttl=None):
         self.app = Slatewatch(root)
-        self.preview_cache = PreviewCache()
+        # File-backed by default so browser preview addresses survive restart.
+        # preview_mode='memory' reproduces the old process-only behaviour for
+        # cutover/rollback drills.
+        self.previews = open_store(root, preview_mode, preview_ttl) if preview_mode else open_store(root)
+        # Retained under the historical attribute name for older callers.
+        self.preview_cache = self.previews
         self.capacity = BoundedSemaphore(slots)
         super().__init__(address, Handler)
 
@@ -119,6 +125,17 @@ class Handler(BaseHTTPRequestHandler):
     def get(self, app, parts):
         if parts == ['health']:
             return 200, {'status': 'ready'}, 'application/json'
+        if parts and parts[0] == 'previews' and 2 <= len(parts) <= 3 and (
+                len(parts) == 2 or parts[2] in ('state', 'status', 'verify')):
+            if len(parts) == 3 and parts[2] == 'verify':
+                responder = preview_views.verify_response
+            elif len(parts) == 3 and parts[2] == 'status':
+                responder = preview_views.status_response
+            else:
+                responder = preview_views.state_response
+            status, body, mime, _headers = responder(
+                app, self.server.previews, parts[1])
+            return status, body, mime
         if len(parts) == 2:
             group, key = parts
             types = {'masters': 'master', 'policies': 'policy', 'scans': 'scan', 'seals': 'seal'}
@@ -145,6 +162,14 @@ class Handler(BaseHTTPRequestHandler):
             operations = {'intents': app.add_intent, 'rulings': app.add_ruling, 'seals': app.seal}
             if action in operations:
                 return 201, operations[action](key, self.json_body()), 'application/json'
+            if action in ('previews', 'preview'):
+                body = self.json_body()
+                ids = body.get('hit_ids') if isinstance(body, dict) else None
+                hit_id = ids[0] if isinstance(ids, list) and ids else None
+                token = preview_views.issue(
+                    app, self.server.previews, key, hit_id,
+                    body.get('padding_ms', 120), body.get('frames', 3))
+                return 201, preview_views.describe(app, self.server.previews, token), 'application/json'
             if action == 'evidence':
                 return 200, app.evidence(key, self.json_body()), 'application/zip'
         raise Missing('route does not exist')
@@ -163,6 +188,12 @@ class Handler(BaseHTTPRequestHandler):
                 self.reply(*desk.handle(self, parsed))
             except (ConnectionError, TimeoutError):
                 pass
+            except Exception:
+                LOG.exception('quick desk read failed')
+                try:
+                    self.reply(500, {'error': 'preview read failed'})
+                except (ConnectionError, TimeoutError):
+                    pass
             return
         if not self.server.capacity.acquire(blocking=False):
             self.reply(HTTPStatus.SERVICE_UNAVAILABLE, {'error': 'all inspection slots are occupied'})
@@ -208,8 +239,13 @@ def main():
     parser.add_argument('--port', type=int, default=8974)
     parser.add_argument('--root', default='slatewatch-vault')
     parser.add_argument('--slots', type=int, choices=(1, 2, 3, 4), default=2)
+    parser.add_argument('--preview-store', choices=('file', 'memory'), default='file',
+                        help='file 把浏览器摘片持久化到 vault/previews（默认）；memory 为旧程序行为')
+    parser.add_argument('--preview-ttl', type=int, default=None,
+                        help='文件预览保留秒数，默认 604800；0 表示不过期')
     args = parser.parse_args()
-    with Server((args.host, args.port), args.root, args.slots) as server:
+    with Server((args.host, args.port), args.root, args.slots,
+                preview_mode=args.preview_store, preview_ttl=args.preview_ttl) as server:
         print(f'Slatewatch listening on {server.server_address}', flush=True)
         try:
             server.serve_forever()

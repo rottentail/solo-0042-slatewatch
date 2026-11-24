@@ -296,6 +296,27 @@
         "seal",
         "store"
       ]
+    },
+    {
+      "id": "switchover",
+      "name": "预览文件存储切换与回退演练",
+      "entry": "python3 -m slatewatch.switchover_walkthrough",
+      "success": "重启后同地址核对原摘片选项、PNG/WAV 与补样范围；expired 与 source_unavailable 状态分离；回退 memory 模式后旧冻结包仍验真",
+      "failure": "旧进程内存令牌切换后为 missing(404)，过期资产 410，源母带缺失为 source_unavailable(/status 503)",
+      "verification": "python3 -m slatewatch.switchover_walkthrough",
+      "steps": [
+        "旧 memory 程序建立进程预览与冻结包",
+        "file 存储同库重启并核对地址、选项、哈希与补样范围",
+        "演练过期、源不可用与恢复重建",
+        "切回 memory 并用切换前代码验证旧冻结包"
+      ],
+      "module_ids": [
+        "desk",
+        "http",
+        "evidence",
+        "seal",
+        "store"
+      ]
     }
   ],
   "complexity": {

@@ -18,7 +18,33 @@ python -m slatewatch.http --root ./slatewatch-vault
 
 浏览器打开 <http://127.0.0.1:8974/desk>。在「母带与规则」登记媒体和规则后开始扫描。点选时间轴或候选列表中的异常可以播放伴音、查看样本对应的源画格，也可记录制作意图和人工裁决。浏览器画格以 PNG 展示，原 ZIP 仍包含 PGM 和时间映射。伴音未选轨会单独标明，摘片合成的零采样按原轨范围列出。
 
-「版次比对」显示同节目时标上的匹配和各版独有候选。「冻结包」保留冻结当时的结论，并提供独立核验与下载。浏览器预览是当前进程内的临时结果。有长期交接需求时，使用即时证据下载或冻结包。
+「版次比对」显示同节目时标上的匹配和各版独有候选。「冻结包」保留冻结当时的结论，并提供独立核验与下载。浏览器预览默认持久化到保管库 `previews/`，软件重启后同一 `/desk/previews/<token>` 地址仍可复听与核对；旧程序的进程内预览令牌不写盘，切换后会得到明确的缺失提示。有长期交接需求时，仍应使用即时证据下载或冻结包。
+
+## 预览存储与切换演练
+
+预览目录 `<root>/previews/<token>/preview.json` 保存原摘片选项（`hit_ids`、`padding_ms`、`frames`）、完整 `clock` 映射（含 `filled_sample_ranges` 补样范围）、资产 SHA-256 索引，以及 `assets/` 下转换好的 PNG 与 `sound.wav`。写入采用临时目录加原子改名。预览地址沿用旧缓存的 32 位十六进制令牌；同一摘片表单再次提交会签发新令牌，对旧地址执行 `rebuild` 则按留档选项原地重建。
+
+地址状态机有四种可观测状态，HTML 页用 `data-preview-state` 与中文标题区分。`GET /desk/previews/<token>/state`（另有 `/status` 语义状态码、`/verify` 重算 SHA-256 核对、`.json`、`/manifest.json`、`?format=json` 和 `/slatewatch/v1/previews/<token>` 别名）返回同一份 JSON 文档：
+
+| `state` | `/state` 与 HTML | `/status` | 含义与处置 |
+| --- | --- | --- | --- |
+| `ready` | 200 | 200 | 描述符与 PNG/WAV 完整，可复听、核对哈希与补样范围 |
+| `expired` | 200 + 状态体 | 410 | TTL、手动 `expire`、容量淘汰或资产丢失；选项与补样范围仍留档，源可用时可 `rebuild`；资产字节地址返回 410 |
+| `source_unavailable` | 200 + 状态体 | 503 | `objects/<master_sha256>` 源母带不在位（或母带描述符缺失）；已落盘 PNG/WAV 仍可核对，但不能重新摘片；`rebuild` 返回 503 |
+| `missing` | 404 | 404 | 地址无描述符，常见于切换前旧进程内存令牌；按提示重新摘片即可 |
+
+JSON 文档同时给出 `state`、`status`、`ok/ready/expired/source_unavailable` 布尔别名与建议的 `http_status`，便于不同校验脚本取值。
+
+可用 `--preview-store memory` 回到旧程序的纯进程缓存，用 `--preview-ttl <秒>` 调整保留期（`0` 为不过期），也可用环境变量 `SLATEWATCH_PREVIEW_STORE`、`SLATEWATCH_PREVIEW_TTL_SECONDS` 配置。运维可直接把某条 `preview.json` 的 `expires_at` 改成过去时间模拟到期。
+
+一条命令演练完整切换（真实样片与回环 HTTP，临时保管库，退出码非 0 即失败）：
+
+```sh
+python -m slatewatch.switchover_walkthrough
+python -m slatewatch.switchover_walkthrough --root /tmp/slatewatch-drill   # 保留现场
+```
+
+演练依次验证：旧 `memory` 进程建预览和冻结包 → 停服 → `file` 模式同库启动，旧内存令牌 404 且带迁移提示、旧冻结包验真通过 → 再重启后同地址的选项、PNG/WAV 哈希和补样范围与新证据 ZIP 逐项一致 → `expired`（410）与移除源对象后的 `source_unavailable`（503）互异且恢复路径可用 → 切回 `memory` 模式冻结包仍验真 → 用 `git archive HEAD` 导出的切换前程序独立 `seal.verify` 同一保管库成功。`python -m slatewatch.preview_walkthrough` 与 `cutover_walkthrough` 是同一演练的别名。冻结包格式、SQLite 描述符和 `objects/` 布局未改，新增 `previews/` 目录不影响旧程序验真；复制整个保管库时会一并带走预览。
 
 ## 一次审片
 

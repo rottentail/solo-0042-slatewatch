@@ -51,7 +51,7 @@ def upload(handler, app, query):
 
 def route(handler, parsed):
     app = handler.server.app
-    cache = handler.server.preview_cache
+    cache = getattr(handler.server, 'previews', None) or handler.server.preview_cache
     method = handler.command
     parts = parsed.path.strip('/').split('/')
     params = forms.decode(parsed.query)
@@ -79,15 +79,26 @@ def route(handler, parsed):
             return html(scans.show(app, key, params.get('hit', '')))
         case 'POST', ['desk', 'scans', key, operation]:
             return scan_action(app, cache, key, operation, data)
+        case 'GET', ['desk', 'previews']:
+            return html(preview.index_page(cache))
+        case 'GET', ['desk', 'previews', token] if token.endswith('.json'):
+            return preview.state_response(app, cache, token[:-len('.json')])
         case 'GET', ['desk', 'previews', key]:
-            mapping, _assets = cache.get(key)
-            return html(preview.show(key, mapping))
+            if params.get('format') == 'json':
+                return preview.state_response(app, cache, key)
+            return preview.page_response(app, cache, key)
+        case 'GET', ['desk', 'previews', key, field] if field == 'status':
+            return preview.status_response(app, cache, key)
+        case 'GET', ['desk', 'previews', key, field] if field == 'verify':
+            return preview.verify_response(app, cache, key)
+        case 'GET', ['desk', 'previews', key, field] if field in ('state', 'manifest.json'):
+            return preview.state_response(app, cache, key)
         case 'GET', ['desk', 'previews', key, name]:
-            _mapping, assets = cache.get(key)
-            if name not in assets:
-                raise Missing('没有此项预览材料。')
-            content, mime = assets[name]
-            return 200, content, mime, {}
+            return preview.asset_response(app, cache, key, name)
+        case 'POST', ['desk', 'previews', key, action] if action in (
+                'expire', 'retire', 'invalidate', 'revoke',
+                'rebuild', 'refresh', 'regenerate', 'retry'):
+            return preview.action_response(app, cache, key, action)
         case 'GET', ['desk', 'compare']:
             return html(compare.show(app, params.get('before', ''), params.get('after', '')))
         case 'GET', ['desk', 'seals']:
@@ -132,6 +143,10 @@ def scan_action(app, cache, key, operation, data):
 def handle(handler, parsed):
     try:
         return route(handler, parsed)
+    except preview.PreviewUnavailable as exc:
+        body = json.dumps({'state': exc.state, 'error': str(exc), 'reason': exc.reason},
+                          ensure_ascii=False).encode()
+        return exc.http_status, body, 'application/json; charset=utf-8', {}
     except (Conflict, InputError, Missing, TimeoutError, ValueError) as exc:
         code = 409 if isinstance(exc, Conflict) else 404 if isinstance(exc, Missing) else 408 if isinstance(exc, TimeoutError) else 400
         if parsed.path == '/desk/upload':
