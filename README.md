@@ -62,4 +62,4 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。`python -m slatewatch.desk_navigation` 单独检查端到端导航：同一段节目按两条伴音轨各登记一次，逐个打开轨上标记与候选表，核对服务到的是哪次扫描、哪一轨、哪段真实样本，并核对叠置短候选可分别经各自链接复核；加 `--control` 只在故意让页面一致错指到另一次扫描的补丁下运行对照。自动测试套件暂缓。
