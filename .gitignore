@@ -2,3 +2,5 @@
 __pycache__/
 *.pyc
 slatewatch-vault/
+deploy/run/
+deploy/media/

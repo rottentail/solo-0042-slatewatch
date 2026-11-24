@@ -1,0 +1,19 @@
+{
+  "room_root": "slatewatch-vault",
+  "run_dir": "deploy/run",
+  "media_dir": "deploy/media",
+  "positions": {
+    "desk-a": {
+      "host": "127.0.0.1",
+      "port": 8974,
+      "slots": 1,
+      "role": "主操作位：演练中长扫描占满其处理槽，登记源件后退出"
+    },
+    "desk-b": {
+      "host": "127.0.0.1",
+      "port": 8975,
+      "slots": 2,
+      "role": "副操作位：演练中继续审片，并在主操作位退出后接管"
+    }
+  }
+}

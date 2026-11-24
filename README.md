@@ -63,3 +63,26 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 ## 复核运行
 
 `python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+
+## 双操作位与切换演练
+
+`deploy/positions.json` 把同一间本机审片室（同一个保管库）部署给两个操作位：`desk-a`（8974，1 个处理槽）和 `desk-b`（8975，2 个处理槽）。`deploy/roomctl.py` 按配置为每个操作位启动一个真实的 `python -m slatewatch.http` 进程，pid 与日志放在 `deploy/run/`：
+
+```sh
+python3 deploy/roomctl.py start all     # 或 start desk-a / stop desk-b / status
+python3 deploy/roomctl.py stop all
+```
+
+`deploy/switchover_drill.py` 是可复跑的切换演练，用两个实际服务进程验收：
+
+1. `desk-a` 登记母带、发布扫描、生成冻结包，并打开一次摘片的浏览器预览。
+2. 一段 4K 长扫描占满 `desk-a` 的处理槽（探测到 HTTP 503），同时 `desk-b` 仍能打开已有扫描、读取原画格（预览 PNG 与摘片 PGM）并试听 WAV。
+3. `desk-a` 在源件已登记、扫描尚未发布时退出；`desk-b` 接管：列出仍可继续审的扫描及其实时状态，发布遗留源件的扫描，确认旧摘片预览地址已失效（404，可重新摘片），并核验旧冻结包仍指向原字节与原裁决（新裁决不改变冻结内容）。
+
+```sh
+python3 deploy/switchover_drill.py            # 重建保管库并完整演练
+python3 deploy/switchover_drill.py --keep     # 在现有保管库上复跑
+python3 deploy/roomctl.py status              # 查看两个操作位
+```
+
+演练样片生成一次后缓存在 `deploy/media/`（删除即重新生成，派生 ID 会随之变化）。默认演练结束即停止两个进程；`--leave-running` 可保留现场。
