@@ -10,7 +10,7 @@ import av
 
 SAMPLE_RATE = 8000
 SIZE = (160, 96)
-REELS = ('basalt', 'revision', 'picture-hole', 'no-sound', 'fractional')
+REELS = ('basalt', 'revision', 'picture-hole', 'no-sound', 'fractional', 'overrun')
 
 
 def raster(index, dark, still):
@@ -44,7 +44,65 @@ def audio_frame(first, count, revision):
     return frame
 
 
+def overrun_frame(index):
+    width, height = SIZE
+    frame = av.VideoFrame(width, height, 'gray')
+    plane = frame.planes[0]
+    raw = bytearray(plane.buffer_size)
+    for y in range(height):
+        start = y * plane.line_size
+        raw[start:start + width] = bytes((x + y + index) % 16 for x in range(width))
+    plane.update(raw)
+    return frame
+
+
+def overrun_audio(first, count, rate):
+    values = array('h')
+    for sample in range(first, first + count):
+        right = 32767 if 30 * rate <= sample < 32 * rate else round(8000 * sin(2 * pi * 500 * sample / rate))
+        values.extend((0, right))
+    frame = av.AudioFrame(format='s16', layout='stereo', samples=count)
+    if sys.byteorder != 'little':
+        values.byteswap()
+    frame.planes[0].update(values.tobytes())
+    frame.sample_rate = rate
+    frame.time_base = Fraction(1, rate)
+    frame.pts = first
+    return frame
+
+
+def overrun(path):
+    """Long reel pressuring preview capacity: programme-long black and left-channel
+    silence overlap, with a short right-channel clip episode in the middle."""
+    rate = 48000
+    seconds = 66
+    fps = Fraction(25)
+    with av.open(str(path), mode='w', format='matroska') as container:
+        video = container.add_stream('ffv1', rate=fps)
+        video.width, video.height = SIZE
+        video.pix_fmt = 'gray'
+        audio = container.add_stream('pcm_s16le', rate=rate)
+        audio.layout = 'stereo'
+        next_sample = 0
+        for i in range(round(seconds * fps)):
+            frame = overrun_frame(i)
+            frame.pts = i
+            frame.time_base = 1 / fps
+            container.mux(video.encode(frame))
+            while next_sample < seconds * rate and Fraction(next_sample, rate) <= Fraction(i, fps):
+                container.mux(audio.encode(overrun_audio(next_sample, 960, rate)))
+                next_sample += 960
+        while next_sample < seconds * rate:
+            container.mux(audio.encode(overrun_audio(next_sample, 960, rate)))
+            next_sample += 960
+        container.mux(video.encode())
+        container.mux(audio.encode())
+    return Path(path)
+
+
 def make(path, name):
+    if name == 'overrun':
+        return overrun(path)
     fps = Fraction(30000, 1001) if name == 'fractional' else Fraction(25)
     audio_end = 28000 if name == 'revision' else 25600
     with av.open(str(path), mode='w', format='matroska') as container:

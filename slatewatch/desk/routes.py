@@ -26,10 +26,10 @@ def allow_origin(handler):
         raise InputError('请从当前审片台地址提交。')
 
 
-def read_form(handler):
+def read_form(handler, repeat=()):
     if handler.headers.get_content_type() != 'application/x-www-form-urlencoded':
         raise InputError('预期审片表单。')
-    return forms.decode(handler.body(16 * 1024).decode('ascii'))
+    return forms.decode(handler.body(16 * 1024).decode('ascii'), repeat=repeat)
 
 
 def selected_url(scan_id, hit_id):
@@ -59,7 +59,10 @@ def route(handler, parsed):
         allow_origin(handler)
         if parts == ['desk', 'upload']:
             return upload(handler, app, params)
-        data = read_form(handler)
+        repeat = ()
+        if len(parts) == 4 and parts[:2] == ['desk', 'scans'] and parts[3] in ('preview', 'evidence'):
+            repeat = ('hit',)
+        data = read_form(handler, repeat=repeat)
     match method, parts:
         case 'GET', [''] | ['desk']:
             latest = scans.home(app.vault)
@@ -101,14 +104,15 @@ def route(handler, parsed):
 
 
 def scan_action(app, cache, key, operation, data):
-    hit_id = data.get('hit', '')
     if operation == 'ruling':
+        hit_id = data.get('hit', '')
         app.add_ruling(key, {'hit_id': hit_id, 'outcome': data.get('outcome'), 'reason': data.get('reason'),
                              'reviewer': data.get('reviewer')})
         return redirect(selected_url(key, hit_id))
     if operation == 'intent':
         from ..review import find_hit
 
+        hit_id = data.get('hit', '')
         hit = find_hit(app.vault.get('scan', key), hit_id)
         request = {'kind': hit['kind'], 'start_us': forms.number(data, 'start_us'),
                    'end_us': forms.number(data, 'end_us'), 'reason': data.get('reason')}
@@ -119,13 +123,15 @@ def scan_action(app, cache, key, operation, data):
     if operation not in ('preview', 'evidence', 'seal'):
         raise Missing('工作台没有此操作。')
     padding, frames = forms.number(data, 'padding_ms', 120), forms.number(data, 'frames', 3)
-    if operation == 'preview':
-        token = preview.create(app, cache, key, hit_id, padding, frames)
-        return redirect(f'/desk/previews/{token}')
-    request = {'hit_ids': [hit_id], 'padding_ms': padding, 'frames': frames}
     if operation == 'seal':
+        request = {'hit_ids': [data.get('hit', '')], 'padding_ms': padding, 'frames': frames}
         record = app.seal(key, request)
         return redirect(f'/desk/seals/{record["id"]}')
+    hit_ids = forms.selection(data)
+    if operation == 'preview':
+        token = preview.create(app, cache, key, hit_ids, padding, frames)
+        return redirect(f'/desk/previews/{token}')
+    request = {'hit_ids': hit_ids, 'padding_ms': padding, 'frames': frames}
     return 200, app.evidence(key, request), 'application/zip', {'Content-Disposition': 'attachment; filename="slatewatch-evidence.zip"'}
 
 

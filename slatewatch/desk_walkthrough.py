@@ -20,7 +20,7 @@ def request(origin, path, data=None, expected=200):
     headers = {'Origin': origin}
     body = None if data is None else urlencode(data).encode()
     try:
-        response = urlopen(Request(origin + path, data=body, headers=headers), timeout=20)
+        response = urlopen(Request(origin + path, data=body, headers=headers), timeout=60)
     except HTTPError as exc:
         response = exc
     with response:
@@ -43,11 +43,14 @@ def run(server, root):
     hit = tour.hit(first, 'sound_gap')
     details = request(origin, route + '?' + urlencode({'hit': hit['id']}))[2]
     assert '节目时间轴'.encode() in details and hit['id'].encode() in details
+    assert '同页预览选中候选'.encode() in details
+    assert details.count(b'type="checkbox"') == len(first['hits'])
     preview, _, page = request(origin, route + '/preview', {'hit': hit['id'], 'padding_ms': 80, 'frames': 3})
     assert '补零区间'.encode() in page and '源采样'.encode() in page
     png = re.search(rb'src="(/desk/previews/[^"]+\.png)"', page)[1]
     assert request(origin, png.decode())[2].startswith(b'\x89PNG')
-    assert request(origin, preview + '/sound.wav')[2].startswith(b'RIFF')
+    wav = re.search(rb'src="(/desk/previews/[^"]+\.wav)"', page)[1]
+    assert request(origin, wav.decode())[2].startswith(b'RIFF')
 
     seal, _, frozen = request(origin, route + '/seal', {'hit': hit['id']})
     assert '待审'.encode() in frozen
@@ -67,7 +70,43 @@ def run(server, root):
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    capacity(tour, origin)
+    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对、同页复核与容量降级均通过')
+
+
+def capacity(tour, origin):
+    """Review overlapping findings on one page while an oversized excerpt degrades."""
+    record = tour.scan('overrun')
+    by_kind = {item['kind']: item for item in record['hits']}
+    black, silence, clip = by_kind['black'], by_kind['silence'], by_kind['clip']
+    route = f'/desk/scans/{record["id"]}'
+    fields = [('hit', black['id']), ('hit', silence['id']), ('hit', clip['id']),
+              ('padding_ms', '2000'), ('frames', '3')]
+    _, _, solo = request(origin, route + '/preview', {'hit': black['id'], 'padding_ms': 2000, 'frames': 3})
+    assert '无法在线播放'.encode() not in solo
+    wav = re.search(rb'src="(/desk/previews/[^"]+\.wav)"', solo)[1]
+    assert len(request(origin, wav.decode())[2]) == 66 * 48000 * 4 + 44
+    _, _, board = request(origin, route + '/preview', fields)
+    for item in (black, silence, clip):
+        assert item['id'].encode() in board
+    assert board.count('无法在线播放'.encode()) == 2
+    assert len(re.findall(rb'src="/desk/previews/[^"]+\.png"', board)) == 9
+    sizes = {}
+    for url in re.findall(rb'src="(/desk/previews/[^"]+\.wav)"', board):
+        key = url.rsplit(b'/', 1)[1].removesuffix(b'-sound.wav').decode()
+        sizes[key] = len(request(origin, url.decode())[2])
+    assert sizes[clip['id']] == 6 * 48000 * 4 + 44
+    assert 11 * 1024 * 1024 < sizes[black['id']] < 66 * 48000 * 4 + 44
+    assert 11 * 1024 * 1024 < sizes[silence['id']] < 66 * 48000 * 4 + 44
+    _, mime, bundle = request(origin, route + '/evidence', fields)
+    assert mime == 'application/zip'
+    with ZipFile(BytesIO(bundle)) as archive:
+        for item, seconds in ((black, 66), (silence, 66), (clip, 6)):
+            mapping = json.loads(archive.read(f"{item['id']}/clock.json"))
+            sound = mapping['sound']
+            assert 'dropped_sample_ranges' not in sound
+            assert sound['end_source_sample'] - sound['first_source_sample'] == seconds * 48000
+            assert len(archive.read(f"{item['id']}/sound.wav")) == seconds * 48000 * 4 + 44
 
 
 def main():

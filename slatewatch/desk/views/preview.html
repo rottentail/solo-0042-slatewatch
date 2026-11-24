@@ -1,6 +1,7 @@
 <div class="wrap">
-  <p><a href="/desk/scans/$scan?hit=$hit#finding">← 返回复核</a></p>
-  <header class="striphead"><div><p>节目范围 · <code>$span</code></p><h1>证据预览</h1></div></header>
-  <section aria-label="证据画格" class="frames">$frames</section>
-  <section class="form-section" aria-label="原轨伴音"><h2>原轨伴音</h2>$sound</section>
+  <p><a href="/desk/scans/$scan#results">← 返回复核</a></p>
+  <header class="striphead"><div><p>同页复核 · $count 条候选</p><h1>证据预览</h1></div>
+    <form method="post" action="/desk/scans/$scan/evidence" class="actions">$download<button>下载全部完整证据</button></form>
+  </header>
+  <div class="panels">$panels</div>
 </div>

@@ -25,7 +25,7 @@ class Tour:
         mime = 'application/octet-stream' if isinstance(value, bytes) else 'application/json'
         request = Request(self.origin + route, data=body, headers={'Content-Type': mime})
         try:
-            response = urlopen(request, timeout=20)
+            response = urlopen(request, timeout=60)
         except HTTPError as exc:
             response = exc
         with response:

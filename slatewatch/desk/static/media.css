@@ -21,3 +21,9 @@ figcaption { display: grid; }
 figcaption strong { font: 650 13px var(--mono); }
 figcaption small { color: var(--muted); }
 audio { width: min(540px, 100%); }
+.panels { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(430px, 100%), 1fr)); gap: 16px; align-items: start; }
+.panel { border: 1px solid var(--line); border-radius: 5px; background: var(--paper); padding: 12px 14px; min-width: 0; }
+.panel h2 { font-size: 16px; }
+.panel-sound h3 { font-size: 14px; margin: 10px 0 6px; }
+.warn { padding: 8px 10px; border-left: 4px solid #b78103; background: #fff4d6; }
+.pick { width: 34px; }

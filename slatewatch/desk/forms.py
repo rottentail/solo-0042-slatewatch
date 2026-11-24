@@ -4,12 +4,26 @@ from urllib.parse import parse_qs
 
 from ..clock import InputError
 
+SELECTION_LIMIT = 6
 
-def decode(raw):
+
+def decode(raw, repeat=()):
     result = parse_qs(raw, encoding='utf-8', errors='strict', keep_blank_values=True, max_num_fields=24)
-    if any(len(values) != 1 for values in result.values()):
+    if any(len(values) != 1 for name, values in result.items() if name not in repeat):
         raise InputError('表单字段不能重复。')
-    return {name: values[0] for name, values in result.items()}
+    return {name: values if name in repeat else values[0] for name, values in result.items()}
+
+
+def selection(data):
+    ids = data.get('hit', [])
+    if isinstance(ids, str):
+        ids = [ids]
+    ids = [key for key in ids if key.strip()]
+    if not 1 <= len(ids) <= SELECTION_LIMIT:
+        raise InputError(f'请选择 1 至 {SELECTION_LIMIT} 条候选。')
+    if len(set(ids)) != len(ids):
+        raise InputError('候选选择不能重复。')
+    return ids
 
 
 def number(data, key, default=None):

@@ -15,10 +15,12 @@ def home(vault):
 def rows(scan_id, findings, selected):
     return ''.join(
         f'<tr{" class=selected" if hit["id"] == selected else ""}>'
+        f'<td class="pick"><input type="checkbox" name="hit" value="{hit["id"]}"'
+        f'{" checked" if hit["id"] == selected else ""} aria-label="选择{KINDS[hit["kind"]]}"></td>'
         f'<th scope="row"><a href="/desk/scans/{scan_id}?hit={hit["id"]}#finding">{KINDS[hit["kind"]]}</a></th>'
         f'<td>{lane(hit)}</td><td class="time">{interval(hit)}</td><td>{badge(hit["status"])}</td></tr>'
         for hit in findings
-    ) or '<tr><td colspan="4">没有技术异常。</td></tr>'
+    ) or '<tr><td colspan="5">没有技术异常。</td></tr>'
 
 
 def details(scan, hit):
@@ -48,5 +50,5 @@ def show(app, scan_id, selected):
     active = hit['id'] if hit else ''
     return page('审片', 'scan', 'scan', sidebar=library.sidebar(app.vault, scan_id),
                 master=safe(master['label']), policy=safe(library.policy_name(app.vault, scan)), state=badge(view['status']),
-                source=safe(master['sha256'][:12]), clip=timeline.draw(scan, active),
+                source=safe(master['sha256'][:12]), scan=scan['id'], clip=timeline.draw(scan, active),
                 table=rows(scan_id, view['hits'], active), detail=details(scan, hit))
