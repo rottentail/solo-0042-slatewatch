@@ -1,0 +1,125 @@
+R045 sender-side verification report
+=====================================
+
+Source master
+- file: sender-reference/source/repair-freeze-lab-r045.mkv
+- sha256: c2ad1b308a9c60778dd8b9bf145782cf6ce4096eb682f663c0c002416881b900
+- picture coverage: [(0, 5000000), (6000000, 10000000)]
+- sound coverage (sample ranges): [(0, 44800), (46400, 54400), (56800, 80000)]
+
+Scan hits
+[
+  {
+    "id": "hit-5f1436d772ced7dabcff2d0c",
+    "kind": "freeze",
+    "channel": null,
+    "start_us": 3500000,
+    "end_us": 5000000,
+    "bins": 2,
+    "minimum": 0,
+    "maximum": 0
+  },
+  {
+    "id": "hit-73907ade8f0d42f16f38f9a6",
+    "kind": "silence",
+    "channel": 1,
+    "start_us": 4700000,
+    "end_us": 5000000,
+    "bins": 6,
+    "minimum": 0,
+    "maximum": 0
+  },
+  {
+    "id": "hit-3d2ad3279942f674ea42677e",
+    "kind": "picture_gap",
+    "channel": null,
+    "start_us": 5000000,
+    "end_us": 6000000,
+    "bins": 1,
+    "minimum": 1000000,
+    "maximum": 1000000
+  },
+  {
+    "id": "hit-65bfef994b6e3a8c1b0f0636",
+    "kind": "sound_gap",
+    "channel": null,
+    "start_us": 5600000,
+    "end_us": 5800000,
+    "bins": 1,
+    "minimum": 200000,
+    "maximum": 200000
+  },
+  {
+    "id": "hit-5b8ac74a13fb1d9dabbbe5cf",
+    "kind": "silence",
+    "channel": 1,
+    "start_us": 6300000,
+    "end_us": 6600000,
+    "bins": 6,
+    "minimum": 0,
+    "maximum": 0
+  },
+  {
+    "id": "hit-9c2c819bfaebbfec6e17bb38",
+    "kind": "freeze",
+    "channel": null,
+    "start_us": 6500000,
+    "end_us": 10000000,
+    "bins": 7,
+    "minimum": 0,
+    "maximum": 0
+  },
+  {
+    "id": "hit-859cc17f31cb4b1cf8250387",
+    "kind": "sound_gap",
+    "channel": null,
+    "start_us": 6800000,
+    "end_us": 7100000,
+    "bins": 1,
+    "minimum": 300000,
+    "maximum": 300000
+  }
+]
+
+Primary offline verifier
+$ python3 verify_handoff.py --root /workspace/repair-handoff/outgoing/repair-desk-R045 --manifest addresses.json
+slot 1: frames/slot-1.png OK -> V08-03500ms
+slot 2: frames/slot-2.png OK -> V09-04500ms
+slot 3: frames/slot-3.png OK -> V10-06000ms
+WAV OK: mono/8000 Hz, 25600 samples, source samples [35200,60800)
+fill-zero range [44800,46400) verified in WAV
+fill-zero range [54400,56800) verified in WAV
+region L-BEFORE: source_tone, rms=8485, peak=12000
+region SIL-REC: recorded_silence, rms=0, peak=0
+region BED-IN-HOLE: source_tone, rms=3535, peak=5000
+region FILL-INNER: extract_fill, rms=0, peak=0
+region R-AFTER: source_tone, rms=8485, peak=12000
+region SIL-REC-2: recorded_silence, rms=0, peak=0
+region FILL-LATER: extract_fill, rms=0, peak=0
+region CHIRP-RESUME: source_tone, rms=7071, peak=10000
+twin check OK: equal pixels, distinct source frame addresses, hole between
+long-cell check OK: 2 targets -> V08-03500ms
+audio both-sides check OK: both marker regions are covered source PCM
+OFFLINE VERIFY PASS: 3 slots, one mono WAV, and address list agree
+
+
+Alternative offline verifier
+$ python3 verify_handoff.py --root /workspace/repair-handoff/sender-reference/alternative-selection --manifest alternative-addresses.json
+slot 1: frames/slot-1.png OK -> V09-04500ms
+slot 2: frames/slot-2.png OK -> V10-06000ms
+slot 3: frames/slot-3.png OK -> V07-03000ms
+WAV OK: mono/8000 Hz, 14000 samples, source samples [36000,50000)
+fill-zero range [44800,46400) verified in WAV
+region L-BEFORE: source_tone, rms=8485, peak=12000
+region SIL-REC: recorded_silence, rms=0, peak=0
+region BED-IN-HOLE: source_tone, rms=3535, peak=5000
+region FILL-INNER: extract_fill, rms=0, peak=0
+region R-AFTER: source_tone, rms=8485, peak=12000
+twin check OK: equal pixels, distinct source frame addresses, hole between
+audio both-sides check OK: both marker regions are covered source PCM
+OFFLINE VERIFY PASS: 3 slots, one mono WAV, and address list agree
+
+
+Outgoing ZIP
+- /workspace/repair-handoff/outgoing/repair-desk-R045.zip
+- sha256: 29c027503d5694f898c4035d0990220af2421827d1253c9370418e4aa6637f33

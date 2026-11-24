@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>R045 远端返修棚交接单</title>
+<style>
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI','Noto Sans CJK SC','Microsoft YaHei',sans-serif;
+ margin:0;background:#f4f1ea;color:#1f2933;line-height:1.55}
+main{max-width:1180px;margin:0 auto;padding:28px}
+header,section{background:#fffdf8;border:1px solid #d8d0bf;border-radius:10px;padding:20px;margin:18px 0;
+ box-shadow:0 1px 2px rgba(60,45,20,.08)}
+h1{margin:0 0 6px;font-size:28px} h2{margin-top:0;border-bottom:2px solid #b45309;padding-bottom:6px}
+.offline{display:inline-block;background:#ecfdf5;border:1px solid #047857;color:#065f46;border-radius:999px;
+ padding:4px 12px;font-weight:700}
+.answer{border-left:5px solid #b45309;background:#fff7ed;padding:12px 16px;margin:12px 0;border-radius:6px}
+.slots{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+figure{margin:0;border:2px solid #64748b;border-radius:8px;background:#0f172a;color:white;padding:10px}
+figure img{width:100%;height:auto;image-rendering:pixelated;background:#94a3b8;border:1px solid #cbd5e1;display:block}
+figcaption{font-size:13px;margin-top:8px}.slotno{font-weight:800;color:#fbbf24}
+table{border-collapse:collapse;width:100%;font-size:13px}th,td{border:1px solid #d6d3d1;padding:6px 8px;
+ vertical-align:top;text-align:left}th{background:#f5f5f4}code{background:#f5f5f4;padding:1px 4px;border-radius:4px}
+audio{width:100%;margin:10px 0}.warn{background:#fef2f2;border-color:#b91c1c}.ok{color:#166534;font-weight:700}
+.small{font-size:13px;color:#57534e}
+</style>
+</head>
+<body><main>
+<header>
+  <h1>R045 远端返修棚交接单</h1>
+  <span class="offline">离线可核：3 个格位 · 1 个单声道 WAV · 随单地址清单 · 不需服务端/母带</span>
+  <p class="small">源母带 SHA-256：<code>c2ad1b308a9c60778dd8b9bf145782cf6ce4096eb682f663c0c002416881b900</code><br>
+  无图段地址：<code>5000000–6000000 μs</code>
+  （00:00:05.000000 → 00:00:06.000000）</p>
+</header>
+
+<section>
+  <h2>复核结论</h2>
+  <div class="answer">
+    <strong>判断一：看似连续的冻帧没有同一个源格跨过无图段。</strong><br>
+    格位 2 是洞前最后源格 <code>V09-04500ms</code>；
+    格位 3 是洞后第一源格 <code>V10-06000ms</code>。
+    两格灰阶像素 SHA-256 完全相同，但源地址不同，中间是无图段
+    <code>5000000–6000000 μs</code>。
+    这是“同像素的两个源格”，不是一个长格跨洞。格位 1 的两个目标地址都映射到同一源格，
+    用来说明清单中“多目标点 → 同一长格”的真实形态。
+  </div>
+  <div class="answer">
+    <strong>判断二：无图段两边的伴音都确实来自源。</strong><br>
+    洞前标记 <code>L-BEFORE</code> 与洞后标记
+    <code>R-AFTER</code> 均在清单列为
+    <code>source_covered</code> 的原始 PCM 区间。WAV 中的零声有两类：
+    清单标 <code>recorded_silence</code> 的是源内实录零声；标 <code>extract_fill</code>
+    或 <code>filled_zero_sample_ranges</code> 的是无覆盖区间的摘片补零。
+  </div>
+  <p>可选离线自检：在本 ZIP 解压根目录运行 <code>python3 verify_handoff.py .</code>，
+  或先运行 <code>sha256sum -c SHA256SUMS</code>。</p>
+</section>
+
+<section>
+  <h2>三个静态画格格位（禁止拼图并入同一格）</h2>
+  <div class="slots">
+        <figure>
+          <div class="slotno">格位 1 / 3</div>
+          <img src="frames/slot-1.png" alt="格位 1：跨两个目标点的同一长格">
+          <figcaption>
+            <strong>跨两个目标点的同一长格</strong><br>
+            目标：T-L1 @ <code>3700000</code><br>→ <code>V08-03500ms</code><br>T-L2 @ <code>4200000</code><br>→ <code>V08-03500ms</code><br>
+            唯一源格：<code>V08-03500ms</code><br>
+            源覆盖：<code>3500000–4500000</code> μs
+          </figcaption>
+        </figure>
+        <figure>
+          <div class="slotno">格位 2 / 3</div>
+          <img src="frames/slot-2.png" alt="格位 2：无图段前最后源格（孪生像素）">
+          <figcaption>
+            <strong>无图段前最后源格（孪生像素）</strong><br>
+            目标：T-B0 @ <code>4750000</code><br>→ <code>V09-04500ms</code><br>
+            唯一源格：<code>V09-04500ms</code><br>
+            源覆盖：<code>4500000–5000000</code> μs
+          </figcaption>
+        </figure>
+        <figure>
+          <div class="slotno">格位 3 / 3</div>
+          <img src="frames/slot-3.png" alt="格位 3：无图段后第一源格（另一源格）">
+          <figcaption>
+            <strong>无图段后第一源格（另一源格）</strong><br>
+            目标：T-A0 @ <code>6250000</code><br>→ <code>V10-06000ms</code><br>
+            唯一源格：<code>V10-06000ms</code><br>
+            源覆盖：<code>6000000–6500000</code> μs
+          </figcaption>
+        </figure></div>
+  <p class="small">三个文件均为从源解码缩略平面写出的单个 80×48 灰阶 PNG；CSS 仅做放大显示，不改变格位数量或拼接内容。格位 2、3 文件哈希相同是本样件故意保留的“同像素、不同源格”情况。</p>
+</section>
+
+<section>
+  <h2>唯一 WAV 附件：可直接打开</h2>
+  <audio controls preload="none" src="audio/R045-primary-mono.wav">当前环境不支持 audio 播放，请直接打开 audio/R045-primary-mono.wav</audio>
+  <p><a href="audio/R045-primary-mono.wav"><code>audio/R045-primary-mono.wav</code></a>
+     （mono / 8000 Hz / 16-bit，源采样 <code>[35200,60800)</code>）</p>
+  <h3>必须按地址清单区分的补零段</h3>
+  <ul><li><code>[44800,46400)</code> 采样 / <code>5600000–5800000</code> μs：摘片补零，不是实录静音</li><li><code>[54400,56800)</code> 采样 / <code>6800000–7100000</code> μs：摘片补零，不是实录静音</li></ul>
+  <table><thead><tr><th>ID</th><th>区段</th><th>类型</th><th>源采样地址</th><th>RMS</th><th>Peak</th></tr></thead>
+  <tbody><tr><td>L-BEFORE</td><td>洞前源内标记音</td><td><code>source_tone</code></td><td><code>36000–37600</code></td><td>8485</td><td>12000</td></tr><tr><td>SIL-REC</td><td>实录数字零声</td><td><code>recorded_silence</code></td><td><code>37600–40000</code></td><td>0</td><td>0</td></tr><tr><td>BED-IN-HOLE</td><td>无图段内源内低鸣</td><td><code>source_tone</code></td><td><code>40000–44800</code></td><td>3535</td><td>5000</td></tr><tr><td>FILL-INNER</td><td>摘片补零（内部声洞）</td><td><code>extract_fill</code></td><td><code>44800–46400</code></td><td>0</td><td>0</td></tr><tr><td>R-AFTER</td><td>洞后源内标记音</td><td><code>source_tone</code></td><td><code>48000–49600</code></td><td>8485</td><td>12000</td></tr><tr><td>SIL-REC-2</td><td>第二段实录零声</td><td><code>recorded_silence</code></td><td><code>50400–52800</code></td><td>0</td><td>0</td></tr><tr><td>FILL-LATER</td><td>摘片补零（后段声洞）</td><td><code>extract_fill</code></td><td><code>54400–56800</code></td><td>0</td><td>0</td></tr><tr><td>CHIRP-RESUME</td><td>补零后源内恢复音</td><td><code>source_tone</code></td><td><code>56800–58400</code></td><td>7071</td><td>10000</td></tr></tbody></table>
+</section>
+
+<section>
+  <h2>随单地址清单（机器可读原件：addresses.json）</h2>
+  <p>
+    <a href="addresses.json"><code>addresses.json</code></a> ·
+    <a href="addresses.md"><code>addresses.md</code> 可读地址表</a> ·
+    <a href="SHA256SUMS"><code>SHA256SUMS</code></a>
+  </p>
+  <p>完整 JSON 与本单一起交付；上表为伴音区段，画格地址见各格位说明。</p>
+  <p class="ok">本件不包含服务端 URL、取证件 token 或要求回服务端的步骤。</p>
+</section>
+</main></body></html>

@@ -1,0 +1,378 @@
+{
+  "schema": "repair-desk-address-list/v1",
+  "item_id": "R045",
+  "package": "alternative-selection",
+  "selection": "alt-boundary-twins-plus-pre-onset",
+  "reproducible_source": {
+    "generator": "repair-handoff/build_repair_handoff.py",
+    "command": "python repair-handoff/build_repair_handoff.py",
+    "sample": "repair-freeze-lab-r045.mkv",
+    "sha256": "c2ad1b308a9c60778dd8b9bf145782cf6ce4096eb682f663c0c002416881b900",
+    "note": "Synthetic but deterministically generated source; all evidence is decoded from this MKV."
+  },
+  "offline": {
+    "server_required": false,
+    "master_required_by_receiver": false,
+    "network_required": false,
+    "verifier": "python3 verify_handoff.py --manifest alternative-addresses.json ."
+  },
+  "clock": {
+    "unit": "integer microseconds",
+    "interval_convention": "half-open [start_us, end_us)",
+    "origin": "Matroska shared container origin"
+  },
+  "source_master": {
+    "filename": "repair-freeze-lab-r045.mkv",
+    "sha256": "c2ad1b308a9c60778dd8b9bf145782cf6ce4096eb682f663c0c002416881b900",
+    "container_format": "matroska,webm",
+    "origin_us": 0,
+    "video_stream_index": 0,
+    "audio_stream_index": 1
+  },
+  "picture_hole": {
+    "address": "P-GAP-5000000-6000000",
+    "start_us": 5000000,
+    "end_us": 6000000,
+    "timecode": [
+      "00:00:05.000000",
+      "00:00:06.000000"
+    ],
+    "coverage_spans_us": [
+      [
+        0,
+        5000000
+      ],
+      [
+        6000000,
+        10000000
+      ]
+    ]
+  },
+  "slots": [
+    {
+      "slot": 1,
+      "key": "before-boundary",
+      "title": "无图段前最后源格（保留边界）",
+      "file": "frames/slot-1.png",
+      "composition": "single-source-frame",
+      "composition_note": "Exactly one decoded source picture; no collage or tile.",
+      "width": 80,
+      "height": 48,
+      "sha256": "1414c9a36eab6a3fb416f9bbf6d8b0128c7fa92a6becda990f773d3b2d0bb8ab",
+      "raw_gray_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+      "targets": [
+        {
+          "label": "T-B0",
+          "program_us": 4750000,
+          "program_timecode": "00:00:04.750000",
+          "source_frame_id": "V09-04500ms"
+        }
+      ],
+      "source_frame": {
+        "frame_id": "V09-04500ms",
+        "stream_index": 0,
+        "decoded_pts_us": 4500000,
+        "decoded_pts_timecode": "00:00:04.500000",
+        "decoded_duration_hint_us": 500000,
+        "next_decoded_pts_us": 6000000,
+        "source_coverage_span_us": [
+          4500000,
+          5000000
+        ],
+        "source_coverage_timecode": [
+          "00:00:04.500000",
+          "00:00:05.000000"
+        ],
+        "raw_gray_80x48_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+        "difference_from_previous_permille": {
+          "mean_abs_luma": 0,
+          "edge_delta": 0,
+          "note": "0/0 means the same measured gray pixels as the prior source frame."
+        }
+      }
+    },
+    {
+      "slot": 2,
+      "key": "after-boundary",
+      "title": "无图段后第一源格（保留边界）",
+      "file": "frames/slot-2.png",
+      "composition": "single-source-frame",
+      "composition_note": "Exactly one decoded source picture; no collage or tile.",
+      "width": 80,
+      "height": 48,
+      "sha256": "1414c9a36eab6a3fb416f9bbf6d8b0128c7fa92a6becda990f773d3b2d0bb8ab",
+      "raw_gray_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+      "targets": [
+        {
+          "label": "T-A0",
+          "program_us": 6250000,
+          "program_timecode": "00:00:06.250000",
+          "source_frame_id": "V10-06000ms"
+        }
+      ],
+      "source_frame": {
+        "frame_id": "V10-06000ms",
+        "stream_index": 0,
+        "decoded_pts_us": 6000000,
+        "decoded_pts_timecode": "00:00:06.000000",
+        "decoded_duration_hint_us": 500000,
+        "next_decoded_pts_us": 6500000,
+        "source_coverage_span_us": [
+          6000000,
+          6500000
+        ],
+        "source_coverage_timecode": [
+          "00:00:06.000000",
+          "00:00:06.500000"
+        ],
+        "raw_gray_80x48_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+        "difference_from_previous_permille": {
+          "mean_abs_luma": 0,
+          "edge_delta": 0,
+          "note": "0/0 means the same measured gray pixels as the prior source frame."
+        }
+      }
+    },
+    {
+      "slot": 3,
+      "key": "pre-onset-witness",
+      "title": "冻帧起点附近的第三源格",
+      "file": "frames/slot-3.png",
+      "composition": "single-source-frame",
+      "composition_note": "Exactly one decoded source picture; no collage or tile.",
+      "width": 80,
+      "height": 48,
+      "sha256": "1414c9a36eab6a3fb416f9bbf6d8b0128c7fa92a6becda990f773d3b2d0bb8ab",
+      "raw_gray_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+      "targets": [
+        {
+          "label": "T-P3",
+          "program_us": 3250000,
+          "program_timecode": "00:00:03.250000",
+          "source_frame_id": "V07-03000ms"
+        }
+      ],
+      "source_frame": {
+        "frame_id": "V07-03000ms",
+        "stream_index": 0,
+        "decoded_pts_us": 3000000,
+        "decoded_pts_timecode": "00:00:03.000000",
+        "decoded_duration_hint_us": 500000,
+        "next_decoded_pts_us": 3500000,
+        "source_coverage_span_us": [
+          3000000,
+          3500000
+        ],
+        "source_coverage_timecode": [
+          "00:00:03.000000",
+          "00:00:03.500000"
+        ],
+        "raw_gray_80x48_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+        "difference_from_previous_permille": {
+          "mean_abs_luma": 54865,
+          "edge_delta": 14695,
+          "note": "0/0 means the same measured gray pixels as the prior source frame."
+        }
+      }
+    }
+  ],
+  "audio_attachment": {
+    "file": "audio/R045-alt-boundary-mono.wav",
+    "sha256": "c0cad70210cac2cfae357770f21bc78078624d59bce38e9a7068594fa946fdb9",
+    "format": "WAV / PCM signed 16-bit little-endian",
+    "channels": 1,
+    "sample_rate": 8000,
+    "first_source_sample": 36000,
+    "end_source_sample": 50000,
+    "source_sample_count": 14000,
+    "first_source_time_us": 4500000,
+    "end_source_time_us": 6250000,
+    "source_timecode": [
+      "00:00:04.500000",
+      "00:00:06.250000"
+    ],
+    "source_covered_sample_ranges": [
+      {
+        "first": 36000,
+        "end": 44800,
+        "time_us": [
+          4500000,
+          5600000
+        ]
+      },
+      {
+        "first": 46400,
+        "end": 50000,
+        "time_us": [
+          5800000,
+          6250000
+        ]
+      }
+    ],
+    "filled_zero_sample_ranges": [
+      {
+        "first": 44800,
+        "end": 46400,
+        "reason": "No source PCM coverage; evidence extractor inserted zero samples.",
+        "time_us": [
+          5600000,
+          5800000
+        ]
+      }
+    ],
+    "regions": [
+      {
+        "id": "L-BEFORE",
+        "label": "洞前源内标记音",
+        "kind": "source_tone",
+        "coverage": "source_covered",
+        "source_time_us": [
+          4500000,
+          4700000
+        ],
+        "source_timecode": [
+          "00:00:04.500000",
+          "00:00:04.700000"
+        ],
+        "source_samples": [
+          36000,
+          37600
+        ],
+        "wav_relative_samples": [
+          0,
+          1600
+        ],
+        "metrics": {
+          "rms": 8485,
+          "peak": 12000,
+          "samples": 1600
+        }
+      },
+      {
+        "id": "SIL-REC",
+        "label": "实录数字零声",
+        "kind": "recorded_silence",
+        "coverage": "source_covered",
+        "source_time_us": [
+          4700000,
+          5000000
+        ],
+        "source_timecode": [
+          "00:00:04.700000",
+          "00:00:05.000000"
+        ],
+        "source_samples": [
+          37600,
+          40000
+        ],
+        "wav_relative_samples": [
+          1600,
+          4000
+        ],
+        "metrics": {
+          "rms": 0,
+          "peak": 0,
+          "samples": 2400
+        }
+      },
+      {
+        "id": "BED-IN-HOLE",
+        "label": "无图段内源内低鸣",
+        "kind": "source_tone",
+        "coverage": "source_covered",
+        "source_time_us": [
+          5000000,
+          5600000
+        ],
+        "source_timecode": [
+          "00:00:05.000000",
+          "00:00:05.600000"
+        ],
+        "source_samples": [
+          40000,
+          44800
+        ],
+        "wav_relative_samples": [
+          4000,
+          8800
+        ],
+        "metrics": {
+          "rms": 3535,
+          "peak": 5000,
+          "samples": 4800
+        }
+      },
+      {
+        "id": "FILL-INNER",
+        "label": "摘片补零（内部声洞）",
+        "kind": "extract_fill",
+        "coverage": "uncovered_by_source_extract_zero_fill",
+        "source_time_us": [
+          5600000,
+          5800000
+        ],
+        "source_timecode": [
+          "00:00:05.600000",
+          "00:00:05.800000"
+        ],
+        "source_samples": [
+          44800,
+          46400
+        ],
+        "wav_relative_samples": [
+          8800,
+          10400
+        ],
+        "metrics": {
+          "rms": 0,
+          "peak": 0,
+          "samples": 1600
+        }
+      },
+      {
+        "id": "R-AFTER",
+        "label": "洞后源内标记音",
+        "kind": "source_tone",
+        "coverage": "source_covered",
+        "source_time_us": [
+          6000000,
+          6200000
+        ],
+        "source_timecode": [
+          "00:00:06.000000",
+          "00:00:06.200000"
+        ],
+        "source_samples": [
+          48000,
+          49600
+        ],
+        "wav_relative_samples": [
+          12000,
+          13600
+        ],
+        "metrics": {
+          "rms": 8485,
+          "peak": 12000,
+          "samples": 1600
+        }
+      }
+    ]
+  },
+  "judgments": {
+    "cross_hole_twins": {
+      "before_slot": 1,
+      "after_slot": 2,
+      "before_slot_key": "before-boundary",
+      "after_slot_key": "after-boundary",
+      "before_frame_id": "V09-04500ms",
+      "after_frame_id": "V10-06000ms",
+      "same_raw_gray_hash": true,
+      "same_source_frame": false
+    },
+    "audio_both_sides_in_source": {
+      "before_region_id": "L-BEFORE",
+      "after_region_id": "R-AFTER"
+    },
+    "tradeoff": "Keeps both boundary cells and adds freeze-onset context; drops the attached long-cell exemplar."
+  }
+}

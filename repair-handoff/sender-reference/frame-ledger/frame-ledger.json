@@ -1,0 +1,405 @@
+[
+  {
+    "frame_id": "V01-00000ms",
+    "stream_index": 0,
+    "decoded_pts_us": 0,
+    "decoded_pts_timecode": "00:00:00.000000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 500000,
+    "source_coverage_span_us": [
+      0,
+      500000
+    ],
+    "source_coverage_timecode": [
+      "00:00:00.000000",
+      "00:00:00.500000"
+    ],
+    "raw_gray_80x48_sha256": "0334247dc65b2df5b74bf62358de7d26cd7463ea93c7103be7274a0ad354e95b",
+    "ledger_png": "frame-ledger/png/V01-00000ms.png",
+    "ledger_png_sha256": "6a017a9ceae59694a5cf4c014ea7cf76ead3e4b6b55e9008f96e3323690a148a"
+  },
+  {
+    "frame_id": "V02-00500ms",
+    "stream_index": 0,
+    "decoded_pts_us": 500000,
+    "decoded_pts_timecode": "00:00:00.500000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 1000000,
+    "source_coverage_span_us": [
+      500000,
+      1000000
+    ],
+    "source_coverage_timecode": [
+      "00:00:00.500000",
+      "00:00:01.000000"
+    ],
+    "raw_gray_80x48_sha256": "912a567248d657951b7ecfdb13df2f286014e01070d1dcc2b37abbe95a603a3f",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 34758,
+      "edge_delta": 13760,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V02-00500ms.png",
+    "ledger_png_sha256": "b9150411a25004de2d0681ec713df1e67d81589bb4f3ba55a3dd711de7dddaab"
+  },
+  {
+    "frame_id": "V03-01000ms",
+    "stream_index": 0,
+    "decoded_pts_us": 1000000,
+    "decoded_pts_timecode": "00:00:01.000000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 1500000,
+    "source_coverage_span_us": [
+      1000000,
+      1500000
+    ],
+    "source_coverage_timecode": [
+      "00:00:01.000000",
+      "00:00:01.500000"
+    ],
+    "raw_gray_80x48_sha256": "599c3dd7f1bbde0419381866d28aa54f933c68d04d20c1fb4546ca442c915b3a",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 34949,
+      "edge_delta": 13933,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V03-01000ms.png",
+    "ledger_png_sha256": "aa2a1c7c5bf26b108a4817673b0c8ba0ec29696110320601875162306e3334bb"
+  },
+  {
+    "frame_id": "V04-01500ms",
+    "stream_index": 0,
+    "decoded_pts_us": 1500000,
+    "decoded_pts_timecode": "00:00:01.500000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 2000000,
+    "source_coverage_span_us": [
+      1500000,
+      2000000
+    ],
+    "source_coverage_timecode": [
+      "00:00:01.500000",
+      "00:00:02.000000"
+    ],
+    "raw_gray_80x48_sha256": "1c031045dddced1edd03d682c8fe28508037d0f5e84ff623d95e451e12a1d4d9",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 35424,
+      "edge_delta": 14213,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V04-01500ms.png",
+    "ledger_png_sha256": "72041ef3d27af5ec92e2f3152d9340ca88ca8f1b5dd998cdcb05e93073f3c57d"
+  },
+  {
+    "frame_id": "V05-02000ms",
+    "stream_index": 0,
+    "decoded_pts_us": 2000000,
+    "decoded_pts_timecode": "00:00:02.000000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 2500000,
+    "source_coverage_span_us": [
+      2000000,
+      2500000
+    ],
+    "source_coverage_timecode": [
+      "00:00:02.000000",
+      "00:00:02.500000"
+    ],
+    "raw_gray_80x48_sha256": "0a0721c9bf662e5476a758f152fede8a0e5af2abf7977f13cf5441d30ba2f97b",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 35492,
+      "edge_delta": 14141,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V05-02000ms.png",
+    "ledger_png_sha256": "3268366d4bbae7e74dd2289e0a04d3cac94df575c6523d5c08b3777d939ea2d7"
+  },
+  {
+    "frame_id": "V06-02500ms",
+    "stream_index": 0,
+    "decoded_pts_us": 2500000,
+    "decoded_pts_timecode": "00:00:02.500000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 3000000,
+    "source_coverage_span_us": [
+      2500000,
+      3000000
+    ],
+    "source_coverage_timecode": [
+      "00:00:02.500000",
+      "00:00:03.000000"
+    ],
+    "raw_gray_80x48_sha256": "02a8ccd58ce489b838bec26ef6d71e9e4aae74b6f626dbf6d41479bd12869f15",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 35224,
+      "edge_delta": 13907,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V06-02500ms.png",
+    "ledger_png_sha256": "9059d9b8bd843df337915e307218007205defb365aa9eea67c850f94c2fc7187"
+  },
+  {
+    "frame_id": "V07-03000ms",
+    "stream_index": 0,
+    "decoded_pts_us": 3000000,
+    "decoded_pts_timecode": "00:00:03.000000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 3500000,
+    "source_coverage_span_us": [
+      3000000,
+      3500000
+    ],
+    "source_coverage_timecode": [
+      "00:00:03.000000",
+      "00:00:03.500000"
+    ],
+    "raw_gray_80x48_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 54865,
+      "edge_delta": 14695,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V07-03000ms.png",
+    "ledger_png_sha256": "1414c9a36eab6a3fb416f9bbf6d8b0128c7fa92a6becda990f773d3b2d0bb8ab"
+  },
+  {
+    "frame_id": "V08-03500ms",
+    "stream_index": 0,
+    "decoded_pts_us": 3500000,
+    "decoded_pts_timecode": "00:00:03.500000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 4500000,
+    "source_coverage_span_us": [
+      3500000,
+      4500000
+    ],
+    "source_coverage_timecode": [
+      "00:00:03.500000",
+      "00:00:04.500000"
+    ],
+    "raw_gray_80x48_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 0,
+      "edge_delta": 0,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V08-03500ms.png",
+    "ledger_png_sha256": "1414c9a36eab6a3fb416f9bbf6d8b0128c7fa92a6becda990f773d3b2d0bb8ab"
+  },
+  {
+    "frame_id": "V09-04500ms",
+    "stream_index": 0,
+    "decoded_pts_us": 4500000,
+    "decoded_pts_timecode": "00:00:04.500000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 6000000,
+    "source_coverage_span_us": [
+      4500000,
+      5000000
+    ],
+    "source_coverage_timecode": [
+      "00:00:04.500000",
+      "00:00:05.000000"
+    ],
+    "raw_gray_80x48_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 0,
+      "edge_delta": 0,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V09-04500ms.png",
+    "ledger_png_sha256": "1414c9a36eab6a3fb416f9bbf6d8b0128c7fa92a6becda990f773d3b2d0bb8ab"
+  },
+  {
+    "frame_id": "V10-06000ms",
+    "stream_index": 0,
+    "decoded_pts_us": 6000000,
+    "decoded_pts_timecode": "00:00:06.000000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 6500000,
+    "source_coverage_span_us": [
+      6000000,
+      6500000
+    ],
+    "source_coverage_timecode": [
+      "00:00:06.000000",
+      "00:00:06.500000"
+    ],
+    "raw_gray_80x48_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 0,
+      "edge_delta": 0,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V10-06000ms.png",
+    "ledger_png_sha256": "1414c9a36eab6a3fb416f9bbf6d8b0128c7fa92a6becda990f773d3b2d0bb8ab"
+  },
+  {
+    "frame_id": "V11-06500ms",
+    "stream_index": 0,
+    "decoded_pts_us": 6500000,
+    "decoded_pts_timecode": "00:00:06.500000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 7000000,
+    "source_coverage_span_us": [
+      6500000,
+      7000000
+    ],
+    "source_coverage_timecode": [
+      "00:00:06.500000",
+      "00:00:07.000000"
+    ],
+    "raw_gray_80x48_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 0,
+      "edge_delta": 0,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V11-06500ms.png",
+    "ledger_png_sha256": "1414c9a36eab6a3fb416f9bbf6d8b0128c7fa92a6becda990f773d3b2d0bb8ab"
+  },
+  {
+    "frame_id": "V12-07000ms",
+    "stream_index": 0,
+    "decoded_pts_us": 7000000,
+    "decoded_pts_timecode": "00:00:07.000000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 7500000,
+    "source_coverage_span_us": [
+      7000000,
+      7500000
+    ],
+    "source_coverage_timecode": [
+      "00:00:07.000000",
+      "00:00:07.500000"
+    ],
+    "raw_gray_80x48_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 0,
+      "edge_delta": 0,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V12-07000ms.png",
+    "ledger_png_sha256": "1414c9a36eab6a3fb416f9bbf6d8b0128c7fa92a6becda990f773d3b2d0bb8ab"
+  },
+  {
+    "frame_id": "V13-07500ms",
+    "stream_index": 0,
+    "decoded_pts_us": 7500000,
+    "decoded_pts_timecode": "00:00:07.500000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 8000000,
+    "source_coverage_span_us": [
+      7500000,
+      8000000
+    ],
+    "source_coverage_timecode": [
+      "00:00:07.500000",
+      "00:00:08.000000"
+    ],
+    "raw_gray_80x48_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 0,
+      "edge_delta": 0,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V13-07500ms.png",
+    "ledger_png_sha256": "1414c9a36eab6a3fb416f9bbf6d8b0128c7fa92a6becda990f773d3b2d0bb8ab"
+  },
+  {
+    "frame_id": "V14-08000ms",
+    "stream_index": 0,
+    "decoded_pts_us": 8000000,
+    "decoded_pts_timecode": "00:00:08.000000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 8500000,
+    "source_coverage_span_us": [
+      8000000,
+      8500000
+    ],
+    "source_coverage_timecode": [
+      "00:00:08.000000",
+      "00:00:08.500000"
+    ],
+    "raw_gray_80x48_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 0,
+      "edge_delta": 0,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V14-08000ms.png",
+    "ledger_png_sha256": "1414c9a36eab6a3fb416f9bbf6d8b0128c7fa92a6becda990f773d3b2d0bb8ab"
+  },
+  {
+    "frame_id": "V15-08500ms",
+    "stream_index": 0,
+    "decoded_pts_us": 8500000,
+    "decoded_pts_timecode": "00:00:08.500000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 9000000,
+    "source_coverage_span_us": [
+      8500000,
+      9000000
+    ],
+    "source_coverage_timecode": [
+      "00:00:08.500000",
+      "00:00:09.000000"
+    ],
+    "raw_gray_80x48_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 0,
+      "edge_delta": 0,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V15-08500ms.png",
+    "ledger_png_sha256": "1414c9a36eab6a3fb416f9bbf6d8b0128c7fa92a6becda990f773d3b2d0bb8ab"
+  },
+  {
+    "frame_id": "V16-09000ms",
+    "stream_index": 0,
+    "decoded_pts_us": 9000000,
+    "decoded_pts_timecode": "00:00:09.000000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 9500000,
+    "source_coverage_span_us": [
+      9000000,
+      9500000
+    ],
+    "source_coverage_timecode": [
+      "00:00:09.000000",
+      "00:00:09.500000"
+    ],
+    "raw_gray_80x48_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 0,
+      "edge_delta": 0,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V16-09000ms.png",
+    "ledger_png_sha256": "1414c9a36eab6a3fb416f9bbf6d8b0128c7fa92a6becda990f773d3b2d0bb8ab"
+  },
+  {
+    "frame_id": "V17-09500ms",
+    "stream_index": 0,
+    "decoded_pts_us": 9500000,
+    "decoded_pts_timecode": "00:00:09.500000",
+    "decoded_duration_hint_us": 500000,
+    "next_decoded_pts_us": 10000000,
+    "source_coverage_span_us": [
+      9500000,
+      10000000
+    ],
+    "source_coverage_timecode": [
+      "00:00:09.500000",
+      "00:00:10.000000"
+    ],
+    "raw_gray_80x48_sha256": "1fc29f1fb8e03924b92f4e16af170a8af98363b549ad23a3c46b58c6fda9e5f2",
+    "difference_from_previous_permille": {
+      "mean_abs_luma": 0,
+      "edge_delta": 0,
+      "note": "0/0 means the same measured gray pixels as the prior source frame."
+    },
+    "ledger_png": "frame-ledger/png/V17-09500ms.png",
+    "ledger_png_sha256": "1414c9a36eab6a3fb416f9bbf6d8b0128c7fa92a6becda990f773d3b2d0bb8ab"
+  }
+]

@@ -1,0 +1,180 @@
+{
+  "id": "scan-6f98ecf7674eee9ac8e8e672",
+  "master_id": "master-r045",
+  "policy_id": "policy-1351066e2f089718fa34b5a3",
+  "analysis_version": 1,
+  "thresholds": {
+    "black_luma_max": 24,
+    "black_permille": 940,
+    "black_min_ms": 300,
+    "freeze_delta_milli": 300,
+    "freeze_edge_milli": 400,
+    "freeze_min_ms": 500,
+    "audio_window_ms": 50,
+    "silence_rms": 80,
+    "silence_min_ms": 300,
+    "clip_permille": 100,
+    "clip_min_ms": 100,
+    "picture_gap_ms": 250,
+    "sound_gap_ms": 100
+  },
+  "extent": {
+    "start_us": 0,
+    "end_us": 10000000
+  },
+  "tracks": {
+    "format": "matroska,webm",
+    "origin_us": 0,
+    "container_duration_us": 10000000,
+    "tracks": [
+      {
+        "index": 0,
+        "type": "video",
+        "codec": "ffv1",
+        "time_base": "1/1000",
+        "start_pts": 0,
+        "width": 160,
+        "height": 96,
+        "average_rate": "2"
+      },
+      {
+        "index": 1,
+        "type": "audio",
+        "codec": "pcm_s16le",
+        "time_base": "1/1000",
+        "start_pts": 0,
+        "rate": 8000,
+        "channels": 1
+      }
+    ],
+    "picture": {
+      "index": 0,
+      "type": "video",
+      "codec": "ffv1",
+      "time_base": "1/1000",
+      "start_pts": 0,
+      "width": 160,
+      "height": 96,
+      "average_rate": "2"
+    },
+    "sound": {
+      "index": 1,
+      "type": "audio",
+      "codec": "pcm_s16le",
+      "time_base": "1/1000",
+      "start_pts": 0,
+      "rate": 8000,
+      "channels": 1
+    }
+  },
+  "coverage": {
+    "picture": [
+      {
+        "start_us": 0,
+        "end_us": 5000000
+      },
+      {
+        "start_us": 6000000,
+        "end_us": 10000000
+      }
+    ],
+    "sound": [
+      {
+        "start_us": 0,
+        "end_us": 5600000
+      },
+      {
+        "start_us": 5800000,
+        "end_us": 6800000
+      },
+      {
+        "start_us": 7100000,
+        "end_us": 10000000
+      }
+    ]
+  },
+  "metrics": {
+    "picture": {
+      "frames": 17,
+      "max_step_us": 1500000
+    },
+    "sound": {
+      "samples": 76000,
+      "peak_codes": [
+        12000
+      ]
+    }
+  },
+  "hits": [
+    {
+      "id": "hit-5f1436d772ced7dabcff2d0c",
+      "kind": "freeze",
+      "channel": null,
+      "start_us": 3500000,
+      "end_us": 5000000,
+      "bins": 2,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "id": "hit-73907ade8f0d42f16f38f9a6",
+      "kind": "silence",
+      "channel": 1,
+      "start_us": 4700000,
+      "end_us": 5000000,
+      "bins": 6,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "id": "hit-3d2ad3279942f674ea42677e",
+      "kind": "picture_gap",
+      "channel": null,
+      "start_us": 5000000,
+      "end_us": 6000000,
+      "bins": 1,
+      "minimum": 1000000,
+      "maximum": 1000000
+    },
+    {
+      "id": "hit-65bfef994b6e3a8c1b0f0636",
+      "kind": "sound_gap",
+      "channel": null,
+      "start_us": 5600000,
+      "end_us": 5800000,
+      "bins": 1,
+      "minimum": 200000,
+      "maximum": 200000
+    },
+    {
+      "id": "hit-5b8ac74a13fb1d9dabbbe5cf",
+      "kind": "silence",
+      "channel": 1,
+      "start_us": 6300000,
+      "end_us": 6600000,
+      "bins": 6,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "id": "hit-9c2c819bfaebbfec6e17bb38",
+      "kind": "freeze",
+      "channel": null,
+      "start_us": 6500000,
+      "end_us": 10000000,
+      "bins": 7,
+      "minimum": 0,
+      "maximum": 0
+    },
+    {
+      "id": "hit-859cc17f31cb4b1cf8250387",
+      "kind": "sound_gap",
+      "channel": null,
+      "start_us": 6800000,
+      "end_us": 7100000,
+      "bins": 1,
+      "minimum": 300000,
+      "maximum": 300000
+    }
+  ]
+}

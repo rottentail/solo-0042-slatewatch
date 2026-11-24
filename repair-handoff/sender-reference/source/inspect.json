@@ -1,0 +1,45 @@
+{
+  "format": "matroska,webm",
+  "origin_us": 0,
+  "container_duration_us": 10000000,
+  "tracks": [
+    {
+      "index": 0,
+      "type": "video",
+      "codec": "ffv1",
+      "time_base": "1/1000",
+      "start_pts": 0,
+      "width": 160,
+      "height": 96,
+      "average_rate": "2"
+    },
+    {
+      "index": 1,
+      "type": "audio",
+      "codec": "pcm_s16le",
+      "time_base": "1/1000",
+      "start_pts": 0,
+      "rate": 8000,
+      "channels": 1
+    }
+  ],
+  "picture": {
+    "index": 0,
+    "type": "video",
+    "codec": "ffv1",
+    "time_base": "1/1000",
+    "start_pts": 0,
+    "width": 160,
+    "height": 96,
+    "average_rate": "2"
+  },
+  "sound": {
+    "index": 1,
+    "type": "audio",
+    "codec": "pcm_s16le",
+    "time_base": "1/1000",
+    "start_pts": 0,
+    "rate": 8000,
+    "channels": 1
+  }
+}
