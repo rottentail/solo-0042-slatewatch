@@ -66,8 +66,35 @@ def run(server, root):
     query = urlencode({'before': first['id'], 'after': second['id']})
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
+    rework(origin, tour)
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对、逐窗核销均通过')
+
+
+def rework(origin, tour):
+    """Exercise the browser recheck desk on the equal-length rework pair."""
+    policy = tour.policy()
+    earlier = tour.master('rework-before')
+    later = tour.master('rework-after', sound='2')
+    before = tour.call('/scans', {'master_id': earlier['id'], 'policy_id': policy['id']}, 201)
+    after = tour.call('/scans', {'master_id': later['id'], 'policy_id': policy['id']}, 201)
+    hit = next(item for item in before['hits']
+               if item['kind'] == 'clip' and item['channel'] == 2)
+    workspace = f'/desk/scans/{after["id"]}/recheck'
+    plan = request(origin, workspace + '?' + urlencode(
+        {'before': before['id'], 'hit': hit['id'], 'after_channel': '2'}))[2]
+    assert '待核销旧窗'.encode() in plan and '沿用前版第 4 窗'.encode() in plan
+    landing, _, page = request(origin, workspace, {
+        'before': before['id'], 'hit': hit['id'], 'after_channel': '2',
+        'reviewer': '审片员', 'reason': '等长换轨逐窗复核'})
+    assert '可销'.encode() in page and '仍削顶'.encode() in page and '证据不足'.encode() in page
+    assert '前版伴音 2 → 后版伴音 2'.encode() in page
+    replay = re.search(rb'href="(/desk/scans/[^"]+/listen\?[^"]+)"', page)[1].decode()
+    assert request(origin, replay.replace('&amp;', '&'))[2].startswith(b'RIFF')
+    switch = request(origin, landing)[2]
+    assert '核销记录'.encode() in switch and '前版伴音 2 → 后版伴音 2'.encode() in switch
+    assert f'/desk/scans/{before["id"]}?hit={hit["id"]}'.encode() in switch
+    return landing
 
 
 def main():

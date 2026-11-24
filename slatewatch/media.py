@@ -118,14 +118,22 @@ def thumbnail(frame):
     return b''.join(raw[y * plane.line_size:y * plane.line_size + WIDTH] for y in range(HEIGHT))
 
 
-def decode(path, manifest):
-    """Yield lightweight pictures and native-rate PCM in decode order."""
+def decode(path, manifest, pictures=True, sound=True):
+    """Yield lightweight pictures and native-rate PCM in decode order.
+
+    Rechecking and replaying only need the selected sound lane; callers can skip
+    picture decoding without changing what is read from the original bytes.
+    """
     video = manifest['picture']
     audio = manifest['sound']
     with open_media(path) as container:
-        selected = [container.streams[video['index']]]
-        if audio:
+        selected = []
+        if pictures:
+            selected.append(container.streams[video['index']])
+        if sound and audio:
             selected.append(container.streams[audio['index']])
+        if not selected:
+            return
         resampler = None
         next_sample = None
         prior_picture = None

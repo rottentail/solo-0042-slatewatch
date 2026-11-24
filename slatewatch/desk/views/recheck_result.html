@@ -1,0 +1,13 @@
+<div class="recheck-result">
+  <header class="striphead"><div><p>$lane · $alignment · $reuse</p><h3>前版候选逐窗核销</h3></div>$status</header>
+  <p class="muted">后版实测窗宽 $window_us 毫秒，沿用前版异常测量窗与规则。综合：可销 $clearable 窗、仍削顶 $clipped 窗、证据不足 $thin 窗。</p>
+  <p class="muted">$note · <a href="/desk/scans/$before_scan?hit=$hit#finding">回到前版候选</a></p>
+  <h4>范围汇总</h4>
+  <div class="table-wrap"><table><thead><tr><th scope="col">结论</th><th scope="col">后版节目时标</th><th scope="col">窗数</th><th scope="col">复听</th></tr></thead>
+  <tbody>$groups</tbody></table></div>
+  <details open><summary>逐窗明细</summary>
+    <div class="table-wrap"><table><thead><tr><th scope="col">窗</th><th scope="col">后版节目范围</th><th scope="col">覆盖样本</th><th scope="col">满幅样本</th><th scope="col">满幅比例</th><th scope="col">结论</th><th scope="col">复听地址</th></tr></thead>
+    <tbody>$windows</tbody></table></div>
+  </details>
+  <p class="muted"><code>$key</code></p>
+</div>

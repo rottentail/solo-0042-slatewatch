@@ -121,13 +121,16 @@ class Handler(BaseHTTPRequestHandler):
             return 200, {'status': 'ready'}, 'application/json'
         if len(parts) == 2:
             group, key = parts
-            types = {'masters': 'master', 'policies': 'policy', 'scans': 'scan', 'seals': 'seal'}
+            types = {'masters': 'master', 'policies': 'policy', 'scans': 'scan', 'seals': 'seal',
+                     'rechecks': 'recheck'}
             if group in types:
                 return 200, app.vault.get(types[group], key), 'application/json'
         if len(parts) == 3:
             group, key, action = parts
             if group == 'scans' and action == 'review':
                 return 200, app.review(key), 'application/json'
+            if group == 'scans' and action == 'rechecks':
+                return 200, app.rechecks(key), 'application/json'
             if group == 'seals' and action == 'verify':
                 return 200, app.verify(key), 'application/json'
             if group == 'seals' and action == 'bundle':
@@ -142,7 +145,8 @@ class Handler(BaseHTTPRequestHandler):
                 return code, operation(self.json_body()), 'application/json'
         if len(parts) == 3 and parts[0] == 'scans':
             _, key, action = parts
-            operations = {'intents': app.add_intent, 'rulings': app.add_ruling, 'seals': app.seal}
+            operations = {'intents': app.add_intent, 'rulings': app.add_ruling, 'seals': app.seal,
+                          'rechecks': app.recheck}
             if action in operations:
                 return 201, operations[action](key, self.json_body()), 'application/json'
             if action == 'evidence':

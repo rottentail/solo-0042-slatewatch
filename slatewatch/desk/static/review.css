@@ -27,3 +27,13 @@
   .review { padding-inline: 13px; }
   .table-wrap .time { white-space: nowrap; }
 }
+.state.clear { color: #115c43; background: #dcf1e5; }
+.state.clipped { color: #8e3126; background: #fce5df; }
+.state.thin { color: #794a00; background: #fff0cb; }
+.recheck-list { display: grid; gap: 4px; margin: 8px 0 16px; }
+.recheck-item { display: grid; gap: 2px; padding: 8px 10px; border-left: 3px solid transparent; background: var(--paper); color: var(--ink); text-decoration: none; border: 1px solid var(--line); border-left-width: 3px; border-radius: 4px; }
+.recheck-item[aria-current] { border-left-color: var(--accent); background: #e9f5f2; }
+.recheck-item small { color: var(--muted); }
+.recheck-plan, .recheck-result { border-top: 1px solid var(--line); margin-top: 18px; padding-top: 12px; }
+.recheck-result h3, .recheck-plan h3 { font-size: 16px; }
+.recheck-result h4 { margin: 14px 0 6px; font-size: 14px; }

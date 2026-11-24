@@ -21,7 +21,7 @@ def rows(scan_id, findings, selected):
     ) or '<tr><td colspan="4">没有技术异常。</td></tr>'
 
 
-def details(scan, hit):
+def details(scan, hit, vault=None):
     if not hit:
         return fragment('clear', scan=scan['id'])
     intent_form = ''
@@ -30,9 +30,13 @@ def details(scan, hit):
                                start=hit['start_us'], end=hit['end_us'])
     ruling = hit['ruling']
     note = f'{safe(ruling["reviewer"])} · {safe(ruling["reason"])}' if ruling else '尚无人工裁决'
+    recheck_form = ''
+    if hit['kind'] == 'clip' and vault is not None:
+        recheck_form = fragment('recheck_start', scan=scan['id'], hit=hit['id'],
+                                after_options=library.scan_choices(vault))
     return fragment('finding', scan=scan['id'], hit=hit['id'], title=KINDS[hit['kind']],
                     lane=lane(hit), span=interval(hit), status=badge(hit['status']),
-                    note=note, intent_form=intent_form)
+                    note=note, intent_form=intent_form, recheck_form=recheck_form)
 
 
 def show(app, scan_id, selected):
@@ -49,4 +53,4 @@ def show(app, scan_id, selected):
     return page('审片', 'scan', 'scan', sidebar=library.sidebar(app.vault, scan_id),
                 master=safe(master['label']), policy=safe(library.policy_name(app.vault, scan)), state=badge(view['status']),
                 source=safe(master['sha256'][:12]), clip=timeline.draw(scan, active),
-                table=rows(scan_id, view['hits'], active), detail=details(scan, hit))
+                table=rows(scan_id, view['hits'], active), detail=details(scan, hit, app.vault))

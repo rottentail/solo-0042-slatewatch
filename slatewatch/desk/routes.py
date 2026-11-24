@@ -5,7 +5,7 @@ from urllib.parse import urlencode, urlsplit
 
 from ..clock import Conflict, InputError, Missing
 from ..media import MAX_ASSET
-from . import compare, forms, library, preview, scans, seals
+from . import compare, forms, library, preview, rechecks, scans, seals
 from .render import ASSETS, HERE, page
 from .text import safe
 
@@ -77,6 +77,12 @@ def route(handler, parsed):
             return redirect(f'/desk/scans/{record["id"]}')
         case 'GET', ['desk', 'scans', key]:
             return html(scans.show(app, key, params.get('hit', '')))
+        case 'GET', ['desk', 'scans', key, 'recheck']:
+            return html(rechecks.show(app, key, params))
+        case 'GET', ['desk', 'scans', key, 'listen']:
+            return replay(app, key, params)
+        case 'POST', ['desk', 'scans', key, 'recheck']:
+            return create_recheck(app, key, data)
         case 'POST', ['desk', 'scans', key, operation]:
             return scan_action(app, cache, key, operation, data)
         case 'GET', ['desk', 'previews', key]:
@@ -90,6 +96,12 @@ def route(handler, parsed):
             return 200, content, mime, {}
         case 'GET', ['desk', 'compare']:
             return html(compare.show(app, params.get('before', ''), params.get('after', '')))
+        case 'GET', ['desk', 'recheck']:
+            if not params.get('after'):
+                raise InputError('请选择要核销的后版扫描。')
+            query = urlencode({'before': params.get('before', ''), 'hit': params.get('hit', ''),
+                               'after_channel': params.get('channel', '')})
+            return redirect(f'/desk/scans/{params["after"]}/recheck?{query}')
         case 'GET', ['desk', 'seals']:
             return html(seals.index(app))
         case 'GET', ['desk', 'seals', key]:
@@ -127,6 +139,26 @@ def scan_action(app, cache, key, operation, data):
         record = app.seal(key, request)
         return redirect(f'/desk/seals/{record["id"]}')
     return 200, app.evidence(key, request), 'application/zip', {'Content-Disposition': 'attachment; filename="slatewatch-evidence.zip"'}
+
+
+def create_recheck(app, after_id, data):
+    """Persist a recheck and redirect to it, keeping the workspace switchable."""
+    record = app.recheck(after_id, {'before_scan': data.get('before', ''), 'hit_id': data.get('hit', ''),
+                                    'after_channel': forms.number(data, 'after_channel'),
+                                    'reviewer': data.get('reviewer', ''), 'reason': data.get('reason', '')})
+    return redirect(f'/desk/scans/{after_id}/recheck?recheck={record["id"]}#recheck')
+
+
+def replay(app, after_id, params):
+    """Return a mono WAV of the confirmed later lane over a requested range."""
+    start = forms.number(params, 'start_us')
+    end = forms.number(params, 'end_us')
+    channel = forms.number(params, 'channel')
+    if start >= end:
+        raise InputError('复听范围需要正长度。')
+    body, mapping = app.replay(after_id, start, end, channel)
+    return 200, body, 'audio/wav', {
+        'Content-Disposition': f'inline; filename="slatewatch-{after_id[-7:]}-{channel}-{start}-{end}.wav"'}
 
 
 def handle(handler, parsed):

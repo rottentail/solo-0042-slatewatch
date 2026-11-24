@@ -1,0 +1,14 @@
+<details><summary>到后版逐窗核销</summary>
+  <p class="muted">后版自己的扫描不报削顶不代表此旧单已修好。请明确对应后版的哪一路伴音，再沿用本条异常的测量窗在后版实测伴音上核销。</p>
+  <form method="get" action="/desk/recheck" class="actions">
+    <input name="before" value="$scan" type="hidden">
+    <input name="hit" value="$hit" type="hidden">
+    <label>后版扫描
+      <select name="after" required><option value="">选择后版扫描</option>$after_options</select>
+    </label>
+    <label>对应后版伴音
+      <select name="channel" required><option value="1">伴音 1</option><option value="2">伴音 2</option></select>
+    </label>
+    <button>打开核销工作台</button>
+  </form>
+</details>

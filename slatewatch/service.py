@@ -4,8 +4,9 @@ from zipfile import ZIP_DEFLATED, ZipFile
 
 from .clock import InputError, integer, shape, text
 from .compare import compare
-from .evidence import extract
+from .evidence import extract, listen
 from .media import inspect
+from .recheck import WindowCache, evaluate, measure as measure_recheck
 from .review import adjudicate, find_hit, intent, ruling
 from .rules import canonical, identifier, new_policy
 from .scan import measure, scan_identity
@@ -16,6 +17,7 @@ from .store import Vault
 class Slatewatch:
     def __init__(self, root):
         self.vault = Vault(root)
+        self.recheck_windows = WindowCache()
 
     def master(self, data, label, picture, sound):
         name = text(label, 'label')
@@ -57,6 +59,43 @@ class Slatewatch:
         later = self.vault.get('scan', text(data['after'], 'after'))
         minimum = integer(data.get('minimum_permille', 300), 'minimum_permille', 1, 1000)
         return compare(earlier, later, minimum)
+
+    def recheck(self, after_id, data):
+        """Recheck one earlier clipping finding on a later scan's measured sound."""
+        shape(data, ('before_scan', 'hit_id', 'after_channel'), ('reviewer', 'reason'))
+        earlier = self.vault.get('scan', text(data['before_scan'], 'before_scan'))
+        later = self.vault.get('scan', text(after_id, 'after'))
+        channel = integer(data['after_channel'], 'after_channel', 1, 64)
+        hit_id = text(data['hit_id'], 'hit_id')
+        asset = self.vault.get('master', later['master_id'])
+        path = self.vault.object_path(asset['sha256'])
+        step_us = earlier['thresholds']['audio_window_ms'] * 1000
+
+        def measure_once():
+            return measure_recheck(later['tracks'], path, step_us)
+
+        reviewer = text(data['reviewer'], 'reviewer') if data.get('reviewer') else ''
+        reason = text(data['reason'], 'reason', 350) if data.get('reason') else ''
+        record = evaluate(earlier, later, hit_id, channel, self.recheck_windows,
+                          measure_once, reviewer, reason)
+        return self.vault.put('recheck', record)
+
+    def rechecks(self, after_id):
+        """List stored rechecks measured against one later scan."""
+        later = self.vault.get('scan', after_id)
+        records = [item for item in self.vault.recent('recheck', limit=200)
+                   if item['after_scan'] == later['id']]
+        return {'after_scan': later['id'], 'rechecks': records}
+
+    def recheck_record(self, key):
+        return self.vault.get('recheck', key)
+
+    def replay(self, scan_id, start_us, end_us, channel, padding_ms=100):
+        """Extract one later-version lane over a requested programme range."""
+        scan = self.vault.get('scan', scan_id)
+        asset = self.vault.get('master', scan['master_id'])
+        path = self.vault.object_path(asset['sha256'])
+        return listen(path, scan, start_us, end_us, channel, padding_ms)
 
     def _selection(self, scan_id, data):
         shape(data, ('hit_ids',), ('padding_ms', 'frames'))

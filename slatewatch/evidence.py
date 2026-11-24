@@ -5,7 +5,7 @@ from io import BytesIO
 import sys
 import wave
 
-from .clock import SECOND, Span, coalesce, sample_boundary, uncovered
+from .clock import InputError, SECOND, Span, coalesce, sample_boundary, uncovered
 from .media import HEIGHT, WIDTH, Picture, decode
 
 
@@ -97,6 +97,45 @@ def extract(path, scan, hits, padding_ms, samples):
     if prior is not None:
         _capture(excerpts, prior, duration, picture_coverage, stops)
     return [excerpt.finish() for excerpt in excerpts]
+
+
+def listen(path, scan, start_us, end_us, channel, padding_ms=100):
+    """Return one confirmed lane of a later version as a mono replay excerpt.
+
+    The excerpt keeps a record of uncovered sample ranges so a gap in the later
+    source is not mistaken for digital silence while listening.
+    """
+    track = scan['tracks']['sound']
+    if not track:
+        raise InputError('selected scan has no sound track to replay')
+    if not 1 <= channel <= track['channels']:
+        raise InputError('replay lane is outside the selected sound track')
+    duration = scan['extent']['end_us']
+    padding = padding_ms * 1000
+    span = Span(max(0, start_us - padding), min(duration, end_us + padding))
+    if span.duration <= 0:
+        raise InputError('replay range is outside the programme')
+    rate, channels = track['rate'], track['channels']
+    first, end = sample_boundary(span.start, rate), sample_boundary(span.end, rate)
+    pcm = array('h', [0]) * (end - first)
+    coverage = []
+    for block in decode(path, scan['tracks'], pictures=False):
+        begin, stop = max(block.first_sample, first), min(block.end_sample, end)
+        if begin >= stop:
+            continue
+        out = begin - first
+        start = (begin - block.first_sample) * channels + (channel - 1)
+        pcm[out:out + stop - begin] = block.samples[start:(stop - block.first_sample) * channels:channels]
+        coverage.append(Span(begin, stop))
+    filled = [{'first': area.start, 'end': area.end}
+              for area in uncovered(coverage, Span(first, end))]
+    mapping = {'hit_id': 'listen', **span.as_dict(),
+               'sound': {'file': 'listen.wav', 'sample_rate': rate, 'channels': 1,
+                         'lane': channel, 'first_source_sample': first,
+                         'end_source_sample': end,
+                         'clock_offset_us': round(first * SECOND / rate),
+                         'filled_sample_ranges': filled}}
+    return write_wav(pcm, rate, 1), mapping
 
 
 def _capture(excerpts, frame, next_time, coverage, stops):

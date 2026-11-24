@@ -35,6 +35,10 @@
       "command": "python3 -m slatewatch.walkthrough compare"
     },
     {
+      "workflow_id": "rework",
+      "command": "python3 -m slatewatch.walkthrough rework"
+    },
+    {
       "workflow_id": "evidence",
       "command": "python3 -m slatewatch.walkthrough evidence"
     },

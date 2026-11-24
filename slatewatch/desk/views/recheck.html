@@ -1,0 +1,26 @@
+<div class="workspace">
+  $sidebar
+  <article class="review">
+    <header class="striphead"><div><p>后版实测伴音 · 逐窗核销</p><h1>$master</h1></div><span class="state pass">核销工作</span></header>
+    <p class="muted rule">后版 $after。沿用前版异常的测量窗和规则，在后版实测伴音上逐窗核销。后版自己的扫描不报削顶，不等于前版候选已经修好。</p>
+    <section class="form-section" aria-label="选择旧单与后版声道">
+      <form method="get" action="/desk/scans/$after_key/recheck" class="actions">
+        <label>前版削顶旧单
+          <select name="candidate" required><option value="">选择旧单</option>$candidates</select>
+        </label>
+        <label>对应后版伴音
+          <select name="after_channel" required>$lane_options</select>
+        </label>
+        <button class="primary">沿用旧窗核销</button>
+      </form>
+      <p class="muted">选轨编号和采样率可以不同，须由看片人明确对应的是后版哪一路伴音。逐窗会显示后版实测的覆盖样本、满幅样本与复听地址。</p>
+    </section>
+    $compare
+    <section aria-labelledby="history"><h2 id="history">这个后版上的核销记录</h2>
+      <nav class="recheck-list" aria-label="核销记录">$history</nav>
+    </section>
+    <section aria-labelledby="recheck-result"><h2 id="recheck-result">当前核销</h2>
+      <div id="recheck">$result</div>
+    </section>
+  </article>
+</div>

@@ -118,6 +118,78 @@ def compare(tour):
             'invalid_threshold': tour.call('/compare', {**data, 'minimum_permille': 0}, 400)}
 
 
+def rework(tour):
+    """Measure one earlier clipping finding window by window on a later rework."""
+    policy = tour.policy()
+    earlier = tour.master('rework-before')
+    later = tour.master('rework-after', sound='2')
+    before = tour.call('/scans', {'master_id': earlier['id'], 'policy_id': policy['id']}, 201)
+    after = tour.call('/scans', {'master_id': later['id'], 'policy_id': policy['id']}, 201)
+    assert not [hit for hit in after['hits'] if hit['kind'] == 'clip']
+
+    crossings = [hit for hit in before['hits'] if hit['kind'] == 'clip' and hit['channel'] == 2]
+    spanning = min(crossings, key=lambda hit: hit['start_us'])
+    request = {'before_scan': before['id'], 'hit_id': spanning['id'], 'after_channel': 2,
+               'reviewer': 'technical QC', 'reason': 'same-length rework'}
+    record = tour.call(f"/scans/{after['id']}/rechecks", request, 201)
+
+    by_window = [window['status'] for window in record['windows']]
+    still, cleared, thin = by_window[0], by_window[1], by_window[2]
+    adjacent = record['windows'][3]
+    assert still == 'still_clipped' and cleared == 'clearable'
+    assert thin == 'insufficient_evidence', by_window
+    assert record['counts'] == {'still_clipped': 1, 'clearable': 2, 'insufficient_evidence': 1}
+    assert adjacent['clipped_samples'] == 79 and adjacent['status'] == 'clearable'
+
+    # The sample just after the old candidate would cross the old threshold if
+    # it were wrongly folded into the last window.
+    boundary = record['windows'][3]['end_sample']
+    naive = (adjacent['clipped_samples'] + 1) * 1000 // adjacent['window_samples']
+    assert naive >= 100, (naive, boundary)
+
+    # A second old finding on the same later version reads its own channel and
+    # its own windows, and shares the recorded later-version measurement.
+    other = [hit for hit in before['hits'] if hit['kind'] == 'clip' and hit['channel'] == 1][0]
+    second = tour.call(f"/scans/{after['id']}/rechecks",
+                       {'before_scan': before['id'], 'hit_id': other['id'], 'after_channel': 1,
+                        'reviewer': 'technical QC', 'reason': 'left lane follow-up'}, 201)
+    assert second['measurement']['signature'] == record['measurement']['signature']
+    assert second['measurement']['sound_index'] == record['measurement']['sound_index']
+    assert second['windows'][0]['status'] == 'still_clipped'
+    crossed = tour.call(f"/scans/{after['id']}/rechecks",
+                        {'before_scan': before['id'], 'hit_id': other['id'], 'after_channel': 2,
+                         'reviewer': 'technical QC', 'reason': 'wrong lane'}, 201)
+    assert crossed['windows'][0]['status'] == 'clearable'
+    assert crossed['id'] != second['id']
+    assert crossed['measurement']['signature'] == record['measurement']['signature']
+    assert crossed['windows'][0]['first_sample'] == second['windows'][0]['first_sample']
+    assert crossed['windows'][0]['clipped_samples'] != second['windows'][0]['clipped_samples']
+
+    listing = tour.call(f"/scans/{after['id']}/rechecks")
+    assert {record['id'], second['id']} <= {item['id'] for item in listing['rechecks']}
+    comparison = tour.call('/compare', {'before': before['id'], 'after': after['id']})
+    assert spanning['id'] in {hit['id'] for hit in comparison['resolved']}
+    return {
+        'spanning': {'start_us': spanning['start_us'], 'end_us': spanning['end_us'],
+                     'windows': by_window, 'counts': record['counts']},
+        'adjacent_sample': {'end_sample': boundary, 'naive_permille': naive},
+        'shared_measurement': {
+            'signature': record['measurement']['signature'],
+            'sound_index': record['measurement']['sound_index'],
+            'lane1': second['windows'][0]['status'],
+            'lane2': crossed['windows'][0]['status'],
+            'lane2_own_window': crossed['windows'][0]['clipped_samples']},
+        'still_resolved_by_compare': True,
+        'errors': {
+            'same_scan': tour.call(f"/scans/{after['id']}/rechecks",
+                                   {'before_scan': after['id'], 'hit_id': spanning['id'],
+                                    'after_channel': 2}, 400),
+            'bad_lane': tour.call(f"/scans/{after['id']}/rechecks",
+                                  {**request, 'after_channel': 9}, 400),
+        },
+    }
+
+
 def evidence(tour):
     record = tour.scan()
     uri = f"/scans/{record['id']}/evidence"
@@ -169,7 +241,8 @@ def verify(tour):
 
 
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'rework': rework, 'evidence': evidence, 'publish': seal,
+             'catalog': catalog, 'verify': verify}
 
 
 def main():

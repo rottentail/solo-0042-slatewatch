@@ -58,6 +58,11 @@
       "responsibility": "同节目时线的版本对照"
     },
     {
+      "id": "recheck",
+      "path": "slatewatch/recheck.py",
+      "responsibility": "前版削顶旧窗在后版实测伴音上的逐窗核销"
+    },
+    {
       "id": "evidence",
       "path": "slatewatch/evidence.py",
       "responsibility": "源时标摘片、补零记录"
@@ -194,6 +199,29 @@
         "store",
         "compare",
         "clock"
+      ]
+    },
+    {
+      "id": "rework",
+      "name": "返修逐窗核销",
+      "entry": "POST /scans/{after_id}/rechecks",
+      "success": "前版削顶旧单在等长后版实测伴音上逐窗给出可销、仍削顶与证据不足范围及复听地址",
+      "failure": "同卷核销、非削顶候选或后版声道越界 400",
+      "verification": "python3 -m slatewatch.walkthrough rework",
+      "steps": [
+        "确认前后版为等长换轨并指定后版伴音声道",
+        "沿用前版测量窗与规则复测后版源样本",
+        "按同后版声轨复用复测并逐窗留证"
+      ],
+      "module_ids": [
+        "http",
+        "service",
+        "store",
+        "recheck",
+        "compare",
+        "clock",
+        "sound",
+        "media"
       ]
     },
     {

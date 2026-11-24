@@ -16,11 +16,11 @@ class Window:
 
 
 class SoundMeter:
-    def __init__(self, track, thresholds):
+    def __init__(self, track, thresholds, window_us=None):
         self.rate = track['rate']
         self.channels = track['channels']
         self.thresholds = thresholds
-        self.step = thresholds.audio_window_ms * 1000
+        self.step = window_us if window_us is not None else thresholds.audio_window_ms * 1000
         self.windows = {}
         self.blocks = []
         self.samples = 0

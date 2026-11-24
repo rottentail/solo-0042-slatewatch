@@ -20,6 +20,12 @@ python -m slatewatch.http --root ./slatewatch-vault
 
 「版次比对」显示同节目时标上的匹配和各版独有候选。「冻结包」保留冻结当时的结论，并提供独立核验与下载。浏览器预览是当前进程内的临时结果。有长期交接需求时，使用即时证据下载或冻结包。
 
+### 返修逐窗核销
+
+返修组要销掉前版某一路削顶时，不能把「后版自己的扫描没报候选」当成已经修好。版次比对里前版独有的削顶候选带有「按旧窗核销后版」入口，也可以在审片页的削顶候选下打开核销工作台。看片人须明确这条旧单对应后版的哪一路伴音（前后两版的选轨编号与采样率可以不同，长度相等时无需剪接位移）。核销沿用前版异常自己的测量窗和规则，在后版实测伴音上逐窗判定，每窗给出覆盖样本、满幅样本、满幅比例、结论和复听地址，并按相邻同结论窗汇总范围。结论分「可销」「仍削顶」「证据不足」；后版窗内样本未被完整覆盖时记证据不足，不当作已消除。
+
+同一后版上切换多条旧单时，后版伴音复测按后版扫描、所选声轨和窗宽复用，窗口数值按确认的声道读取，因此不会串用别的旧窗或声道。核销是只追加的证据记录，不改动原有对照候选，也不自动销单。
+
 ## 一次审片
 
 另开终端并激活虚拟环境。下面的 `MASTER_ID`、`POLICY_ID`、`SCAN_ID` 和 `HIT_ID` 用上一步响应里的实际 ID 替换。
@@ -35,7 +41,7 @@ curl -fsS "$BASE/scans/SCAN_ID/review"
 curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d '{"hit_ids":["HIT_ID"],"padding_ms":80,"frames":3}' -o evidence.zip
 ```
 
-`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
+`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。`rework-before` / `rework-after` 是一对等长换轨样片：前版 8 kHz 双声道，右声道在 0.5–0.7 秒与 1.2–1.4 秒、左声道在 1.6–1.8 秒满幅削顶；后版首条伴音是静音诱饵，实测伴音为第二条 16 kHz 双声道，长 4 秒。后版自身扫描不报削顶，但 0.50–0.55 秒仍整窗满幅、0.55–0.60 秒仅稀疏满幅、0.60–0.65 秒缺 1 ms 覆盖、0.65–0.70 秒为 79 个满幅样本且在窗口结束后的相邻样本属于旧候选之外。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
 
 ## 接口
 
@@ -52,6 +58,8 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 | `POST /scans/{id}/rulings` | 用 `hit_id`、`outcome`、`reason` 和 `reviewer` 操作单个候选。`outcome` 为 `accept`、`hold` 或 `reset` |
 | `GET /scans/{id}/review` | 读取按当前意图及裁决投影的复核状态 |
 | `POST /compare` | 以 `before`、`after` 扫描 ID 及可选的 `minimum_permille` 对照共享时线上的候选 |
+| `POST /scans/{after_id}/rechecks` | 以 `before_scan`、`hit_id` 和 `after_channel`（可选 `reviewer`、`reason`）在后版实测伴音上逐窗核销一条前版削顶候选，返回逐窗结论与复听地址 |
+| `GET /scans/{after_id}/rechecks`、`GET /rechecks/{id}` | 列出某后版上的核销记录，或读取一条核销记录 |
 | `POST /scans/{id}/evidence` | 按 1 至 6 个 `hit_ids`、可选 `padding_ms` 和 `frames` 生成即时 ZIP。每条证据含时标映射和可用媒体 |
 | `POST /scans/{id}/seals` | 接收同一摘片选项，冻结扫描、裁决及媒体，返回封包描述符 |
 | `GET /seals/{id}`、`/seals/{id}/verify`、`/seals/{id}/bundle` | 读取描述、校验包哈希与文件索引，或下载已校验的 ZIP |
@@ -62,4 +70,4 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`rework`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
