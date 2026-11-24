@@ -1,9 +1,14 @@
-"""Show exact evidence mappings and browser-compatible views of packaged assets."""
+"""Browser previews built straight from excerpt materials.
 
-from io import BytesIO
-import json
+A preview is a bounded, process-local rendering of one short excerpt: the
+service hands back the same raw PGM/WAV members that a formal archive would
+contain, and this module turns them into browser PNG/WAV assets without ever
+constructing a ZIP. Long multi-excerpt deliveries keep their own full member
+sets inside instant archives and frozen bundles; the preview cache never
+retains a second copy of those collections and cannot influence vault state.
+"""
+
 from struct import pack
-from zipfile import ZipFile
 from zlib import compress, crc32
 
 from ..clock import InputError
@@ -29,15 +34,19 @@ def png(pgm):
 
 def create(app, cache, scan_id, hit_id, padding, frames):
     selection = {'hit_ids': [hit_id], 'padding_ms': padding, 'frames': frames}
-    raw = app.evidence(scan_id, selection)
-    with ZipFile(BytesIO(raw)) as archive:
-        if sum(item.file_size for item in archive.infolist()) > PREVIEW_LIMIT:
-            raise InputError('摘片超过浏览器预览容量，请下载完整证据包。')
-        mapping = json.loads(archive.read(f'{hit_id}/clock.json'))
-        assets = {frame['file'].removesuffix('.pgm') + '.png': (png(archive.read(f'{hit_id}/{frame["file"]}')), 'image/png')
-                  for frame in mapping['picture'] if frame['file']}
-        if mapping['sound']:
-            assets['sound.wav'] = (archive.read(f'{hit_id}/sound.wav'), 'audio/wav')
+    excerpts = app.evidence_materials(scan_id, selection)
+    if len(excerpts) != 1:
+        raise InputError('浏览器预览只接受单条摘片。')
+    members, mapping = excerpts[0]
+    if sum(len(data) for data in members.values()) > PREVIEW_LIMIT:
+        raise InputError('摘片超过浏览器预览容量，请下载完整证据包。')
+    assets = {}
+    for frame in mapping['picture']:
+        if frame['file']:
+            assets[frame['file'].removesuffix('.pgm') + '.png'] = (
+                png(members[frame['file']]), 'image/png')
+    if mapping['sound']:
+        assets['sound.wav'] = (members['sound.wav'], 'audio/wav')
     mapping['scan_id'] = scan_id
     return cache.put(mapping, assets)
 

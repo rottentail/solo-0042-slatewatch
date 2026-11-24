@@ -73,10 +73,19 @@ class Slatewatch:
         frames = integer(data.get('frames', 3), 'frames', 1, 8)
         return scan, asset, hits, padding, frames
 
-    def evidence(self, scan_id, data):
+    def evidence_materials(self, scan_id, data):
+        """Resolve one selection into raw excerpt materials without packaging them.
+
+        Browser previews turn the PGM/WAV members into PNG/WAV directly; the
+        temporary preview cache never feeds the vault, so rejection or
+        eviction here cannot alter an instant archive or a frozen bundle.
+        """
         scan, asset, hits, padding, frames = self._selection(scan_id, data)
         path = self.vault.object_path(asset['sha256'])
-        excerpts = extract(path, scan, hits, padding, frames)
+        return extract(path, scan, hits, padding, frames)
+
+    def evidence(self, scan_id, data):
+        excerpts = self.evidence_materials(scan_id, data)
 
         buf = BytesIO()
         with ZipFile(buf, 'w', compression=ZIP_DEFLATED) as archive:
@@ -88,11 +97,12 @@ class Slatewatch:
         return buf.getvalue()
 
     def seal(self, scan_id, data):
-        scan, asset, hits, padding, frames = self._selection(scan_id, data)
+        scan = self.vault.get('scan', scan_id)
         review = adjudicate(scan, *self.vault.timeline(scan_id))
-        path = self.vault.object_path(asset['sha256'])
-        excerpts = extract(path, scan, hits, padding, frames)
-        record, data = pack({'scan': scan, 'review': review, 'master_sha256': asset['sha256']}, excerpts)
+        excerpts = self.evidence_materials(scan_id, data)
+        record, data = pack({'scan': scan, 'review': review,
+                             'master_sha256': self.vault.get('master', scan['master_id'])['sha256']},
+                            excerpts)
         with self.vault.staged(data) as (source, digest):
             self.vault.publish(source, digest)
         return self.vault.put('seal', {**record, 'sha256': digest})
