@@ -35,7 +35,9 @@ curl -fsS "$BASE/scans/SCAN_ID/review"
 curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d '{"hit_ids":["HIT_ID"],"padding_ms":80,"frames":3}' -o evidence.zip
 ```
 
-`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
+`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。`lead-pad` 把伴音首个采样推迟到 200 ms，使摘片 WAV 开头出现合成补零；`fractional-hole` 在 30000/1001 帧率的 2.0–2.5 s 跳过画格，形成分数帧率画面中洞。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
+
+预览跟片与复听的页面主时钟选型（节目微秒 vs WAV）记录在 `docs/preview-clock-decision.md`，其三种输入对照与偏差仿真可用 `python -m tools.preview_sync.runner` 重跑。
 
 ## 接口
 

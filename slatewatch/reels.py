@@ -10,7 +10,14 @@ import av
 
 SAMPLE_RATE = 8000
 SIZE = (160, 96)
-REELS = ('basalt', 'revision', 'picture-hole', 'no-sound', 'fractional')
+# lead-pad：伴音流起点延后到第 1600 个采样（200 ms），用于观测摘片开头补零。
+# fractional-hole：30000/1001 分数帧率且在 2.0–2.5 s 跳过画格，用于观测画面中洞。
+REELS = ('basalt', 'revision', 'picture-hole', 'no-sound', 'fractional',
+         'lead-pad', 'fractional-hole')
+# 各样片伴音第一个/最后一个采样编号，以及是否保留 16000–17600 的内部伴音空洞。
+AUDIO_FIRST = {'lead-pad': 1600}
+AUDIO_CONTINUOUS = frozenset(('fractional-hole',))
+PICTURE_HOLE = frozenset(('picture-hole', 'fractional-hole'))
 
 
 def raster(index, dark, still):
@@ -45,8 +52,9 @@ def audio_frame(first, count, revision):
 
 
 def make(path, name):
-    fps = Fraction(30000, 1001) if name == 'fractional' else Fraction(25)
+    fps = Fraction(30000, 1001) if name in ('fractional', 'fractional-hole') else Fraction(25)
     audio_end = 28000 if name == 'revision' else 25600
+    audio_first = AUDIO_FIRST.get(name, 0)
     with av.open(str(path), mode='w', format='matroska') as container:
         video = container.add_stream('ffv1', rate=fps)
         video.width, video.height = SIZE
@@ -54,10 +62,10 @@ def make(path, name):
         audio = None if name == 'no-sound' else container.add_stream('pcm_s16le', rate=SAMPLE_RATE)
         if audio:
             audio.layout = 'stereo'
-        next_sample = 0
+        next_sample = audio_first
         for i in range(round(4 * fps)):
             seconds = Fraction(i, fps)
-            if name != 'picture-hole' or not Fraction(2) <= seconds < Fraction(5, 2):
+            if name not in PICTURE_HOLE or not Fraction(2) <= seconds < Fraction(5, 2):
                 dark = Fraction(0) <= seconds < (Fraction(8, 25) if name == 'revision' else Fraction(12, 25))
                 still = Fraction(3, 5) <= seconds < Fraction(7, 5)
                 frame = raster(i, dark, still)
@@ -65,7 +73,7 @@ def make(path, name):
                 frame.time_base = 1 / fps
                 container.mux(video.encode(frame))
             while audio and next_sample < audio_end and Fraction(next_sample, SAMPLE_RATE) <= seconds:
-                if not 16000 <= next_sample < 17600:
+                if name in AUDIO_CONTINUOUS or not 16000 <= next_sample < 17600:
                     container.mux(audio.encode(audio_frame(next_sample, 160, name == 'revision')))
                 next_sample += 160
         container.mux(video.encode())
