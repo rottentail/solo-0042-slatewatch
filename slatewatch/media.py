@@ -44,6 +44,24 @@ class PCM:
                     round(Fraction(self.end_sample * SECOND, self.rate)))
 
 
+def _is_attached_pic(stream):
+    disposition = getattr(stream, 'disposition', None)
+    if disposition is None:
+        return False
+    return bool(disposition.attached_pic & disposition)
+
+
+def _plane_stride(plane, width):
+    return getattr(plane, 'line_size', width)
+
+
+def _frame_duration_us(frame, packet_duration_us):
+    duration = getattr(frame, 'duration', None)
+    if duration is None:
+        return packet_duration_us
+    return round(duration * frame.time_base * SECOND)
+
+
 def open_media(path: Path):
     try:
         return av.open(str(path), options={'protocol_whitelist': 'file',
@@ -93,7 +111,7 @@ def inspect(path, picture_index, sound_index):
             raise InputError('only Matroska and MOV/MP4 containers are supported')
         if container.duration is not None and container.duration > LIMIT:
             raise InputError('source exceeds 120 seconds')
-        videos = [stream for stream in container.streams.video if not stream.disposition.attached_pic & stream.disposition]
+        videos = [stream for stream in container.streams.video if not _is_attached_pic(stream)]
         picture = pick_track(videos, picture_index, 'picture', required=True)
         audio = list(container.streams.audio)
         if sound_index == 'first':
@@ -115,7 +133,8 @@ def thumbnail(frame):
     gray = frame.reformat(width=WIDTH, height=HEIGHT, format='gray')
     plane = gray.planes[0]
     raw = memoryview(plane)
-    return b''.join(raw[y * plane.line_size:y * plane.line_size + WIDTH] for y in range(HEIGHT))
+    stride = _plane_stride(plane, WIDTH)
+    return b''.join(raw[y * stride:y * stride + WIDTH] for y in range(HEIGHT))
 
 
 def decode(path, manifest):
@@ -132,6 +151,8 @@ def decode(path, manifest):
         count = 0
         try:
             for packet in container.demux(selected):
+                packet_duration_us = (round(packet.duration * packet.time_base * SECOND)
+                                      if packet.duration is not None else 0)
                 for frame in packet.decode():
                     point = timestamp(frame, manifest['origin_us'])
                     if packet.stream.type == 'video':
@@ -144,7 +165,7 @@ def decode(path, manifest):
                         count += 1
                         if count > MAX_FRAMES:
                             raise InputError('too many decoded pictures')
-                        duration = round((frame.duration or 0) * frame.time_base * SECOND)
+                        duration = _frame_duration_us(frame, packet_duration_us)
                         yield Picture(when, duration, thumbnail(frame))
                     else:
                         if frame.sample_rate != audio['rate'] or len(frame.layout.channels) != audio['channels']:

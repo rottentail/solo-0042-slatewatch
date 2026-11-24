@@ -35,7 +35,7 @@ curl -fsS "$BASE/scans/SCAN_ID/review"
 curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d '{"hit_ids":["HIT_ID"],"padding_ms":80,"frames":3}' -o evidence.zip
 ```
 
-`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
+`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。`grid-cells` 是纯画面 80×48 灰阶格矩阵：含一段半秒画面洞、一段冻帧、两个被不同目标重复选中的同灰阶格，以及两个除一个像素外完全相同的孪生格。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
 
 ## 接口
 
@@ -63,3 +63,14 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 ## 复核运行
 
 `python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+
+### 证据预览可复跑核验
+
+`python -m slatewatch.preview_check` 在临时保管库生成 `grid-cells` 母带，跑真实回环 HTTP 服务，并对四个证据面做交叉核验：
+
+1. 即时证据 ZIP 的 PGM 与 `clock.json` 时标映射；
+2. 浏览页预览缓存里实际下发的 PNG；
+3. 冻结包内的 PGM（用独立的 P5 解析器逐字节读取，不经过生成它们的证据构建器）；
+4. 负面对照，证明检查确实能抓到三类问题：浏览页选了错误的源格、PNG/PGM 转换改动了像素、画面洞里的缺格被前一帧填上。
+
+核验自带与管线分离的读法：PGM 按 P5 规范手工解析，PNG 只用标准库 `zlib`/`struct` 解压和反滤波，源母带则用 PyAV 独立解码并自行缩到 80×48 灰阶，不调用 `media.thumbnail` 或证据构建代码。每条裁决都给出采样点、期望源时标和差异像素，失败时可直接定位是源格选择、像素转换还是缺格回填。`grid-cells` 里两个同灰阶格（索引 5、42）可被两个不同候选的摘片同时选中，孪生格（索引 12、53）在非冻帧区间恰好相差一个像素，冻帧区间则完全一致。
