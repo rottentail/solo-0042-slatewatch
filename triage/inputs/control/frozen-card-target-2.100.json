@@ -1,0 +1,16 @@
+{
+  "frame": {
+    "file": "frame-02.pgm",
+    "source_us": 1000000,
+    "target_us": 2100000
+  },
+  "hit_id": "hit-a89fff29594a5b04dff1221a",
+  "kind": "sound_gap",
+  "master_sha256": "a82ff11e7737c4e66ac0ec13565652ecef05392fae6e70c8689d49523fc2cb44",
+  "note": "frozen ZIP entry: complete mapping, target + source",
+  "scan_id": "scan-a3a883b167b081102f69d4d4",
+  "span_us": [
+    2000000,
+    2200000
+  ]
+}

@@ -2,3 +2,6 @@
 __pycache__/
 *.pyc
 slatewatch-vault/
+
+# attribution-triage drill: generator truth must never be handed out
+triage/key/

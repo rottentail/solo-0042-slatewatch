@@ -1,0 +1,3 @@
+source: browser evidence preview (link expired)
+programme time shown on page: 00:03.300000
+not copied: source-frame line, preview token, mapping

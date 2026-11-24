@@ -1,0 +1,523 @@
+{
+  "case": "slatewatch-attribution-triage",
+  "classification": {
+    "confirmed_other_source_version": [
+      {
+        "basis": [
+          "归档画面覆盖 = [{'end_us': 3200000, 'start_us': 0}, {'end_us': 4000000, 'start_us': 3600000}]",
+          "current 在 3.300 s 的源帧 = 3280000",
+          "与 current 派生画格相同 = True"
+        ],
+        "claim": "3.300 s 的网页画格来自与归档版不同的另一版源（条件：手抄时标无误）。",
+        "class": "other-source-version",
+        "id": "C1",
+        "verdict": "在“手抄时标 3.300 s 无误”的前提下确认：归档版在该时标无画面；现存 current 母带可逐像素复现同一画格。"
+      }
+    ],
+    "excluded_as_configuration": [
+      {
+        "basis": [
+          "映射 source_us = [1000000, 1000000, 1000000]",
+          "成员像素一致 = True",
+          "唯一配置 = [{'hit_id': 'hit-a89fff29594a5b04dff1221a', 'kind': 'sound_gap', 'channel': None, 'start_us': 2000000, 'end_us': 2200000, 'padding_ms': 0, 'frames': 3, 'all_labels_in_picture_coverage': True}]",
+          "该唯一配置的每一个目标都落在归档画面覆盖内 = True",
+          "其它候选能否产出同样三个时标 = []"
+        ],
+        "claim": "ZIP 卡片证据里 2.033 / 2.100 / 2.167 三个显示时标对应三张不同画格。",
+        "class": "configuration-or-extraction",
+        "id": "E1",
+        "verdict": "排除：三者共用源帧 1.000 s，且三份成员像素逐字节相同。"
+      },
+      {
+        "basis": [
+          "ZIP 内 3.300 s 的目标 = [{'entry': 'hit-d39b6e57dd894caabe952cfe', 'target_us': 3300000, 'source_us': None, 'file': None}]",
+          "归档画面覆盖 = [{'end_us': 3200000, 'start_us': 0}, {'end_us': 4000000, 'start_us': 3600000}]，覆盖 3.300 s = False",
+          "冻结扫描上命中 3.300 s 的配置数 = 2440；这些配置在该时标都落在画面洞 = True"
+        ],
+        "claim": "网页画格与 ZIP 卡片画格属于同一候选、同一画面，只是留边或抽图配置不同。",
+        "class": "configuration-or-extraction",
+        "id": "E2",
+        "verdict": "排除“同一候选同一画面”：ZIP 自己的证据已把 3.300 s 记在洞条目下，画格为 null；归档扫描在该时标也无画面，任何配置都取不出画格。"
+      },
+      {
+        "basis": [
+          "画面覆盖 = [{'end_us': 3200000, 'start_us': 0}, {'end_us': 4000000, 'start_us': 3600000}]",
+          "覆盖 3.300 s = False",
+          "冻结扫描上命中 3.300 s 的配置数 = 2440；这些配置在该时标都落在画面洞 = True"
+        ],
+        "claim": "3.300 s 那张网页画格可以靠调留边或帧数从归档版取出。",
+        "class": "configuration-or-extraction",
+        "id": "E3",
+        "verdict": "排除：归档画面覆盖在 3.2–3.6 s 为空，该时标不可能产出画格。"
+      }
+    ],
+    "frozen_record_only": [
+      {
+        "basis": [
+          "洞条目 targets = [3233333, 3300000, 3366666]，pictures_null = True",
+          "补零区间 = [{'end': 27200, 'first': 25600}]",
+          "封包 scan.json 的 picture_gap 候选 = [{'id': 'hit-a89fff29594a5b04dff1221a', 'kind': 'sound_gap', 'channel': None, 'start_us': 2000000, 'end_us': 2200000}, {'id': 'hit-b97ab19c88a367959483d27e', 'kind': 'picture_gap', 'channel': None, 'start_us': 3200000, 'end_us': 3600000}, {'id': 'hit-d39b6e57dd894caabe952cfe', 'kind': 'sound_gap', 'channel': None, 'start_us': 3200000, 'end_us': 3400000}]",
+          "归档母带 sha256 = a82ff11e7737c4e66ac0ec13565652ecef05392fae6e70c8689d49523fc2cb44"
+        ],
+        "claim": "归档母带在 3.2–3.6 s 存在画面洞、3.2–3.4 s 存在伴音洞。",
+        "class": "frozen-record-only",
+        "id": "R1",
+        "verdict": "只能复核冻结记录自洽，不能复核母带本身：母带字节未随件。"
+      },
+      {
+        "basis": [
+          "索引含整包 sha256 = False",
+          "成员核对 = True；索引声明 8 个成员，ZIP 内 9 个文件"
+        ],
+        "claim": "这枚 ZIP 在冻结时就已作为整包字节通过验真。",
+        "class": "frozen-record-only",
+        "id": "R2",
+        "verdict": "未知：描述符未随件，索引只有成员摘要；只能确认成员与索引一致。"
+      }
+    ],
+    "limits": [
+      "冻结 scan 是当时测量的记录，不是母带本身；若怀疑当时测量或选流有误，必须用母带字节复测。",
+      "网页画格只携带像素；手抄时标可能有笔误，本次以手抄值为输入。",
+      "current 扫描是本次新生成的观察，不是历史证据，也未封包。",
+      "浏览尺寸是 80x48 灰阶缩略图；其上“像素相同”不等于源栅格相同。"
+    ],
+    "pixel_identical_unattributable": [
+      {
+        "basis": [
+          "网页像素 = 归档卡片帧 = True",
+          "网页像素 = 当前长格派生帧 = True",
+          "网页像素 = 当前 3.300 s 派生帧 = True",
+          "源帧：归档 1000000、当前长格 1040000、当前 3.300 s 3280000",
+          "current 上 1.040 s 与 3.280 s 浏览像素相同但全分辨率不同：15360/15360 个代码值不同",
+          "归档母带字节未随件，无法对归档做全分辨率比对"
+        ],
+        "claim": "仅凭网页这一份像素，判定它出自归档源帧 1.000 s，还是当前源帧 1.040 / 3.280 s。",
+        "class": "pixel-identical-unattributable",
+        "id": "U1",
+        "verdict": "像素相同也不能判定：该 80x48 像素同时等于归档卡片帧和当前两处画面；current 全分辨率已证明 1.04 与 3.28 两帧并非同一栅格，归档全分辨率不可得。"
+      },
+      {
+        "basis": [
+          "手抄记录 = 'source: browser evidence preview (link expired)\\nprogramme time shown on page: 00:03.300000\\nnot copied: source-frame line, preview token, mapping'",
+          "预览缓存与 token 已失效"
+        ],
+        "claim": "把网页上看到的手抄时标 3.300 s 当作可靠输入。",
+        "class": "pixel-identical-unattributable",
+        "id": "U2",
+        "verdict": "无法独立校验手抄值：只有一行字，没有源帧或 token；若该值抄错，C1 也要降级。"
+      }
+    ],
+    "reconciliation": [
+      "C1 与 U1 不矛盾：C1 只用“手抄页面时标 3.300 s + 归档画面覆盖为空”判定版本，不依赖像素归属到某一源帧；U1 说的是反过来——单看这份浏览像素，无法指认它究竟由归档 1.000 s、当前 1.040 s 还是当前 3.280 s 的源栅格生成。",
+      "同一条浏览像素在 current 内部就对应两个全分辨率不同的源帧（1.040 s 与 3.280 s），因此浏览尺寸像素相同本身不构成“同一物理帧”的证据。"
+    ],
+    "what_would_decide": [
+      {
+        "added_observation": "另存画格时一并抄下“源帧”时标，或保留预览 token 与映射",
+        "class": "U1",
+        "control": "control/frozen-card-target-2.100.json 与 control/current-long-target-2.100.json",
+        "effect": "1.000000 归归档版；1.040000/3.280000 归 current；U1 从未知变可判"
+      },
+      {
+        "added_observation": "保存时截下含“节目时标 + 源帧”两行的整页，或保留 token 对应的映射",
+        "class": "U2",
+        "effect": "手抄值可与映射对齐核对，C1/U2 不再依赖单一手抄行"
+      },
+      {
+        "added_observation": "归档母带字节，或封包内保留源栅格而不只是 80x48 缩略图",
+        "class": "U1 的全分辨率分支",
+        "effect": "可做全分辨率比对，决定两帧是否同一物理帧"
+      },
+      {
+        "added_observation": "按索引 master_sha256 核对归档母带字节",
+        "class": "R1",
+        "effect": "可直接复测覆盖与空洞，R1 由记录级升为母带级"
+      },
+      {
+        "added_observation": "封包描述符（含整包 sha256）",
+        "class": "R2",
+        "effect": "可重算整包摘要，R2 变可判"
+      }
+    ]
+  },
+  "conclusions_sha256": "30077814a9c85d25b1ce0805c84c406a9c2fb59546efd06c83e8bf4cd3942ad3",
+  "generated_at": "2026-11-24T17:02:04+00:00",
+  "inputs_root": "/workspace/triage/inputs",
+  "not_done": [
+    "未修改任何产品代码或产品保管库。",
+    "未读取 triage/key，也未导入案例生成器。",
+    "未为历史数据补建扫描或冻结包；current 扫描只存在于临时目录。",
+    "未把当前母带视图当作当时视图。"
+  ],
+  "observations": {
+    "controls": {
+      "current-long-target-2.100.json": {
+        "frame": {
+          "file": "frame-02.pgm",
+          "source_us": 1040000,
+          "target_us": 2100000
+        },
+        "hit_id": "hit-7ff5216073cd733bb5a77e70",
+        "master_sha256": "bcc745dfdd201fec6ff0f57a0648c3e844bd2b4fa900c5e1ddb31840ceb518e1",
+        "note": "fresh derivation from current/current.mkv; not historical evidence",
+        "scan_id": "scan-7915cba2b7fb74013e0ee901"
+      },
+      "frozen-card-target-2.100.json": {
+        "frame": {
+          "file": "frame-02.pgm",
+          "source_us": 1000000,
+          "target_us": 2100000
+        },
+        "hit_id": "hit-a89fff29594a5b04dff1221a",
+        "kind": "sound_gap",
+        "master_sha256": "a82ff11e7737c4e66ac0ec13565652ecef05392fae6e70c8689d49523fc2cb44",
+        "note": "frozen ZIP entry: complete mapping, target + source",
+        "scan_id": "scan-a3a883b167b081102f69d4d4",
+        "span_us": [
+          2000000,
+          2200000
+        ]
+      }
+    },
+    "cross_version": {
+      "archive_card_source_us": 1000000,
+      "archive_full_resolution_available": false,
+      "browse_pixels_identical_archive_vs_current": true,
+      "current_card_source_at_3_300_us": 3280000,
+      "current_long_pixels_equal_to_web": true,
+      "current_long_source_us": 1040000,
+      "full_resolution_comparison": "无法进行：归档母带字节未随件",
+      "source_time_delta_us": 40000
+    },
+    "current_observation": {
+      "coverage": {
+        "picture": [
+          {
+            "end_us": 4000000,
+            "start_us": 0
+          }
+        ],
+        "sound": [
+          {
+            "end_us": 2000000,
+            "start_us": 0
+          },
+          {
+            "end_us": 3980000,
+            "start_us": 2200000
+          }
+        ]
+      },
+      "evidence_entry_sources_us": [
+        1040000,
+        1040000,
+        1040000
+      ],
+      "evidence_entry_targets_us": [
+        2033333,
+        2100000,
+        2166666
+      ],
+      "hits": [
+        {
+          "channel": 1,
+          "end_us": 1800000,
+          "kind": "silence",
+          "start_us": 1200000
+        },
+        {
+          "channel": null,
+          "end_us": 2200000,
+          "kind": "sound_gap",
+          "start_us": 2000000
+        },
+        {
+          "channel": 2,
+          "end_us": 2750000,
+          "kind": "clip",
+          "start_us": 2500000
+        }
+      ],
+      "is_historical_evidence": false,
+      "scan_id": "scan-2ca8524c22ec56eb4e36b1bf",
+      "sha256": "bcc745dfdd201fec6ff0f57a0648c3e844bd2b4fa900c5e1ddb31840ceb518e1"
+    },
+    "frozen_scan": {
+      "coverage_picture": [
+        {
+          "end_us": 3200000,
+          "start_us": 0
+        },
+        {
+          "end_us": 4000000,
+          "start_us": 3600000
+        }
+      ],
+      "coverage_sound": [
+        {
+          "end_us": 2000000,
+          "start_us": 0
+        },
+        {
+          "end_us": 3200000,
+          "start_us": 2200000
+        },
+        {
+          "end_us": 3980000,
+          "start_us": 3400000
+        }
+      ],
+      "covers_card_label": true,
+      "covers_web_label": false,
+      "extent": {
+        "end_us": 4000000,
+        "start_us": 0
+      },
+      "hits": [
+        {
+          "channel": 1,
+          "end_us": 1800000,
+          "id": "hit-7a8317c22f0c58bdf04afbd2",
+          "kind": "silence",
+          "start_us": 1200000
+        },
+        {
+          "channel": null,
+          "end_us": 2200000,
+          "id": "hit-a89fff29594a5b04dff1221a",
+          "kind": "sound_gap",
+          "start_us": 2000000
+        },
+        {
+          "channel": 2,
+          "end_us": 2750000,
+          "id": "hit-5f94e451439790eb6ec8af5a",
+          "kind": "clip",
+          "start_us": 2500000
+        },
+        {
+          "channel": null,
+          "end_us": 3600000,
+          "id": "hit-b97ab19c88a367959483d27e",
+          "kind": "picture_gap",
+          "start_us": 3200000
+        },
+        {
+          "channel": null,
+          "end_us": 3400000,
+          "id": "hit-d39b6e57dd894caabe952cfe",
+          "kind": "sound_gap",
+          "start_us": 3200000
+        }
+      ],
+      "picture_metrics": {
+        "frames": 41,
+        "max_step_us": 2000000
+      },
+      "scan_id": "scan-a3a883b167b081102f69d4d4"
+    },
+    "full_resolution_probe": {
+      "browse_pixels_equal": true,
+      "codes_compared": 15360,
+      "differing_codes": 15360,
+      "full_pixels_equal": false,
+      "insert_source_us": 3280000,
+      "long_source_us": 1040000,
+      "source": "current/current.mkv (available bytes, fresh decode)"
+    },
+    "integrity": {
+      "archive_bytes_available": false,
+      "archived_master_sha256": "a82ff11e7737c4e66ac0ec13565652ecef05392fae6e70c8689d49523fc2cb44",
+      "chain_ok": true,
+      "current_equals_archived_master": false,
+      "current_sha256": "bcc745dfdd201fec6ff0f57a0648c3e844bd2b4fa900c5e1ddb31840ceb518e1",
+      "inventory": [
+        {
+          "bytes": 751,
+          "kind": "complete-mapping-control",
+          "path": "control/README.md",
+          "sha256": "4f9edeba3ac87d033be3e6757ec61eb8b9b4b6a30c5cf166436a39fb01e301e6",
+          "sha256_now": "4f9edeba3ac87d033be3e6757ec61eb8b9b4b6a30c5cf166436a39fb01e301e6",
+          "unchanged": true
+        },
+        {
+          "bytes": 357,
+          "kind": "complete-mapping-control",
+          "path": "control/current-long-target-2.100.json",
+          "sha256": "4ec094b6b493f318f18fea4ef2281de6c5238205a725048d200bac40109a17a0",
+          "sha256_now": "4ec094b6b493f318f18fea4ef2281de6c5238205a725048d200bac40109a17a0",
+          "unchanged": true
+        },
+        {
+          "bytes": 410,
+          "kind": "complete-mapping-control",
+          "path": "control/frozen-card-target-2.100.json",
+          "sha256": "cbc39ef00d56d40304c409ff6a079d6765530ea49ec223f487f3bf6d98b5b7d6",
+          "sha256_now": "cbc39ef00d56d40304c409ff6a079d6765530ea49ec223f487f3bf6d98b5b7d6",
+          "unchanged": true
+        },
+        {
+          "bytes": 290705,
+          "kind": "current-master",
+          "path": "current/current.mkv",
+          "sha256": "bcc745dfdd201fec6ff0f57a0648c3e844bd2b4fa900c5e1ddb31840ceb518e1",
+          "sha256_now": "bcc745dfdd201fec6ff0f57a0648c3e844bd2b4fa900c5e1ddb31840ceb518e1",
+          "unchanged": true
+        },
+        {
+          "bytes": 435,
+          "kind": "browser-saved-picture",
+          "path": "png/saved-03-300000.png",
+          "sha256": "9377f8c783957ea10160e1827ccf5a95f01b20c1b1d11e68b4a94eba20f8abdd",
+          "sha256_now": "9377f8c783957ea10160e1827ccf5a95f01b20c1b1d11e68b4a94eba20f8abdd",
+          "unchanged": true
+        },
+        {
+          "bytes": 145,
+          "kind": "hand-copied-page-label",
+          "path": "png/saved-03-300000.txt",
+          "sha256": "e1ca41f267dc924409930d8deaf470a06968607c596148381e62367c8762e0a7",
+          "sha256_now": "e1ca41f267dc924409930d8deaf470a06968607c596148381e62367c8762e0a7",
+          "unchanged": true
+        },
+        {
+          "bytes": 4406,
+          "kind": "frozen-evidence-bundle",
+          "path": "zip/seal-9665874c6d790418b93140eb.zip",
+          "sha256": "0ff5718e4ff8c9d0ccf08a34359f7cb5251cd8aba786a998fc60bbd014ddc557",
+          "sha256_now": "0ff5718e4ff8c9d0ccf08a34359f7cb5251cd8aba786a998fc60bbd014ddc557",
+          "unchanged": true
+        }
+      ],
+      "seal": {
+        "bundle_sha256_present": false,
+        "declared_members": 8,
+        "declared_members_present": true,
+        "file": "seal-9665874c6d790418b93140eb.zip",
+        "files_in_zip": 9,
+        "files_not_in_member_table": [
+          "index.json"
+        ],
+        "id_matches_name": true,
+        "id_matches_recomputation": true,
+        "master_sha256": "a82ff11e7737c4e66ac0ec13565652ecef05392fae6e70c8689d49523fc2cb44",
+        "members_ok": true,
+        "review_status": "pending",
+        "seal_id": "seal-9665874c6d790418b93140eb",
+        "seal_id_recomputed": "seal-9665874c6d790418b93140eb"
+      }
+    },
+    "web_png": {
+      "configs_on_frozen_scan_with_web_label_only": 2440,
+      "current_source_at_card_label_us": 1040000,
+      "current_source_at_web_label_us": 3280000,
+      "equals_current_derivation_at_card_label": true,
+      "equals_current_derivation_at_web_label": true,
+      "equals_zip_card_at_1_500": true,
+      "equals_zip_card_at_2_100": true,
+      "equals_zip_card_at_2_167": true,
+      "equals_zip_card_frame": true,
+      "every_such_config_falls_in_picture_hole": true,
+      "file": "png/saved-03-300000.png",
+      "label_copied_by_hand": "source: browser evidence preview (link expired)\nprogramme time shown on page: 00:03.300000\nnot copied: source-frame line, preview token, mapping\n",
+      "label_us": 3300000,
+      "pixel_sha256": "9ea8b14b674cc0a7f909de0c0b1f799510adbb766217fb23b29444a1c3437184",
+      "zip_card_members_all_identical": true,
+      "zip_targets_equal_to_web_label": [
+        {
+          "entry": "hit-d39b6e57dd894caabe952cfe",
+          "file": null,
+          "source_us": null,
+          "target_us": 3300000
+        }
+      ]
+    },
+    "zip_card_entry": {
+      "hit_id": "hit-a89fff29594a5b04dff1221a",
+      "members_pixel_identical": true,
+      "same_labels_from_other_hits": [],
+      "sound": {
+        "channels": 2,
+        "clock_offset_us": 2000000,
+        "end_source_sample": 17600,
+        "file": "sound.wav",
+        "filled_sample_ranges": [
+          {
+            "end": 17600,
+            "first": 16000
+          }
+        ],
+        "first_source_sample": 16000,
+        "sample_rate": 8000
+      },
+      "sources_us": [
+        1000000,
+        1000000,
+        1000000
+      ],
+      "span": {
+        "end_us": 2200000,
+        "start_us": 2000000
+      },
+      "targets_us": [
+        2033333,
+        2100000,
+        2166666
+      ],
+      "three_targets_share_one_source": true,
+      "unique_config_carries_picture_coverage": true,
+      "unique_config_for_three_labels": [
+        {
+          "all_labels_in_picture_coverage": true,
+          "channel": null,
+          "end_us": 2200000,
+          "frames": 3,
+          "hit_id": "hit-a89fff29594a5b04dff1221a",
+          "kind": "sound_gap",
+          "padding_ms": 0,
+          "start_us": 2000000
+        }
+      ]
+    },
+    "zip_hole_entry": {
+      "hit_id": "hit-d39b6e57dd894caabe952cfe",
+      "pictures_null": true,
+      "sound_fill": [
+        {
+          "end": 27200,
+          "first": 25600
+        }
+      ],
+      "sound_span_samples": [
+        25600,
+        27200
+      ],
+      "span": {
+        "end_us": 3400000,
+        "start_us": 3200000
+      },
+      "targets_us": [
+        3233333,
+        3300000,
+        3366666
+      ]
+    }
+  },
+  "product": {
+    "files": {
+      "slatewatch/clock.py": "9fb7ec5b8c3d95acab9c6256652286944f42f1a9148fd4279598f38d4b280da5",
+      "slatewatch/desk/preview.py": "0ca680f18fc30cc55979432139a72688072fada3d077e4626d4e7b65206e0162",
+      "slatewatch/evidence.py": "fd85b8b0a1228b0d4880107ce5dce3144e74c0d2a5f454229715f150c67d8474",
+      "slatewatch/hits.py": "3b141217d0fa74e8ecca4712584de7a0669c74747d92e8a2342a94da818c9fc5",
+      "slatewatch/media.py": "816558a2de514dfaa971c6ee215f08469e892a25f32b435711143f57678316a3",
+      "slatewatch/picture.py": "29301dac6eabfb0bd30a90155f9a23060d28d374ea4f899d57424fe814d55b7d",
+      "slatewatch/reels.py": "08f0318a544cce366343d2e0db0faea69859ac46115aa6001b093851e72a1084",
+      "slatewatch/rules.py": "72a8bbbe3a3219d4594941d2d0bf51ff88cdd2b760f61b792c0848cb89db2289",
+      "slatewatch/scan.py": "b39cd0509bfaa634bd8392c64448d3875dc06e0ab9e89e6a47048cabd945db54",
+      "slatewatch/service.py": "4acdf53371d2377560e57c1fae242e857dbed2a5259b13a1e723ce82a39543bd",
+      "slatewatch/sound.py": "1184db9c0a3c9901b647647c8ad241676b36445d576a0747aaa20b079a66db97"
+    },
+    "head": "3fb16b7bf50f4fb7896e6314e72b5a026bbb8a48",
+    "slatewatch_worktree_clean": true
+  }
+}

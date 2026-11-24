@@ -1,0 +1,11 @@
+{
+  "frame": {
+    "file": "frame-02.pgm",
+    "source_us": 1040000,
+    "target_us": 2100000
+  },
+  "hit_id": "hit-7ff5216073cd733bb5a77e70",
+  "master_sha256": "bcc745dfdd201fec6ff0f57a0648c3e844bd2b4fa900c5e1ddb31840ceb518e1",
+  "note": "fresh derivation from current/current.mkv; not historical evidence",
+  "scan_id": "scan-7915cba2b7fb74013e0ee901"
+}

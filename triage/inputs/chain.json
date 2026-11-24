@@ -1,0 +1,56 @@
+{
+  "available_but_not_evidence": [
+    "current/current.mkv (the only master bytes on hand)"
+  ],
+  "case": "slatewatch-attribution-triage",
+  "not_available": [
+    "archive master bytes",
+    "preview cache, token and per-preview mapping",
+    "seal descriptor record carrying the whole-bundle sha256"
+  ],
+  "provenance": "repository-generated drill media; no production data",
+  "received": [
+    {
+      "bytes": 751,
+      "kind": "complete-mapping-control",
+      "path": "control/README.md",
+      "sha256": "4f9edeba3ac87d033be3e6757ec61eb8b9b4b6a30c5cf166436a39fb01e301e6"
+    },
+    {
+      "bytes": 357,
+      "kind": "complete-mapping-control",
+      "path": "control/current-long-target-2.100.json",
+      "sha256": "4ec094b6b493f318f18fea4ef2281de6c5238205a725048d200bac40109a17a0"
+    },
+    {
+      "bytes": 410,
+      "kind": "complete-mapping-control",
+      "path": "control/frozen-card-target-2.100.json",
+      "sha256": "cbc39ef00d56d40304c409ff6a079d6765530ea49ec223f487f3bf6d98b5b7d6"
+    },
+    {
+      "bytes": 290705,
+      "kind": "current-master",
+      "path": "current/current.mkv",
+      "sha256": "bcc745dfdd201fec6ff0f57a0648c3e844bd2b4fa900c5e1ddb31840ceb518e1"
+    },
+    {
+      "bytes": 435,
+      "kind": "browser-saved-picture",
+      "path": "png/saved-03-300000.png",
+      "sha256": "9377f8c783957ea10160e1827ccf5a95f01b20c1b1d11e68b4a94eba20f8abdd"
+    },
+    {
+      "bytes": 145,
+      "kind": "hand-copied-page-label",
+      "path": "png/saved-03-300000.txt",
+      "sha256": "e1ca41f267dc924409930d8deaf470a06968607c596148381e62367c8762e0a7"
+    },
+    {
+      "bytes": 4406,
+      "kind": "frozen-evidence-bundle",
+      "path": "zip/seal-9665874c6d790418b93140eb.zip",
+      "sha256": "0ff5718e4ff8c9d0ccf08a34359f7cb5251cd8aba786a998fc60bbd014ddc557"
+    }
+  ]
+}
