@@ -13,7 +13,7 @@ PAGES = (
     ('compare', '版次比对', '/desk/compare'),
     ('seals', '冻结包', '/desk/seals'),
 )
-ASSETS = {'shell.css', 'review.css', 'media.css', 'intake.js'}
+ASSETS = {'shell.css', 'review.css', 'media.css', 'intake.js', 'audition.js'}
 
 
 @lru_cache

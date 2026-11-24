@@ -81,7 +81,7 @@ def route(handler, parsed):
             return scan_action(app, cache, key, operation, data)
         case 'GET', ['desk', 'previews', key]:
             mapping, _assets = cache.get(key)
-            return html(preview.show(key, mapping))
+            return html(preview.show(key, mapping, app.vault))
         case 'GET', ['desk', 'previews', key, name]:
             _mapping, assets = cache.get(key)
             if name not in assets:
@@ -120,7 +120,7 @@ def scan_action(app, cache, key, operation, data):
         raise Missing('工作台没有此操作。')
     padding, frames = forms.number(data, 'padding_ms', 120), forms.number(data, 'frames', 3)
     if operation == 'preview':
-        token = preview.create(app, cache, key, hit_id, padding, frames)
+        token = preview.create(app, cache, key, hit_id, padding, frames, data.get('reference') or None)
         return redirect(f'/desk/previews/{token}')
     request = {'hit_ids': [hit_id], 'padding_ms': padding, 'frames': frames}
     if operation == 'seal':

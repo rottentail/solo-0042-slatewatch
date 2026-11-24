@@ -18,6 +18,8 @@ python -m slatewatch.http --root ./slatewatch-vault
 
 浏览器打开 <http://127.0.0.1:8974/desk>。在「母带与规则」登记媒体和规则后开始扫描。点选时间轴或候选列表中的异常可以播放伴音、查看样本对应的源画格，也可记录制作意图和人工裁决。浏览器画格以 PNG 展示，原 ZIP 仍包含 PGM 和时间映射。伴音未选轨会单独标明，摘片合成的零采样按原轨范围列出。
 
+试听页可以把一个短段准备成「主混 / 参考轨对听」：选取另一卷已登记母带后，按同一节目区间切取参考轨短段，与主混一起留在本预览内，切换时保持节目位置，不重新请求媒体。两条源流采样率不同（如 44.1 与 48 kHz）或录音起点不同都可以对听；试听信号可能为顺畅切听转换到统一采样率，页面和对听映射 clock.json 会列出每轨的原母带、源流、原采样区间与补零区间，转换和补零不算原声。对听只读源母带，不改变主混扫描与既有证据，预览仍受既有单条与总缓存上限约束。
+
 「版次比对」显示同节目时标上的匹配和各版独有候选。「冻结包」保留冻结当时的结论，并提供独立核验与下载。浏览器预览是当前进程内的临时结果。有长期交接需求时，使用即时证据下载或冻结包。
 
 ## 一次审片
@@ -35,7 +37,7 @@ curl -fsS "$BASE/scans/SCAN_ID/review"
 curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d '{"hit_ids":["HIT_ID"],"padding_ms":80,"frames":3}' -o evidence.zip
 ```
 
-`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
+`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。`mix-main` 是 44.1 kHz 主混，含一段右声道削顶；`mix-ref` 是 48 kHz 参考轨，容器录音起点靠后 0.8 秒，中间缺几包并有一段实录为零；`mix-long` 是 70 秒长卷，用于核对预览容量上限。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
 
 ## 接口
 
@@ -62,4 +64,4 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包，另用 `mix-main` 与 `mix-ref` 逐样本核对对听切换前后的节目位置（含缺口边界与参考轨实录为零两种情形），并确认试听不改变扫描与证据。自动测试套件暂缓。

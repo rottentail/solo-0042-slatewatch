@@ -18,6 +18,6 @@ Slatewatch 面向录播技术验收员。输入是已经剪定的短节目母带
 
 ## 职责
 
-`media` 管理、选择和解码流，`clock` 统一时标，`picture` 与 `sound` 量测，`scan` 产生不可变观测，`rules` 校验量测规则，`review` 合成审片状态，`compare` 比对扫描，`evidence` 生成摘片，`seal` 交付和验证，`store` 持久化，`service` 和 `http` 暴露实际入口。
+`media` 管理、选择和解码流，`clock` 统一时标，`picture` 与 `sound` 量测，`scan` 产生不可变观测，`rules` 校验量测规则，`review` 合成审片状态，`compare` 比对扫描，`evidence` 生成摘片，`audition` 为试听切取同节目区间的参考轨短段并做可核对的试听转换，`seal` 交付和验证，`store` 持久化，`service` 和 `http` 暴露实际入口。
 
 验证方法与可用输入见 README。自动测试套件延后，当前以有边界的真实 HTTP 媒体工作流验证健康基线。
