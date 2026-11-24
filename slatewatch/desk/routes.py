@@ -112,9 +112,19 @@ def scan_action(app, cache, key, operation, data):
         hit = find_hit(app.vault.get('scan', key), hit_id)
         request = {'kind': hit['kind'], 'start_us': forms.number(data, 'start_us'),
                    'end_us': forms.number(data, 'end_us'), 'reason': data.get('reason')}
+        if data.get('record'):
+            request['record'] = data['record']
         if hit['channel'] is not None:
             request['channel'] = hit['channel']
         app.add_intent(key, request)
+        return redirect(selected_url(key, hit_id))
+    if operation == 'intent-correction':
+        request = {'intent_seq': forms.number(data, 'intent_seq'),
+                   'start_us': forms.number(data, 'start_us'),
+                   'end_us': forms.number(data, 'end_us'), 'reason': data.get('reason')}
+        if data.get('record'):
+            request['record'] = data['record']
+        app.correct_intent(key, request)
         return redirect(selected_url(key, hit_id))
     if operation not in ('preview', 'evidence', 'seal'):
         raise Missing('工作台没有此操作。')

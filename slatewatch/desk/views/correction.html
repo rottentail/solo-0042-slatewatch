@@ -1,0 +1,12 @@
+<details><summary>登记制作方更正</summary>
+  <form method="post" action="/desk/scans/$scan/intent-correction" class="actions">
+    <input name="hit" value="$hit" type="hidden">
+    <label>被更正意图<select name="intent_seq" required>$options</select></label>
+    <label>更正后起点（微秒）<input name="start_us" type="number" min="0" required></label>
+    <label>更正后终点（微秒）<input name="end_us" type="number" min="1" required></label>
+    <label>制作记录（可选）<input name="record" maxlength="120"></label>
+    <label>更正说明<input name="reason" required maxlength="350"></label>
+    <button type="submit">追加更正事件</button>
+  </form>
+  <p class="muted">更正只追加事件，不抹掉原意图；原区间保留为「已被更正」，交接仍可查到先前放行依据。</p>
+</details>

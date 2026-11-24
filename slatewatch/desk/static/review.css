@@ -14,11 +14,22 @@
 .state.expected, .state.accepted, .state.pass { color: #115c43; background: #dcf1e5; }
 .state.held, .state.hold { color: #8e3126; background: #fce5df; }
 .state.pending { color: #794a00; background: #fff0cb; }
+.state.superseded { color: #6a3b78; background: #f0e4f6; }
+.state.unmeasured { color: #6d214f; background: #f7e0ee; }
 .selected { background: #e9f5f2; }
 .finding { border-top: 1px solid var(--line); margin-top: 21px; padding-top: 13px; }
 .finding details { margin: 9px 0; }
 .finding summary { cursor: pointer; width: fit-content; }
 .finding input[type="number"] { width: 112px; }
+.segments td:first-child, .ledger td:first-child { white-space: nowrap; }
+tr.basis.expected { border-left: 3px solid #2e8a63; }
+tr.basis.pending { border-left: 3px solid #c48a1b; }
+tr.basis.unmeasured { border-left: 3px solid #a02f74; }
+.ledger small { display: block; color: var(--muted); margin-top: 2px; }
+tr.ledger.superseded { opacity: 0.72; }
+.ruling-trail { margin: 8px 0 4px; padding-left: 18px; display: grid; gap: 3px; }
+.intent-panel { border-top: 1px solid var(--line); margin-top: 24px; padding-top: 12px; }
+.intent-panel .actions input:not([type="number"]) { min-width: 220px; }
 @media (max-width: 720px) {
   .workspace { display: block; }
   .sidebar { border-right: 0; border-bottom: 1px solid var(--line); }

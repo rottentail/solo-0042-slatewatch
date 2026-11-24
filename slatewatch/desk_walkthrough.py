@@ -67,7 +67,44 @@ def run(server, root):
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
+
+    corrected_scan = tour.scan('picture-hole')
+    corrected_route = f'/desk/scans/{corrected_scan["id"]}'
+    black = tour.hit(corrected_scan, 'black')
+    silence = next(hit for hit in corrected_scan['hits'] if hit['kind'] == 'silence' and hit['channel'] == 1)
+    hole = tour.hit(corrected_scan, 'picture_gap')
+    first_intent = tour.call(f'/scans/{corrected_scan["id"]}/intents', {
+        'kind': 'black', 'start_us': black['start_us'], 'end_us': black['end_us'],
+        'reason': '制作记录 A：片头黑场', 'record': 'PROD-A-17'}, 201)
+    tour.call(f'/scans/{corrected_scan["id"]}/intents', {
+        'kind': 'black', 'start_us': black['start_us'], 'end_us': black['end_us'] - 80000,
+        'reason': '制作记录 B：交接单', 'record': 'PROD-B-04'}, 201)
+    page_origin, _, ledger_page = request(origin, corrected_route + '?' + urlencode({'hit': black['id']}))
+    assert '采信依据片段'.encode() in ledger_page and '制作意图台账'.encode() in ledger_page
+    assert 'PROD-A-17'.encode() in ledger_page and '登记制作方更正'.encode() in ledger_page
+    cut = black['start_us'] + 120000
+    _, _, corrected_page = request(origin, corrected_route + '/intent-correction', {
+        'hit': black['id'], 'intent_seq': first_intent['seq'], 'start_us': black['start_us'],
+        'end_us': cut, 'record': 'PROD-A-17-R1', 'reason': '制作方更正：黑场提前收束'})
+    assert '已被更正'.encode() in corrected_page and '恢复待查'.encode() in corrected_page
+    assert '仍有采信依据'.encode() in corrected_page and '更正自'.encode() in corrected_page
+    # ruling history stays visible after accept then reset
+    request(origin, corrected_route + '/ruling', {
+        'hit': black['id'], 'outcome': 'accept', 'reason': '交接前人工放行', 'reviewer': '甲班'})
+    request(origin, corrected_route + '/ruling', {
+        'hit': black['id'], 'outcome': 'reset', 'reason': '制作方更正撤回', 'reviewer': '乙班'})
+    _, _, trail_page = request(origin, corrected_route + '?' + urlencode({'hit': black['id']}))
+    assert '人工裁决与操作史'.encode() in trail_page
+    assert '交接前人工放行'.encode() in trail_page and '制作方更正撤回'.encode() in trail_page
+    # channel-qualified silence and unmeasured hole render their basis
+    _, _, silence_page = request(origin, corrected_route + '?' + urlencode({'hit': silence['id']}))
+    assert '恢复待查'.encode() in silence_page
+    request(origin, corrected_route + '/ruling', {
+        'hit': hole['id'], 'outcome': 'accept', 'reason': '缺口候选放行', 'reviewer': '甲班'})
+    _, _, hole_page = request(origin, corrected_route + '?' + urlencode({'hit': hole['id']}))
+    assert '从无可证实画面'.encode() in hole_page and '人工通过'.encode() in hole_page
     print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：意图台账、更正事件、采信片段与操作史交接视图均通过')
 
 
 def main():

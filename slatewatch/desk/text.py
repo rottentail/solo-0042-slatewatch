@@ -10,6 +10,10 @@ STATUS = {
     'pending': '待审', 'expected': '制作意图覆盖', 'accepted': '人工通过',
     'held': '人工扣留', 'hold': '扣留', 'pass': '已通过',
 }
+BASIS = {
+    'expected': '仍有采信依据', 'pending': '恢复待查', 'unmeasured': '从无可证实画面',
+}
+INTENT_STATE = {'active': '现行', 'superseded': '已被更正'}
 
 
 def safe(value):

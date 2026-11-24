@@ -6,8 +6,8 @@ from .clock import InputError, integer, shape, text
 from .compare import compare
 from .evidence import extract
 from .media import inspect
-from .review import adjudicate, find_hit, intent, ruling
-from .rules import canonical, identifier, new_policy
+from .review import adjudicate, correction, find_hit, intent, ruling
+from .rules import INTENT_CORRECTION, canonical, identifier, new_policy
 from .scan import measure, scan_identity
 from .seal import pack, verify
 from .store import Vault
@@ -43,13 +43,20 @@ class Slatewatch:
         scan = self.vault.get('scan', scan_id)
         return self.vault.append(scan_id, 'intent', intent(scan, data))
 
+    def correct_intent(self, scan_id, data):
+        scan = self.vault.get('scan', scan_id)
+        intents, corrections, _rulings = self.vault.timeline(scan_id)
+        record = correction(scan, intents, corrections, data)
+        return self.vault.append(scan_id, INTENT_CORRECTION, record)
+
     def add_ruling(self, scan_id, data):
         scan = self.vault.get('scan', scan_id)
         return self.vault.append(scan_id, 'ruling', ruling(scan, data))
 
     def review(self, scan_id):
         scan = self.vault.get('scan', scan_id)
-        return adjudicate(scan, *self.vault.timeline(scan_id))
+        intents, corrections, rulings = self.vault.timeline(scan_id)
+        return adjudicate(scan, intents, rulings, corrections)
 
     def compare(self, data):
         shape(data, ('before', 'after'), ('minimum_permille',))
@@ -89,7 +96,8 @@ class Slatewatch:
 
     def seal(self, scan_id, data):
         scan, asset, hits, padding, frames = self._selection(scan_id, data)
-        review = adjudicate(scan, *self.vault.timeline(scan_id))
+        intents, corrections, rulings = self.vault.timeline(scan_id)
+        review = adjudicate(scan, intents, rulings, corrections)
         path = self.vault.object_path(asset['sha256'])
         excerpts = extract(path, scan, hits, padding, frames)
         record, data = pack({'scan': scan, 'review': review, 'master_sha256': asset['sha256']}, excerpts)

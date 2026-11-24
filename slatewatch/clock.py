@@ -95,6 +95,13 @@ def uncovered(coverage, extent):
         yield Span(cursor, extent.end)
 
 
+def partition(boundaries, extent):
+    """Cut one half-open span at every boundary strictly inside it."""
+    cuts = sorted({point for point in boundaries if extent.start < point < extent.end})
+    points = [extent.start, *cuts, extent.end]
+    return [Span(left, right) for left, right in zip(points, points[1:])]
+
+
 def timestamp(frame, origin):
     if frame.pts is None or frame.time_base is None:
         raise InputError('decoded frame has no presentation timestamp')

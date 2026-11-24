@@ -168,8 +168,114 @@ def verify(tour):
     return {'verified': verified, 'tampered': tour.call(uri + '/verify', expected=409)}
 
 
+def handoff(tour):
+    """Black-field correction, channel-qualified silence and a frozen pre-correction handoff."""
+    record = tour.scan('picture-hole')
+    uri = f"/scans/{record['id']}"
+    black = tour.hit(record, 'black')
+    silence = next(hit for hit in record['hits'] if hit['kind'] == 'silence' and hit['channel'] == 1)
+    hole = tour.hit(record, 'picture_gap')
+
+    def black_view():
+        view = tour.call(uri + '/review')
+        return view, next(hit for hit in view['hits'] if hit['id'] == black['id'])
+
+    # Two overlapping black intents from different production records cover the candidate.
+    first = tour.call(uri + '/intents', {
+        'kind': 'black', 'start_us': black['start_us'], 'end_us': black['end_us'],
+        'reason': '制作记录 A：片头黑场', 'record': 'PROD-A-17'}, 201)
+    second = tour.call(uri + '/intents', {
+        'kind': 'black', 'start_us': black['start_us'], 'end_us': black['end_us'] - 80000,
+        'reason': '制作记录 B：片头黑场交接单', 'record': 'PROD-B-04'}, 201)
+    _, covered = black_view()
+    assert covered['status'] == 'expected'
+    assert {segment['basis'] for segment in covered['segments']} == {'expected'}
+
+    # Manual accept is frozen before the producer correction, then withdrawn.
+    tour.call(uri + '/rulings', {'hit_id': black['id'], 'outcome': 'accept',
+                                 'reason': '交接前人工放行', 'reviewer': '甲班'}, 201)
+    accepted_seal = tour.call(uri + '/seals', {'hit_ids': [black['id']]}, 201)
+    tour.call(uri + '/rulings', {'hit_id': black['id'], 'outcome': 'reset',
+                                 'reason': '制作方更正，撤回放行重新核对', 'reviewer': '乙班'}, 201)
+    view, withdrawn = black_view()
+    assert withdrawn['status'] == 'expected' and withdrawn['ruling']['outcome'] == 'reset'
+    history = [event['outcome'] for event in view['rulings'] if event['hit_id'] == black['id']]
+    assert history == ['accept', 'reset']
+
+    # Producer corrects record A: only the first 120 ms of the original span still stand.
+    cut = black['start_us'] + 120000
+    corrected = tour.call(uri + '/intent-corrections', {
+        'intent_seq': first['seq'], 'start_us': black['start_us'], 'end_us': cut,
+        'reason': '制作方更正：黑场提前收束', 'record': 'PROD-A-17-R1'}, 201)
+    view, after = black_view()
+    assert after['status'] == 'pending'
+    assert [(segment['start_us'], segment['end_us'], segment['basis'], segment['intent_sequences'])
+            for segment in after['segments']] == [
+        (0, cut, 'expected', sorted((second['seq'], corrected['seq']))),
+        (cut, second['end_us'], 'expected', [second['seq']]),
+        (second['end_us'], black['end_us'], 'pending', []),
+    ]
+    ledger = {row['seq']: row for row in view['intents']}
+    assert ledger[first['seq']]['state'] == 'superseded'
+    assert ledger[first['seq']]['reason'] == '制作记录 A：片头黑场'
+    assert ledger[corrected['seq']]['state'] == 'active'
+    assert ledger[corrected['seq']]['corrected_from_seq'] == first['seq']
+    assert ledger[second['seq']]['state'] == 'active'
+    assert view['intent_events'][0]['record'] == 'PROD-A-17'
+    double = tour.call(uri + '/intent-corrections', {
+        'intent_seq': first['seq'], 'start_us': 0, 'end_us': cut, 'reason': '重复更正'}, expected=400)
+    unknown = tour.call(uri + '/intent-corrections', {
+        'intent_seq': 2 ** 31, 'start_us': 0, 'end_us': cut, 'reason': '找不到意图'}, expected=404)
+    inverted = tour.call(uri + '/intent-corrections', {
+        'intent_seq': second['seq'], 'start_us': cut, 'end_us': 0, 'reason': '反向区间'}, expected=400)
+    no_channel = tour.call(uri + '/intents', {
+        'kind': 'silence', 'start_us': silence['start_us'], 'end_us': silence['end_us'],
+        'reason': '未指声道'}, expected=400)
+
+    # Silence intent on the other channel cannot support a channel-1 finding.
+    tour.call(uri + '/intents', {
+        'kind': 'silence', 'channel': 2, 'start_us': silence['start_us'], 'end_us': silence['end_us'],
+        'reason': '误指右声道的静音', 'record': 'PROD-C-02'}, 201)
+    sound_view = tour.call(uri + '/review')
+    wrong = next(hit for hit in sound_view['hits'] if hit['id'] == silence['id'])
+    assert wrong['status'] == 'pending' and all(s['basis'] == 'pending' for s in wrong['segments'])
+    matched = tour.call(uri + '/intents', {
+        'kind': 'silence', 'channel': 1, 'start_us': silence['start_us'], 'end_us': silence['end_us'],
+        'reason': '左声道确认为有意静音', 'record': 'PROD-C-03'}, 201)
+    sound_view = tour.call(uri + '/review')
+    right = next(hit for hit in sound_view['hits'] if hit['id'] == silence['id'])
+    assert right['status'] == 'expected'
+    assert right['segments'][0]['basis'] == 'expected' and right['segments'][0]['intent_sequences'] == [matched['seq']]
+
+    # A ruling cannot turn a coverage hole into measured material.
+    tour.call(uri + '/rulings', {'hit_id': hole['id'], 'outcome': 'accept',
+                                 'reason': '交接放行画面缺口候选', 'reviewer': '甲班'}, 201)
+    hole_view = tour.call(uri + '/review')
+    accepted_hole = next(hit for hit in hole_view['hits'] if hit['id'] == hole['id'])
+    assert accepted_hole['status'] == 'accepted'
+    assert [(s['basis'], s['start_us'], s['end_us']) for s in accepted_hole['segments']] == [
+        ('unmeasured', hole['start_us'], hole['end_us'])]
+    assert hole_view['basis_us']['unmeasured'] >= hole['end_us'] - hole['start_us']
+
+    # The current handoff seal differs; the earlier frozen bundle keeps the pre-correction release.
+    current_seal = tour.call(uri + '/seals', {'hit_ids': [black['id']]}, 201)
+    assert current_seal['id'] != accepted_seal['id']
+    verified = tour.call(f"/seals/{accepted_seal['id']}/verify")
+    with ZipFile(BytesIO(tour.call(f"/seals/{accepted_seal['id']}/bundle"))) as archive:
+        frozen = json.loads(archive.read('review.json'))
+    frozen_black = next(hit for hit in frozen['hits'] if hit['id'] == black['id'])
+    assert frozen_black['status'] == 'accepted' and frozen_black['ruling']['reason'] == '交接前人工放行'
+    assert all(row['state'] == 'active' for row in frozen['intents'])
+    assert frozen['intent_corrections'] == []
+    return {'segments_after_correction': after['segments'], 'frozen_accept_seal': accepted_seal['id'],
+            'verified_frozen': verified['status'], 'current_seal': current_seal['id'],
+            'duplicate_rejected': double, 'unknown_intent': unknown,
+            'inverted_rejected': inverted, 'silence_without_channel': no_channel}
+
+
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog,
+             'verify': verify, 'handoff': handoff}
 
 
 def main():

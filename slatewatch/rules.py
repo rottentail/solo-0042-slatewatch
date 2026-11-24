@@ -10,6 +10,8 @@ PCM_FULL_SCALE = 1 << 15
 KINDS = ('black', 'freeze', 'silence', 'clip', 'picture_gap', 'sound_gap')
 INTENT_KINDS = frozenset(('black', 'freeze', 'silence'))
 CHANNEL_KINDS = frozenset(('silence', 'clip'))
+INTENT_STATES = ('active', 'superseded')
+INTENT_CORRECTION = 'intent_correction'
 
 
 def canonical(value):

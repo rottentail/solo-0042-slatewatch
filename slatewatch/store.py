@@ -8,7 +8,7 @@ import sqlite3
 import tempfile
 
 from .clock import Conflict, Missing
-from .rules import canonical
+from .rules import INTENT_CORRECTION, canonical
 
 
 class Vault:
@@ -80,10 +80,16 @@ class Vault:
         with self.connect() as connection:
             rows = connection.execute('SELECT seq, kind, document FROM review_events WHERE scan_id=? ORDER BY seq',
                                       (scan_id,)).fetchall()
-        intents, rulings = [], []
+        intents, corrections, rulings = [], [], []
         for seq, kind, document in rows:
-            (intents if kind == 'intent' else rulings).append({'seq': seq, **json.loads(document)})
-        return intents, rulings
+            record = {'seq': seq, **json.loads(document)}
+            if kind == 'intent':
+                intents.append(record)
+            elif kind == INTENT_CORRECTION:
+                corrections.append(record)
+            else:
+                rulings.append(record)
+        return intents, corrections, rulings
 
     def object_path(self, digest):
         return self.objects / digest

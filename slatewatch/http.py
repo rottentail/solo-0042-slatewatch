@@ -142,7 +142,8 @@ class Handler(BaseHTTPRequestHandler):
                 return code, operation(self.json_body()), 'application/json'
         if len(parts) == 3 and parts[0] == 'scans':
             _, key, action = parts
-            operations = {'intents': app.add_intent, 'rulings': app.add_ruling, 'seals': app.seal}
+            operations = {'intents': app.add_intent, 'intent-corrections': app.correct_intent,
+                          'rulings': app.add_ruling, 'seals': app.seal}
             if action in operations:
                 return 201, operations[action](key, self.json_body()), 'application/json'
             if action == 'evidence':

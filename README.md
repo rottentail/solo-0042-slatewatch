@@ -48,9 +48,10 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 | `GET /masters/{id}` | 读取已登记流描述及来源 |
 | `POST /policies`、`GET /policies/{id}` | 用 `label` 和可选 `thresholds` 生成规则版，或读取旧版。刻度及默认值见 `slatewatch/rules.py` |
 | `POST /scans`、`GET /scans/{id}` | 以 `master_id` 和 `policy_id` 获取覆盖区间、候选及固定规则，也可读取已存扫描 |
-| `POST /scans/{id}/intents` | 用 `kind`、`start_us`、`end_us`、`reason` 和可选 `channel` 登记有意的黑场、冻帧或静音 |
-| `POST /scans/{id}/rulings` | 用 `hit_id`、`outcome`、`reason` 和 `reviewer` 操作单个候选。`outcome` 为 `accept`、`hold` 或 `reset` |
-| `GET /scans/{id}/review` | 读取按当前意图及裁决投影的复核状态 |
+| `POST /scans/{id}/intents` | 用 `kind`、`start_us`、`end_us`、`reason`、声音指标必填的 `channel` 和可选 `record`（制作记录号）登记有意的黑场、冻帧或静音 |
+| `POST /scans/{id}/intent-corrections` | 用 `intent_seq`、更正后的 `start_us`/`end_us`、`reason` 和可选 `record` 追加制作方更正。原意图保留为 `superseded`，更正事件生成带 `corrected_from_seq` 链的新现行意图；同一意图只能更正一次 |
+| `POST /scans/{id}/rulings` | 用 `hit_id`、`outcome`、`reason` 和 `reviewer` 操作单个候选。`outcome` 为 `accept`、`hold` 或 `reset`，全部事件保留在裁决史中 |
+| `GET /scans/{id}/review` | 读取按当前意图台账、更正链及裁决投影的复核状态，含逐微秒片段的采信依据 |
 | `POST /compare` | 以 `before`、`after` 扫描 ID 及可选的 `minimum_permille` 对照共享时线上的候选 |
 | `POST /scans/{id}/evidence` | 按 1 至 6 个 `hit_ids`、可选 `padding_ms` 和 `frames` 生成即时 ZIP。每条证据含时标映射和可用媒体 |
 | `POST /scans/{id}/seals` | 接收同一摘片选项，冻结扫描、裁决及媒体，返回封包描述符 |
@@ -60,6 +61,18 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 输入、未找到和冲突分别返回 400、404、409。工位并发槽位用完返回 503。不同规则或流选择可产生不同扫描，原始母带和既有冻结包可继续读取。
 
+## 交接、更正与采信片段
+
+制作意图只追加、不改写。每条意图可带 `record` 制作记录号；两条来自不同制作记录的重叠意图可以合起来覆盖一个候选。制作方更正时调用 `intent-corrections`：系统追加更正事件，把原意图标记为 `superseded` 并保留原区间、原理由，再生成带 `corrected_from_seq` 链的现行意图。`review` 的 `intents` 是带 `active`/`superseded` 状态的台账，`intent_events` 与 `intent_corrections` 保留原始事件流。
+
+`review` 同时把每个候选切成微秒片段 `segments`，交接人可逐段判断：
+
+- `expected` 仍有采信依据：实测区间内存在适用指标、适用声道的现行意图；片段附带支持它的意图序号。
+- `pending` 恢复待查：有实测画面或声音，但更正后已无意图支持，需要重新核对。
+- `unmeasured` 从无可证实画面：片段落在覆盖空洞（画面缺口或伴音缺口）上，任何人工裁决都不会把它改成已测。
+
+人工裁决优先于自动投影，`accept` 后 `reset` 会回落到按当前意图重新判断，但裁决事件全部留在 `rulings` 里，先前为什么放行仍可查。声音意图必须指定声道，另一声道的意图不能支持本声道候选。冻结包封入当时的完整台账与裁决史；更正之后再冻结会得到不同的包，而更正前已冻结的包仍可独立验真并保留当时的放行结论。旧微秒意图事件、旧扫描和已冻结交接件继续按原样可读。
+
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog`、`verify` 或 `handoff`。`handoff` 用一轮片头黑场和一次带声道限定的静音意图，验证两条制作记录的重叠覆盖、更正后片段的采信/待查/空洞分类、accept 后 reset 的裁决史，以及更正前后两个冻结包各自可读。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV、冻结包、意图台账和更正表单。自动测试套件暂缓。
