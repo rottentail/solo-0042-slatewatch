@@ -1,0 +1,698 @@
+{
+  "schema": "slatewatch-blind-lab-truth/1",
+  "warning": "ANSWER KEY / HOST-ONLY. Never distribute blind_pack with this file.",
+  "shared_stream_name": "主混 MIX",
+  "constants": {
+    "rate": 16000,
+    "channels": 2,
+    "fps": 25,
+    "width": 320,
+    "height": 180,
+    "duration_s": 6.4,
+    "total_samples_per_channel": 102400,
+    "plateaus_s": {
+      "L1": [
+        1.6,
+        2.4
+      ],
+      "L2": [
+        3.2,
+        4.0
+      ]
+    },
+    "sync_tol_us": 140000
+  },
+  "items": [
+    {
+      "bid": "BL-01",
+      "code": "A1",
+      "group": "sync",
+      "scene": "摄影棚打点台：滑锤依次滑向圆、方、三角三个站位，接触站位的瞬间出现矩形白闪。",
+      "duration_s": 6.4,
+      "fps": 25,
+      "width": 320,
+      "height": 180,
+      "rate": 16000,
+      "channels_master": 2,
+      "total_samples_per_channel": 102400,
+      "frame_count": 160,
+      "shared_stream_name": "主混 MIX",
+      "master_rel": "debrief/masters/BL-01_A1_dual.mkv",
+      "master_sha256": "a94821c7b089d74e5314de4dd7ea46e0a7e130244a6f8573b09b6ec198dcde1d",
+      "master_size": 922914,
+      "physical_audio_indices": [
+        1,
+        2
+      ],
+      "role_order": [
+        "main",
+        "ref"
+      ],
+      "role_to_stream": {
+        "main": 1,
+        "ref": 2
+      },
+      "stream_to_role": {
+        "1": "main",
+        "2": "ref"
+      },
+      "blind_to_role": {
+        "jia": "ref",
+        "yi": "main"
+      },
+      "role_to_blind": {
+        "ref": "jia",
+        "main": "yi"
+      },
+      "correct_label": "yi",
+      "expected_verdict": "yi_is_synced_main",
+      "main_hole": "L1",
+      "role_hole": {
+        "main": "L1",
+        "ref": "L2"
+      },
+      "plateau_us": {
+        "L1": [
+          1600000,
+          2400000
+        ],
+        "L2": [
+          3200000,
+          4000000
+        ]
+      },
+      "actions": [
+        {
+          "t_s": 0.8,
+          "t_us": 800000,
+          "station": 0,
+          "freq": 880,
+          "shape": "圆形左标",
+          "expected_sound": "一声清亮高频「嗒」（木鱼 / 铃）"
+        },
+        {
+          "t_s": 2.8,
+          "t_us": 2800000,
+          "station": 1,
+          "freq": 520,
+          "shape": "方形中标",
+          "expected_sound": "一声中频闷「梆」"
+        },
+        {
+          "t_s": 4.4,
+          "t_us": 4400000,
+          "station": 2,
+          "freq": 196,
+          "shape": "三角右标",
+          "expected_sound": "一声低沉有力的「咚」（鼓）"
+        }
+      ],
+      "wrong_onsets": [
+        {
+          "t_s": 0.8,
+          "t_us": 800000,
+          "station": 0
+        },
+        {
+          "t_s": 3.0,
+          "t_us": 3000000,
+          "station": 1
+        },
+        {
+          "t_s": 4.8,
+          "t_us": 4800000,
+          "station": 2
+        }
+      ],
+      "sync_tol_us": 140000,
+      "assets": {
+        "dir_rel": "blind_pack/assets/BL-01",
+        "jia_wav_rel": "blind_pack/assets/BL-01/jia.wav",
+        "yi_wav_rel": "blind_pack/assets/BL-01/yi.wav",
+        "jia_sha256": "5e8c2cd1250c22fa9d2659a29b25d944d105e5935e4dd8828340d701ca0ee284",
+        "yi_sha256": "cc3ab54eb44e05484f2d4db1efdd484564330ff14f85dc2252e2049e8b614feb",
+        "wav_bytes_equal": false,
+        "picture_mp4_rel": "blind_pack/assets/BL-01/picture.mp4",
+        "filmstrip_rel": "blind_pack/assets/BL-01/filmstrip.png",
+        "frame_count_on_disk": 160
+      }
+    },
+    {
+      "bid": "BL-02",
+      "code": "B1",
+      "group": "ambiguous",
+      "scene": "小型演奏位：击槌先后落在左、右两个站位，落点有白闪；中段有两段动作留白。",
+      "duration_s": 6.4,
+      "fps": 25,
+      "width": 320,
+      "height": 180,
+      "rate": 16000,
+      "channels_master": 2,
+      "total_samples_per_channel": 102400,
+      "frame_count": 160,
+      "shared_stream_name": "主混 MIX",
+      "master_rel": "debrief/masters/BL-02_B1_dual.mkv",
+      "master_sha256": "e89292399257f96dd01f1359b3440743c14fcfbe30a5d3c234cc377b240c5e05",
+      "master_size": 923127,
+      "physical_audio_indices": [
+        1,
+        2
+      ],
+      "role_order": [
+        "main",
+        "ref"
+      ],
+      "role_to_stream": {
+        "main": 1,
+        "ref": 2
+      },
+      "stream_to_role": {
+        "1": "main",
+        "2": "ref"
+      },
+      "blind_to_role": {
+        "jia": "main",
+        "yi": "ref"
+      },
+      "role_to_blind": {
+        "main": "jia",
+        "ref": "yi"
+      },
+      "correct_label": null,
+      "expected_verdict": "cannot_confirm",
+      "main_hole": "L1",
+      "role_hole": {
+        "main": "L1",
+        "ref": "L2"
+      },
+      "plateau_us": {
+        "L1": [
+          1600000,
+          2400000
+        ],
+        "L2": [
+          3200000,
+          4000000
+        ]
+      },
+      "actions": [
+        {
+          "t_s": 1.0,
+          "t_us": 1000000,
+          "station": 0,
+          "freq": 880,
+          "shape": "圆形左标",
+          "expected_sound": "一声清亮高频「嗒」（木鱼 / 铃）"
+        },
+        {
+          "t_s": 4.6,
+          "t_us": 4600000,
+          "station": 2,
+          "freq": 196,
+          "shape": "三角右标",
+          "expected_sound": "一声低沉有力的「咚」（鼓）"
+        }
+      ],
+      "wrong_onsets": [
+        {
+          "t_s": 1.0,
+          "t_us": 1000000,
+          "station": 0
+        },
+        {
+          "t_s": 4.6,
+          "t_us": 4600000,
+          "station": 2
+        }
+      ],
+      "sync_tol_us": 140000,
+      "assets": {
+        "dir_rel": "blind_pack/assets/BL-02",
+        "jia_wav_rel": "blind_pack/assets/BL-02/jia.wav",
+        "yi_wav_rel": "blind_pack/assets/BL-02/yi.wav",
+        "jia_sha256": "53d5e295ac56f004e50551f6a2939d5389da4462983b6216edb9a6f41e7f66b0",
+        "yi_sha256": "53d5e295ac56f004e50551f6a2939d5389da4462983b6216edb9a6f41e7f66b0",
+        "wav_bytes_equal": true,
+        "picture_mp4_rel": "blind_pack/assets/BL-02/picture.mp4",
+        "filmstrip_rel": "blind_pack/assets/BL-02/filmstrip.png",
+        "frame_count_on_disk": 160
+      }
+    },
+    {
+      "bid": "BL-03",
+      "code": "A2",
+      "group": "sync",
+      "scene": "同型打点台的另一条镜头：滑锤仍按圆 → 方 → 三角顺序击打，接触瞬间白闪。",
+      "duration_s": 6.4,
+      "fps": 25,
+      "width": 320,
+      "height": 180,
+      "rate": 16000,
+      "channels_master": 2,
+      "total_samples_per_channel": 102400,
+      "frame_count": 160,
+      "shared_stream_name": "主混 MIX",
+      "master_rel": "debrief/masters/BL-03_A2_dual.mkv",
+      "master_sha256": "db8b7d47f8e14d0c25e8162f67b704e3b3fea8c5fcf2b3e8a6e497e9cf530175",
+      "master_size": 923769,
+      "physical_audio_indices": [
+        1,
+        2
+      ],
+      "role_order": [
+        "ref",
+        "main"
+      ],
+      "role_to_stream": {
+        "ref": 1,
+        "main": 2
+      },
+      "stream_to_role": {
+        "1": "ref",
+        "2": "main"
+      },
+      "blind_to_role": {
+        "jia": "main",
+        "yi": "ref"
+      },
+      "role_to_blind": {
+        "main": "jia",
+        "ref": "yi"
+      },
+      "correct_label": "jia",
+      "expected_verdict": "jia_is_synced_main",
+      "main_hole": "L2",
+      "role_hole": {
+        "main": "L2",
+        "ref": "L1"
+      },
+      "plateau_us": {
+        "L1": [
+          1600000,
+          2400000
+        ],
+        "L2": [
+          3200000,
+          4000000
+        ]
+      },
+      "actions": [
+        {
+          "t_s": 1.0,
+          "t_us": 1000000,
+          "station": 0,
+          "freq": 880,
+          "shape": "圆形左标",
+          "expected_sound": "一声清亮高频「嗒」（木鱼 / 铃）"
+        },
+        {
+          "t_s": 3.0,
+          "t_us": 3000000,
+          "station": 1,
+          "freq": 520,
+          "shape": "方形中标",
+          "expected_sound": "一声中频闷「梆」"
+        },
+        {
+          "t_s": 4.8,
+          "t_us": 4800000,
+          "station": 2,
+          "freq": 196,
+          "shape": "三角右标",
+          "expected_sound": "一声低沉有力的「咚」（鼓）"
+        }
+      ],
+      "wrong_onsets": [
+        {
+          "t_s": 1.0,
+          "t_us": 1000000,
+          "station": 0
+        },
+        {
+          "t_s": 2.6,
+          "t_us": 2600000,
+          "station": 1
+        },
+        {
+          "t_s": 4.2,
+          "t_us": 4200000,
+          "station": 2
+        }
+      ],
+      "sync_tol_us": 140000,
+      "assets": {
+        "dir_rel": "blind_pack/assets/BL-03",
+        "jia_wav_rel": "blind_pack/assets/BL-03/jia.wav",
+        "yi_wav_rel": "blind_pack/assets/BL-03/yi.wav",
+        "jia_sha256": "6f845a82df54149686b546f795abb23a889a6336e11c0109392f0ccd7eede451",
+        "yi_sha256": "e02981a70ea8bf721b87baf7542f7117b14fd83a86315be3fae4f570c9a5cbf5",
+        "wav_bytes_equal": false,
+        "picture_mp4_rel": "blind_pack/assets/BL-03/picture.mp4",
+        "filmstrip_rel": "blind_pack/assets/BL-03/filmstrip.png",
+        "frame_count_on_disk": 160
+      }
+    },
+    {
+      "bid": "BL-04",
+      "code": "B2",
+      "group": "ambiguous",
+      "scene": "独奏站位：击槌依次落在左、中、右三个站位，落点白闪；画面里同样有两段等长留白。",
+      "duration_s": 6.4,
+      "fps": 25,
+      "width": 320,
+      "height": 180,
+      "rate": 16000,
+      "channels_master": 2,
+      "total_samples_per_channel": 102400,
+      "frame_count": 160,
+      "shared_stream_name": "主混 MIX",
+      "master_rel": "debrief/masters/BL-04_B2_dual.mkv",
+      "master_sha256": "83a8373e8d8867c46847d5b952390512d5e4bc8f73b4ecc4f390a3fa269a30ec",
+      "master_size": 925253,
+      "physical_audio_indices": [
+        1,
+        2
+      ],
+      "role_order": [
+        "ref",
+        "main"
+      ],
+      "role_to_stream": {
+        "ref": 1,
+        "main": 2
+      },
+      "stream_to_role": {
+        "1": "ref",
+        "2": "main"
+      },
+      "blind_to_role": {
+        "jia": "ref",
+        "yi": "main"
+      },
+      "role_to_blind": {
+        "ref": "jia",
+        "main": "yi"
+      },
+      "correct_label": null,
+      "expected_verdict": "cannot_confirm",
+      "main_hole": "L2",
+      "role_hole": {
+        "main": "L2",
+        "ref": "L1"
+      },
+      "plateau_us": {
+        "L1": [
+          1600000,
+          2400000
+        ],
+        "L2": [
+          3200000,
+          4000000
+        ]
+      },
+      "actions": [
+        {
+          "t_s": 0.8,
+          "t_us": 800000,
+          "station": 0,
+          "freq": 880,
+          "shape": "圆形左标",
+          "expected_sound": "一声清亮高频「嗒」（木鱼 / 铃）"
+        },
+        {
+          "t_s": 2.8,
+          "t_us": 2800000,
+          "station": 1,
+          "freq": 520,
+          "shape": "方形中标",
+          "expected_sound": "一声中频闷「梆」"
+        },
+        {
+          "t_s": 5.2,
+          "t_us": 5200000,
+          "station": 2,
+          "freq": 196,
+          "shape": "三角右标",
+          "expected_sound": "一声低沉有力的「咚」（鼓）"
+        }
+      ],
+      "wrong_onsets": [
+        {
+          "t_s": 0.8,
+          "t_us": 800000,
+          "station": 0
+        },
+        {
+          "t_s": 2.8,
+          "t_us": 2800000,
+          "station": 1
+        },
+        {
+          "t_s": 5.2,
+          "t_us": 5200000,
+          "station": 2
+        }
+      ],
+      "sync_tol_us": 140000,
+      "assets": {
+        "dir_rel": "blind_pack/assets/BL-04",
+        "jia_wav_rel": "blind_pack/assets/BL-04/jia.wav",
+        "yi_wav_rel": "blind_pack/assets/BL-04/yi.wav",
+        "jia_sha256": "df82f3d55be7461d5381d6bb53583bf961d034f467ab0aea82a32cbd7b5ab2eb",
+        "yi_sha256": "df82f3d55be7461d5381d6bb53583bf961d034f467ab0aea82a32cbd7b5ab2eb",
+        "wav_bytes_equal": true,
+        "picture_mp4_rel": "blind_pack/assets/BL-04/picture.mp4",
+        "filmstrip_rel": "blind_pack/assets/BL-04/filmstrip.png",
+        "frame_count_on_disk": 160
+      }
+    },
+    {
+      "bid": "BL-05",
+      "code": "A3",
+      "group": "sync",
+      "scene": "打点台第三条：滑锤长距离移动后击打三个站位，接触瞬间白闪。",
+      "duration_s": 6.4,
+      "fps": 25,
+      "width": 320,
+      "height": 180,
+      "rate": 16000,
+      "channels_master": 2,
+      "total_samples_per_channel": 102400,
+      "frame_count": 160,
+      "shared_stream_name": "主混 MIX",
+      "master_rel": "debrief/masters/BL-05_A3_dual.mkv",
+      "master_sha256": "9fcbffae68910569fb6fd757d88308501bc4be8fac80cc9aa2b30768933bb39b",
+      "master_size": 924726,
+      "physical_audio_indices": [
+        1,
+        2
+      ],
+      "role_order": [
+        "ref",
+        "main"
+      ],
+      "role_to_stream": {
+        "ref": 1,
+        "main": 2
+      },
+      "stream_to_role": {
+        "1": "ref",
+        "2": "main"
+      },
+      "blind_to_role": {
+        "jia": "ref",
+        "yi": "main"
+      },
+      "role_to_blind": {
+        "ref": "jia",
+        "main": "yi"
+      },
+      "correct_label": "yi",
+      "expected_verdict": "yi_is_synced_main",
+      "main_hole": "L1",
+      "role_hole": {
+        "main": "L1",
+        "ref": "L2"
+      },
+      "plateau_us": {
+        "L1": [
+          1600000,
+          2400000
+        ],
+        "L2": [
+          3200000,
+          4000000
+        ]
+      },
+      "actions": [
+        {
+          "t_s": 0.6,
+          "t_us": 600000,
+          "station": 0,
+          "freq": 880,
+          "shape": "圆形左标",
+          "expected_sound": "一声清亮高频「嗒」（木鱼 / 铃）"
+        },
+        {
+          "t_s": 2.6,
+          "t_us": 2600000,
+          "station": 1,
+          "freq": 520,
+          "shape": "方形中标",
+          "expected_sound": "一声中频闷「梆」"
+        },
+        {
+          "t_s": 5.0,
+          "t_us": 5000000,
+          "station": 2,
+          "freq": 196,
+          "shape": "三角右标",
+          "expected_sound": "一声低沉有力的「咚」（鼓）"
+        }
+      ],
+      "wrong_onsets": [
+        {
+          "t_s": 0.6,
+          "t_us": 600000,
+          "station": 0
+        },
+        {
+          "t_s": 3.0,
+          "t_us": 3000000,
+          "station": 1
+        },
+        {
+          "t_s": 4.4,
+          "t_us": 4400000,
+          "station": 2
+        }
+      ],
+      "sync_tol_us": 140000,
+      "assets": {
+        "dir_rel": "blind_pack/assets/BL-05",
+        "jia_wav_rel": "blind_pack/assets/BL-05/jia.wav",
+        "yi_wav_rel": "blind_pack/assets/BL-05/yi.wav",
+        "jia_sha256": "d1f454fa80b1254d2b124f4ad13b1f8d28e1a81ae3b68ae44dd74a634cdb0dc2",
+        "yi_sha256": "7f8dd6d5b51d772d8a74c08d35b2d93182f56477f94ed68f1383624576ca52b4",
+        "wav_bytes_equal": false,
+        "picture_mp4_rel": "blind_pack/assets/BL-05/picture.mp4",
+        "filmstrip_rel": "blind_pack/assets/BL-05/filmstrip.png",
+        "frame_count_on_disk": 160
+      }
+    },
+    {
+      "bid": "BL-06",
+      "code": "A4",
+      "group": "sync",
+      "scene": "打点台第四条：三次击打间隔不同，接触瞬间白闪；三种音色对应三种站位。",
+      "duration_s": 6.4,
+      "fps": 25,
+      "width": 320,
+      "height": 180,
+      "rate": 16000,
+      "channels_master": 2,
+      "total_samples_per_channel": 102400,
+      "frame_count": 160,
+      "shared_stream_name": "主混 MIX",
+      "master_rel": "debrief/masters/BL-06_A4_dual.mkv",
+      "master_sha256": "aa974f3227980375c52674024dc139ad6a096202bae838948059589b5110f299",
+      "master_size": 922004,
+      "physical_audio_indices": [
+        1,
+        2
+      ],
+      "role_order": [
+        "main",
+        "ref"
+      ],
+      "role_to_stream": {
+        "main": 1,
+        "ref": 2
+      },
+      "stream_to_role": {
+        "1": "main",
+        "2": "ref"
+      },
+      "blind_to_role": {
+        "jia": "main",
+        "yi": "ref"
+      },
+      "role_to_blind": {
+        "main": "jia",
+        "ref": "yi"
+      },
+      "correct_label": "jia",
+      "expected_verdict": "jia_is_synced_main",
+      "main_hole": "L2",
+      "role_hole": {
+        "main": "L2",
+        "ref": "L1"
+      },
+      "plateau_us": {
+        "L1": [
+          1600000,
+          2400000
+        ],
+        "L2": [
+          3200000,
+          4000000
+        ]
+      },
+      "actions": [
+        {
+          "t_s": 1.2,
+          "t_us": 1200000,
+          "station": 0,
+          "freq": 880,
+          "shape": "圆形左标",
+          "expected_sound": "一声清亮高频「嗒」（木鱼 / 铃）"
+        },
+        {
+          "t_s": 2.8,
+          "t_us": 2800000,
+          "station": 1,
+          "freq": 520,
+          "shape": "方形中标",
+          "expected_sound": "一声中频闷「梆」"
+        },
+        {
+          "t_s": 4.2,
+          "t_us": 4200000,
+          "station": 2,
+          "freq": 196,
+          "shape": "三角右标",
+          "expected_sound": "一声低沉有力的「咚」（鼓）"
+        }
+      ],
+      "wrong_onsets": [
+        {
+          "t_s": 1.2,
+          "t_us": 1200000,
+          "station": 0
+        },
+        {
+          "t_s": 2.6,
+          "t_us": 2600000,
+          "station": 1
+        },
+        {
+          "t_s": 5.0,
+          "t_us": 5000000,
+          "station": 2
+        }
+      ],
+      "sync_tol_us": 140000,
+      "assets": {
+        "dir_rel": "blind_pack/assets/BL-06",
+        "jia_wav_rel": "blind_pack/assets/BL-06/jia.wav",
+        "yi_wav_rel": "blind_pack/assets/BL-06/yi.wav",
+        "jia_sha256": "606eb02e086fce619c344dccce4b0f891bf42eabf0e7e2945a2dc412e893ccbe",
+        "yi_sha256": "236b6b15a4c8330367b52d486619cd95b542965d7ca59e7b268d52bafba9d50e",
+        "wav_bytes_equal": false,
+        "picture_mp4_rel": "blind_pack/assets/BL-06/picture.mp4",
+        "filmstrip_rel": "blind_pack/assets/BL-06/filmstrip.png",
+        "frame_count_on_disk": 160
+      }
+    }
+  ]
+}

@@ -1,0 +1,82 @@
+{
+  "files_scanned": [
+    "index.html",
+    "答题卡.md",
+    "参训者说明.md",
+    "制作记录.md",
+    "答题卡.html"
+  ],
+  "content_hits": [],
+  "remote_refs": [],
+  "trivial_cues": [
+    {
+      "bid": "BL-01",
+      "correct": "yi",
+      "jia_size": 204844,
+      "yi_size": 204844,
+      "size_tie": true,
+      "jia_leading0": 0,
+      "yi_leading0": 0,
+      "leading_tie": true,
+      "jia_first_onset": 0.8,
+      "yi_first_onset": 0.8,
+      "first_onset_tie": true,
+      "zero_platforms_equal": true
+    },
+    {
+      "bid": "BL-03",
+      "correct": "jia",
+      "jia_size": 204844,
+      "yi_size": 204844,
+      "size_tie": true,
+      "jia_leading0": 0,
+      "yi_leading0": 0,
+      "leading_tie": true,
+      "jia_first_onset": 1.0,
+      "yi_first_onset": 1.0,
+      "first_onset_tie": true,
+      "zero_platforms_equal": true
+    },
+    {
+      "bid": "BL-05",
+      "correct": "yi",
+      "jia_size": 204844,
+      "yi_size": 204844,
+      "size_tie": true,
+      "jia_leading0": 0,
+      "yi_leading0": 0,
+      "leading_tie": true,
+      "jia_first_onset": 0.6,
+      "yi_first_onset": 0.6,
+      "first_onset_tie": true,
+      "zero_platforms_equal": true
+    },
+    {
+      "bid": "BL-06",
+      "correct": "jia",
+      "jia_size": 204844,
+      "yi_size": 204844,
+      "size_tie": true,
+      "jia_leading0": 0,
+      "yi_leading0": 0,
+      "leading_tie": true,
+      "jia_first_onset": 1.2,
+      "yi_first_onset": 1.2,
+      "first_onset_tie": true,
+      "zero_platforms_equal": true
+    }
+  ],
+  "classifiers": {
+    "always_pick_first_label_jia": "2/4 (答案甲乙各半)",
+    "always_pick_yi": "2/4",
+    "pick_by_smaller_file_size": "all ties -> 无法选择",
+    "pick_by_fewer_leading_zeros": "all ties",
+    "pick_by_earlier_first_onset_(opening_alignment)": "all ties",
+    "pick_by_all_zero_waveform_platforms": "identical x2 each"
+  },
+  "forbidden_names": [],
+  "zip_member_count": 989,
+  "zip_bad": [],
+  "host_hint_hits": [],
+  "leak_checks_ok": true
+}

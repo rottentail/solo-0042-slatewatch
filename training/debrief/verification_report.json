@@ -1,0 +1,1331 @@
+{
+  "schema": "slatewatch-blind-verify/1",
+  "ok": true,
+  "total_checks": 188,
+  "passed": 188,
+  "critical_failed": [],
+  "checks": [
+    {
+      "id": "master-exists-BL-01",
+      "title": "BL-01 母带存在",
+      "ok": true,
+      "severity": "critical",
+      "detail": "/workspace/training/debrief/masters/BL-01_A1_dual.mkv"
+    },
+    {
+      "id": "master-sha-BL-01",
+      "title": "BL-01 母带 SHA-256 与底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recomputed=a94821c7b089d74e5314de4dd7ea46e0a7e130244a6f8573b09b6ec198dcde1d"
+    },
+    {
+      "id": "shared-name-BL-01",
+      "title": "BL-01 两条音轨流名完全相同且为密封流名",
+      "ok": true,
+      "severity": "critical",
+      "detail": "titles=['主混 MIX', '主混 MIX']"
+    },
+    {
+      "id": "indices-BL-01",
+      "title": "BL-01 物理音频流号与底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "observed=[1, 2] truth=[1, 2]"
+    },
+    {
+      "id": "hole-BL-01-s1",
+      "title": "BL-01 流1(main) 独立判定无覆盖平台=L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "uncovered=[(1600000, 2400000)]"
+    },
+    {
+      "id": "realsil-BL-01-s1",
+      "title": "BL-01 流1(main) 独立判定实录静音平台=L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recorded=[(3200000, 4000000)]"
+    },
+    {
+      "id": "startzero-BL-01-s1",
+      "title": "BL-01 流1 起点为 0 且无前置偏移",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=0 leading0=0"
+    },
+    {
+      "id": "hole-BL-01-s2",
+      "title": "BL-01 流2(ref) 独立判定无覆盖平台=L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "uncovered=[(3200000, 4000000)]"
+    },
+    {
+      "id": "realsil-BL-01-s2",
+      "title": "BL-01 流2(ref) 独立判定实录静音平台=L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recorded=[(1600000, 2400000)]"
+    },
+    {
+      "id": "startzero-BL-01-s2",
+      "title": "BL-01 流2 起点为 0 且无前置偏移",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=0 leading0=0"
+    },
+    {
+      "id": "flash-BL-01",
+      "title": "BL-01 母带白闪独立重算与制作记录一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "flashes=[800000, 2800000, 4400000] target=[800000, 2800000, 4400000]"
+    },
+    {
+      "id": "wav-sha-BL-01-jia",
+      "title": "BL-01 jia.wav 与构建底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "5e8c2cd1250c22fa"
+    },
+    {
+      "id": "wav-readable-BL-01-jia",
+      "title": "BL-01 jia.wav 可完整解码",
+      "ok": true,
+      "severity": "critical",
+      "detail": "decoded=102400 header=102400"
+    },
+    {
+      "id": "wav-sha-BL-01-yi",
+      "title": "BL-01 yi.wav 与构建底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "cc3ab54eb44e0548"
+    },
+    {
+      "id": "wav-readable-BL-01-yi",
+      "title": "BL-01 yi.wav 可完整解码",
+      "ok": true,
+      "severity": "critical",
+      "detail": "decoded=102400 header=102400"
+    },
+    {
+      "id": "wav-format-BL-01",
+      "title": "BL-01 甲/乙格式、样本数、字节大小完全相同",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=(1,16000,102400,204844) yi=(1,16000,102400,204844)"
+    },
+    {
+      "id": "wav-notzero-BL-01",
+      "title": "BL-01 两条试听都不是全零文件",
+      "ok": true,
+      "severity": "critical",
+      "detail": "peaks=10426,10334"
+    },
+    {
+      "id": "leading-tie-BL-01",
+      "title": "BL-01 甲/乙开头前导零样本数相同",
+      "ok": true,
+      "severity": "critical",
+      "detail": "0 vs 0"
+    },
+    {
+      "id": "first-onset-tie-BL-01",
+      "title": "BL-01 甲/乙第一个起振时刻相同（不能只靠开头对齐取轨）",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=[0.8] vs [0.8] Δ=0.000s"
+    },
+    {
+      "id": "zeroruns-tie-BL-01",
+      "title": "BL-01 甲/乙长全零平台位置与长度相同（全零波形不泄漏选轨）",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=[(1600000, 2400000), (3200000, 4000000)] yi=[(1600000, 2400000), (3200000, 4000000)]"
+    },
+    {
+      "id": "verdict-BL-01",
+      "title": "BL-01 独立声画重算唯一锁定 yi 且与密封答案一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=1/3 yi=3/3 derived=yi truth=yi other_matches_only_first=True"
+    },
+    {
+      "id": "film-BL-01",
+      "title": "BL-01 盲包胶片条白闪时点与母带一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "film=[0.8, 2.8, 4.4]"
+    },
+    {
+      "id": "mp4-BL-01",
+      "title": "BL-01 picture.mp4 可解码且为等长画面",
+      "ok": true,
+      "severity": "check",
+      "detail": "{'frames_decoded': 160, 'container_duration_us': 6400000}"
+    },
+    {
+      "id": "master-exists-BL-02",
+      "title": "BL-02 母带存在",
+      "ok": true,
+      "severity": "critical",
+      "detail": "/workspace/training/debrief/masters/BL-02_B1_dual.mkv"
+    },
+    {
+      "id": "master-sha-BL-02",
+      "title": "BL-02 母带 SHA-256 与底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recomputed=e89292399257f96dd01f1359b3440743c14fcfbe30a5d3c234cc377b240c5e05"
+    },
+    {
+      "id": "shared-name-BL-02",
+      "title": "BL-02 两条音轨流名完全相同且为密封流名",
+      "ok": true,
+      "severity": "critical",
+      "detail": "titles=['主混 MIX', '主混 MIX']"
+    },
+    {
+      "id": "indices-BL-02",
+      "title": "BL-02 物理音频流号与底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "observed=[1, 2] truth=[1, 2]"
+    },
+    {
+      "id": "hole-BL-02-s1",
+      "title": "BL-02 流1(main) 独立判定无覆盖平台=L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "uncovered=[(1600000, 2400000)]"
+    },
+    {
+      "id": "realsil-BL-02-s1",
+      "title": "BL-02 流1(main) 独立判定实录静音平台=L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recorded=[(3200000, 4000000)]"
+    },
+    {
+      "id": "startzero-BL-02-s1",
+      "title": "BL-02 流1 起点为 0 且无前置偏移",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=0 leading0=0"
+    },
+    {
+      "id": "hole-BL-02-s2",
+      "title": "BL-02 流2(ref) 独立判定无覆盖平台=L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "uncovered=[(3200000, 4000000)]"
+    },
+    {
+      "id": "realsil-BL-02-s2",
+      "title": "BL-02 流2(ref) 独立判定实录静音平台=L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recorded=[(1600000, 2400000)]"
+    },
+    {
+      "id": "startzero-BL-02-s2",
+      "title": "BL-02 流2 起点为 0 且无前置偏移",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=0 leading0=0"
+    },
+    {
+      "id": "flash-BL-02",
+      "title": "BL-02 母带白闪独立重算与制作记录一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "flashes=[1000000, 4600000] target=[1000000, 4600000]"
+    },
+    {
+      "id": "wav-sha-BL-02-jia",
+      "title": "BL-02 jia.wav 与构建底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "53d5e295ac56f004"
+    },
+    {
+      "id": "wav-readable-BL-02-jia",
+      "title": "BL-02 jia.wav 可完整解码",
+      "ok": true,
+      "severity": "critical",
+      "detail": "decoded=102400 header=102400"
+    },
+    {
+      "id": "wav-sha-BL-02-yi",
+      "title": "BL-02 yi.wav 与构建底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "53d5e295ac56f004"
+    },
+    {
+      "id": "wav-readable-BL-02-yi",
+      "title": "BL-02 yi.wav 可完整解码",
+      "ok": true,
+      "severity": "critical",
+      "detail": "decoded=102400 header=102400"
+    },
+    {
+      "id": "wav-format-BL-02",
+      "title": "BL-02 甲/乙格式、样本数、字节大小完全相同",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=(1,16000,102400,204844) yi=(1,16000,102400,204844)"
+    },
+    {
+      "id": "wav-notzero-BL-02",
+      "title": "BL-02 两条试听都不是全零文件",
+      "ok": true,
+      "severity": "critical",
+      "detail": "peaks=10413,10413"
+    },
+    {
+      "id": "leading-tie-BL-02",
+      "title": "BL-02 甲/乙开头前导零样本数相同",
+      "ok": true,
+      "severity": "critical",
+      "detail": "0 vs 0"
+    },
+    {
+      "id": "first-onset-tie-BL-02",
+      "title": "BL-02 甲/乙第一个起振时刻相同（不能只靠开头对齐取轨）",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=[1.0] vs [1.0] Δ=0.000s"
+    },
+    {
+      "id": "zeroruns-tie-BL-02",
+      "title": "BL-02 甲/乙长全零平台位置与长度相同（全零波形不泄漏选轨）",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=[(1600000, 2400000), (3200000, 4000000)] yi=[(1600000, 2400000), (3200000, 4000000)]"
+    },
+    {
+      "id": "ambiguous-BL-02",
+      "title": "BL-02 甲/乙字节相同且声画匹配相同 → 盲材必须判无法确认",
+      "ok": true,
+      "severity": "critical",
+      "detail": "sha_equal=True matches jia=2 yi=2"
+    },
+    {
+      "id": "film-BL-02",
+      "title": "BL-02 盲包胶片条白闪时点与母带一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "film=[1.0, 4.6]"
+    },
+    {
+      "id": "mp4-BL-02",
+      "title": "BL-02 picture.mp4 可解码且为等长画面",
+      "ok": true,
+      "severity": "check",
+      "detail": "{'frames_decoded': 160, 'container_duration_us': 6400000}"
+    },
+    {
+      "id": "master-exists-BL-03",
+      "title": "BL-03 母带存在",
+      "ok": true,
+      "severity": "critical",
+      "detail": "/workspace/training/debrief/masters/BL-03_A2_dual.mkv"
+    },
+    {
+      "id": "master-sha-BL-03",
+      "title": "BL-03 母带 SHA-256 与底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recomputed=db8b7d47f8e14d0c25e8162f67b704e3b3fea8c5fcf2b3e8a6e497e9cf530175"
+    },
+    {
+      "id": "shared-name-BL-03",
+      "title": "BL-03 两条音轨流名完全相同且为密封流名",
+      "ok": true,
+      "severity": "critical",
+      "detail": "titles=['主混 MIX', '主混 MIX']"
+    },
+    {
+      "id": "indices-BL-03",
+      "title": "BL-03 物理音频流号与底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "observed=[1, 2] truth=[1, 2]"
+    },
+    {
+      "id": "hole-BL-03-s1",
+      "title": "BL-03 流1(ref) 独立判定无覆盖平台=L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "uncovered=[(1600000, 2400000)]"
+    },
+    {
+      "id": "realsil-BL-03-s1",
+      "title": "BL-03 流1(ref) 独立判定实录静音平台=L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recorded=[(3200000, 4000000)]"
+    },
+    {
+      "id": "startzero-BL-03-s1",
+      "title": "BL-03 流1 起点为 0 且无前置偏移",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=0 leading0=0"
+    },
+    {
+      "id": "hole-BL-03-s2",
+      "title": "BL-03 流2(main) 独立判定无覆盖平台=L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "uncovered=[(3200000, 4000000)]"
+    },
+    {
+      "id": "realsil-BL-03-s2",
+      "title": "BL-03 流2(main) 独立判定实录静音平台=L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recorded=[(1600000, 2400000)]"
+    },
+    {
+      "id": "startzero-BL-03-s2",
+      "title": "BL-03 流2 起点为 0 且无前置偏移",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=0 leading0=0"
+    },
+    {
+      "id": "flash-BL-03",
+      "title": "BL-03 母带白闪独立重算与制作记录一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "flashes=[1000000, 3000000, 4800000] target=[1000000, 3000000, 4800000]"
+    },
+    {
+      "id": "wav-sha-BL-03-jia",
+      "title": "BL-03 jia.wav 与构建底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "6f845a82df541496"
+    },
+    {
+      "id": "wav-readable-BL-03-jia",
+      "title": "BL-03 jia.wav 可完整解码",
+      "ok": true,
+      "severity": "critical",
+      "detail": "decoded=102400 header=102400"
+    },
+    {
+      "id": "wav-sha-BL-03-yi",
+      "title": "BL-03 yi.wav 与构建底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "e02981a70ea8bf72"
+    },
+    {
+      "id": "wav-readable-BL-03-yi",
+      "title": "BL-03 yi.wav 可完整解码",
+      "ok": true,
+      "severity": "critical",
+      "detail": "decoded=102400 header=102400"
+    },
+    {
+      "id": "wav-format-BL-03",
+      "title": "BL-03 甲/乙格式、样本数、字节大小完全相同",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=(1,16000,102400,204844) yi=(1,16000,102400,204844)"
+    },
+    {
+      "id": "wav-notzero-BL-03",
+      "title": "BL-03 两条试听都不是全零文件",
+      "ok": true,
+      "severity": "critical",
+      "detail": "peaks=10426,10295"
+    },
+    {
+      "id": "leading-tie-BL-03",
+      "title": "BL-03 甲/乙开头前导零样本数相同",
+      "ok": true,
+      "severity": "critical",
+      "detail": "0 vs 0"
+    },
+    {
+      "id": "first-onset-tie-BL-03",
+      "title": "BL-03 甲/乙第一个起振时刻相同（不能只靠开头对齐取轨）",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=[1.0] vs [1.0] Δ=0.000s"
+    },
+    {
+      "id": "zeroruns-tie-BL-03",
+      "title": "BL-03 甲/乙长全零平台位置与长度相同（全零波形不泄漏选轨）",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=[(1600000, 2400000), (3200000, 4000000)] yi=[(1600000, 2400000), (3200000, 4000000)]"
+    },
+    {
+      "id": "verdict-BL-03",
+      "title": "BL-03 独立声画重算唯一锁定 jia 且与密封答案一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=3/3 yi=1/3 derived=jia truth=jia other_matches_only_first=True"
+    },
+    {
+      "id": "film-BL-03",
+      "title": "BL-03 盲包胶片条白闪时点与母带一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "film=[1.0, 3.0, 4.8]"
+    },
+    {
+      "id": "mp4-BL-03",
+      "title": "BL-03 picture.mp4 可解码且为等长画面",
+      "ok": true,
+      "severity": "check",
+      "detail": "{'frames_decoded': 160, 'container_duration_us': 6400000}"
+    },
+    {
+      "id": "master-exists-BL-04",
+      "title": "BL-04 母带存在",
+      "ok": true,
+      "severity": "critical",
+      "detail": "/workspace/training/debrief/masters/BL-04_B2_dual.mkv"
+    },
+    {
+      "id": "master-sha-BL-04",
+      "title": "BL-04 母带 SHA-256 与底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recomputed=83a8373e8d8867c46847d5b952390512d5e4bc8f73b4ecc4f390a3fa269a30ec"
+    },
+    {
+      "id": "shared-name-BL-04",
+      "title": "BL-04 两条音轨流名完全相同且为密封流名",
+      "ok": true,
+      "severity": "critical",
+      "detail": "titles=['主混 MIX', '主混 MIX']"
+    },
+    {
+      "id": "indices-BL-04",
+      "title": "BL-04 物理音频流号与底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "observed=[1, 2] truth=[1, 2]"
+    },
+    {
+      "id": "hole-BL-04-s1",
+      "title": "BL-04 流1(ref) 独立判定无覆盖平台=L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "uncovered=[(1600000, 2400000)]"
+    },
+    {
+      "id": "realsil-BL-04-s1",
+      "title": "BL-04 流1(ref) 独立判定实录静音平台=L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recorded=[(3200000, 4000000)]"
+    },
+    {
+      "id": "startzero-BL-04-s1",
+      "title": "BL-04 流1 起点为 0 且无前置偏移",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=0 leading0=0"
+    },
+    {
+      "id": "hole-BL-04-s2",
+      "title": "BL-04 流2(main) 独立判定无覆盖平台=L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "uncovered=[(3200000, 4000000)]"
+    },
+    {
+      "id": "realsil-BL-04-s2",
+      "title": "BL-04 流2(main) 独立判定实录静音平台=L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recorded=[(1600000, 2400000)]"
+    },
+    {
+      "id": "startzero-BL-04-s2",
+      "title": "BL-04 流2 起点为 0 且无前置偏移",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=0 leading0=0"
+    },
+    {
+      "id": "flash-BL-04",
+      "title": "BL-04 母带白闪独立重算与制作记录一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "flashes=[800000, 2800000, 5200000] target=[800000, 2800000, 5200000]"
+    },
+    {
+      "id": "wav-sha-BL-04-jia",
+      "title": "BL-04 jia.wav 与构建底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "df82f3d55be7461d"
+    },
+    {
+      "id": "wav-readable-BL-04-jia",
+      "title": "BL-04 jia.wav 可完整解码",
+      "ok": true,
+      "severity": "critical",
+      "detail": "decoded=102400 header=102400"
+    },
+    {
+      "id": "wav-sha-BL-04-yi",
+      "title": "BL-04 yi.wav 与构建底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "df82f3d55be7461d"
+    },
+    {
+      "id": "wav-readable-BL-04-yi",
+      "title": "BL-04 yi.wav 可完整解码",
+      "ok": true,
+      "severity": "critical",
+      "detail": "decoded=102400 header=102400"
+    },
+    {
+      "id": "wav-format-BL-04",
+      "title": "BL-04 甲/乙格式、样本数、字节大小完全相同",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=(1,16000,102400,204844) yi=(1,16000,102400,204844)"
+    },
+    {
+      "id": "wav-notzero-BL-04",
+      "title": "BL-04 两条试听都不是全零文件",
+      "ok": true,
+      "severity": "critical",
+      "detail": "peaks=10334,10334"
+    },
+    {
+      "id": "leading-tie-BL-04",
+      "title": "BL-04 甲/乙开头前导零样本数相同",
+      "ok": true,
+      "severity": "critical",
+      "detail": "0 vs 0"
+    },
+    {
+      "id": "first-onset-tie-BL-04",
+      "title": "BL-04 甲/乙第一个起振时刻相同（不能只靠开头对齐取轨）",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=[0.8] vs [0.8] Δ=0.000s"
+    },
+    {
+      "id": "zeroruns-tie-BL-04",
+      "title": "BL-04 甲/乙长全零平台位置与长度相同（全零波形不泄漏选轨）",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=[(1600000, 2400000), (3200000, 4000000)] yi=[(1600000, 2400000), (3200000, 4000000)]"
+    },
+    {
+      "id": "ambiguous-BL-04",
+      "title": "BL-04 甲/乙字节相同且声画匹配相同 → 盲材必须判无法确认",
+      "ok": true,
+      "severity": "critical",
+      "detail": "sha_equal=True matches jia=3 yi=3"
+    },
+    {
+      "id": "film-BL-04",
+      "title": "BL-04 盲包胶片条白闪时点与母带一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "film=[0.8, 2.8, 5.2]"
+    },
+    {
+      "id": "mp4-BL-04",
+      "title": "BL-04 picture.mp4 可解码且为等长画面",
+      "ok": true,
+      "severity": "check",
+      "detail": "{'frames_decoded': 160, 'container_duration_us': 6400000}"
+    },
+    {
+      "id": "master-exists-BL-05",
+      "title": "BL-05 母带存在",
+      "ok": true,
+      "severity": "critical",
+      "detail": "/workspace/training/debrief/masters/BL-05_A3_dual.mkv"
+    },
+    {
+      "id": "master-sha-BL-05",
+      "title": "BL-05 母带 SHA-256 与底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recomputed=9fcbffae68910569fb6fd757d88308501bc4be8fac80cc9aa2b30768933bb39b"
+    },
+    {
+      "id": "shared-name-BL-05",
+      "title": "BL-05 两条音轨流名完全相同且为密封流名",
+      "ok": true,
+      "severity": "critical",
+      "detail": "titles=['主混 MIX', '主混 MIX']"
+    },
+    {
+      "id": "indices-BL-05",
+      "title": "BL-05 物理音频流号与底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "observed=[1, 2] truth=[1, 2]"
+    },
+    {
+      "id": "hole-BL-05-s1",
+      "title": "BL-05 流1(ref) 独立判定无覆盖平台=L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "uncovered=[(3200000, 4000000)]"
+    },
+    {
+      "id": "realsil-BL-05-s1",
+      "title": "BL-05 流1(ref) 独立判定实录静音平台=L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recorded=[(1600000, 2400000)]"
+    },
+    {
+      "id": "startzero-BL-05-s1",
+      "title": "BL-05 流1 起点为 0 且无前置偏移",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=0 leading0=0"
+    },
+    {
+      "id": "hole-BL-05-s2",
+      "title": "BL-05 流2(main) 独立判定无覆盖平台=L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "uncovered=[(1600000, 2400000)]"
+    },
+    {
+      "id": "realsil-BL-05-s2",
+      "title": "BL-05 流2(main) 独立判定实录静音平台=L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recorded=[(3200000, 4000000)]"
+    },
+    {
+      "id": "startzero-BL-05-s2",
+      "title": "BL-05 流2 起点为 0 且无前置偏移",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=0 leading0=0"
+    },
+    {
+      "id": "flash-BL-05",
+      "title": "BL-05 母带白闪独立重算与制作记录一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "flashes=[600000, 2600000, 5000000] target=[600000, 2600000, 5000000]"
+    },
+    {
+      "id": "wav-sha-BL-05-jia",
+      "title": "BL-05 jia.wav 与构建底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "d1f454fa80b1254d"
+    },
+    {
+      "id": "wav-readable-BL-05-jia",
+      "title": "BL-05 jia.wav 可完整解码",
+      "ok": true,
+      "severity": "critical",
+      "detail": "decoded=102400 header=102400"
+    },
+    {
+      "id": "wav-sha-BL-05-yi",
+      "title": "BL-05 yi.wav 与构建底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "7f8dd6d5b51d772d"
+    },
+    {
+      "id": "wav-readable-BL-05-yi",
+      "title": "BL-05 yi.wav 可完整解码",
+      "ok": true,
+      "severity": "critical",
+      "detail": "decoded=102400 header=102400"
+    },
+    {
+      "id": "wav-format-BL-05",
+      "title": "BL-05 甲/乙格式、样本数、字节大小完全相同",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=(1,16000,102400,204844) yi=(1,16000,102400,204844)"
+    },
+    {
+      "id": "wav-notzero-BL-05",
+      "title": "BL-05 两条试听都不是全零文件",
+      "ok": true,
+      "severity": "critical",
+      "detail": "peaks=10353,10353"
+    },
+    {
+      "id": "leading-tie-BL-05",
+      "title": "BL-05 甲/乙开头前导零样本数相同",
+      "ok": true,
+      "severity": "critical",
+      "detail": "0 vs 0"
+    },
+    {
+      "id": "first-onset-tie-BL-05",
+      "title": "BL-05 甲/乙第一个起振时刻相同（不能只靠开头对齐取轨）",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=[0.6] vs [0.6] Δ=0.000s"
+    },
+    {
+      "id": "zeroruns-tie-BL-05",
+      "title": "BL-05 甲/乙长全零平台位置与长度相同（全零波形不泄漏选轨）",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=[(1600000, 2400000), (3200000, 4000000)] yi=[(1600000, 2400000), (3200000, 4000000)]"
+    },
+    {
+      "id": "verdict-BL-05",
+      "title": "BL-05 独立声画重算唯一锁定 yi 且与密封答案一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=1/3 yi=3/3 derived=yi truth=yi other_matches_only_first=True"
+    },
+    {
+      "id": "film-BL-05",
+      "title": "BL-05 盲包胶片条白闪时点与母带一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "film=[0.6, 2.6, 5.0]"
+    },
+    {
+      "id": "mp4-BL-05",
+      "title": "BL-05 picture.mp4 可解码且为等长画面",
+      "ok": true,
+      "severity": "check",
+      "detail": "{'frames_decoded': 160, 'container_duration_us': 6400000}"
+    },
+    {
+      "id": "master-exists-BL-06",
+      "title": "BL-06 母带存在",
+      "ok": true,
+      "severity": "critical",
+      "detail": "/workspace/training/debrief/masters/BL-06_A4_dual.mkv"
+    },
+    {
+      "id": "master-sha-BL-06",
+      "title": "BL-06 母带 SHA-256 与底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recomputed=aa974f3227980375c52674024dc139ad6a096202bae838948059589b5110f299"
+    },
+    {
+      "id": "shared-name-BL-06",
+      "title": "BL-06 两条音轨流名完全相同且为密封流名",
+      "ok": true,
+      "severity": "critical",
+      "detail": "titles=['主混 MIX', '主混 MIX']"
+    },
+    {
+      "id": "indices-BL-06",
+      "title": "BL-06 物理音频流号与底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "observed=[1, 2] truth=[1, 2]"
+    },
+    {
+      "id": "hole-BL-06-s1",
+      "title": "BL-06 流1(main) 独立判定无覆盖平台=L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "uncovered=[(3200000, 4000000)]"
+    },
+    {
+      "id": "realsil-BL-06-s1",
+      "title": "BL-06 流1(main) 独立判定实录静音平台=L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recorded=[(1600000, 2400000)]"
+    },
+    {
+      "id": "startzero-BL-06-s1",
+      "title": "BL-06 流1 起点为 0 且无前置偏移",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=0 leading0=0"
+    },
+    {
+      "id": "hole-BL-06-s2",
+      "title": "BL-06 流2(ref) 独立判定无覆盖平台=L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "uncovered=[(1600000, 2400000)]"
+    },
+    {
+      "id": "realsil-BL-06-s2",
+      "title": "BL-06 流2(ref) 独立判定实录静音平台=L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "recorded=[(3200000, 4000000)]"
+    },
+    {
+      "id": "startzero-BL-06-s2",
+      "title": "BL-06 流2 起点为 0 且无前置偏移",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=0 leading0=0"
+    },
+    {
+      "id": "flash-BL-06",
+      "title": "BL-06 母带白闪独立重算与制作记录一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "flashes=[1200000, 2800000, 4200000] target=[1200000, 2800000, 4200000]"
+    },
+    {
+      "id": "wav-sha-BL-06-jia",
+      "title": "BL-06 jia.wav 与构建底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "606eb02e086fce61"
+    },
+    {
+      "id": "wav-readable-BL-06-jia",
+      "title": "BL-06 jia.wav 可完整解码",
+      "ok": true,
+      "severity": "critical",
+      "detail": "decoded=102400 header=102400"
+    },
+    {
+      "id": "wav-sha-BL-06-yi",
+      "title": "BL-06 yi.wav 与构建底册一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "236b6b15a4c83303"
+    },
+    {
+      "id": "wav-readable-BL-06-yi",
+      "title": "BL-06 yi.wav 可完整解码",
+      "ok": true,
+      "severity": "critical",
+      "detail": "decoded=102400 header=102400"
+    },
+    {
+      "id": "wav-format-BL-06",
+      "title": "BL-06 甲/乙格式、样本数、字节大小完全相同",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=(1,16000,102400,204844) yi=(1,16000,102400,204844)"
+    },
+    {
+      "id": "wav-notzero-BL-06",
+      "title": "BL-06 两条试听都不是全零文件",
+      "ok": true,
+      "severity": "critical",
+      "detail": "peaks=10295,10353"
+    },
+    {
+      "id": "leading-tie-BL-06",
+      "title": "BL-06 甲/乙开头前导零样本数相同",
+      "ok": true,
+      "severity": "critical",
+      "detail": "0 vs 0"
+    },
+    {
+      "id": "first-onset-tie-BL-06",
+      "title": "BL-06 甲/乙第一个起振时刻相同（不能只靠开头对齐取轨）",
+      "ok": true,
+      "severity": "critical",
+      "detail": "first=[1.2] vs [1.2] Δ=0.000s"
+    },
+    {
+      "id": "zeroruns-tie-BL-06",
+      "title": "BL-06 甲/乙长全零平台位置与长度相同（全零波形不泄漏选轨）",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=[(1600000, 2400000), (3200000, 4000000)] yi=[(1600000, 2400000), (3200000, 4000000)]"
+    },
+    {
+      "id": "verdict-BL-06",
+      "title": "BL-06 独立声画重算唯一锁定 jia 且与密封答案一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "jia=3/3 yi=1/3 derived=jia truth=jia other_matches_only_first=True"
+    },
+    {
+      "id": "film-BL-06",
+      "title": "BL-06 盲包胶片条白闪时点与母带一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "film=[1.2, 2.8, 4.2]"
+    },
+    {
+      "id": "mp4-BL-06",
+      "title": "BL-06 picture.mp4 可解码且为等长画面",
+      "ok": true,
+      "severity": "check",
+      "detail": "{'frames_decoded': 160, 'container_duration_us': 6400000}"
+    },
+    {
+      "id": "balance-labels",
+      "title": "声画组密封答案在甲/乙间平衡（不存在‘总选第一个’规律）",
+      "ok": true,
+      "severity": "critical",
+      "detail": {
+        "yi": 2,
+        "jia": 2
+      }
+    },
+    {
+      "id": "balance-stream-index",
+      "title": "主混物理流号在 1/2 间平衡（不存在‘流号小=主混’规律）",
+      "ok": true,
+      "severity": "critical",
+      "detail": {
+        "1": 2,
+        "2": 2
+      }
+    },
+    {
+      "id": "balance-cross",
+      "title": "盲标签与物理流号无固定共现关系",
+      "ok": true,
+      "severity": "critical",
+      "detail": "[('jia', 1), ('jia', 2), ('yi', 1), ('yi', 2)]"
+    },
+    {
+      "id": "scan-coverage-BL-01-s1",
+      "title": "BL-01 流 1：真实扫描覆盖与独立重算一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "scan=[{'start_us': 0, 'end_us': 1600000}, {'start_us': 2400000, 'end_us': 6400000}] ind=[{'start_us': 0, 'end_us': 1600000}, {'start_us': 2400000, 'end_us': 6400000}]"
+    },
+    {
+      "id": "scan-gap-BL-01-s1",
+      "title": "BL-01 流 1：sound_gap 配对无覆盖平台 L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "gaps=[{'id': 'hit-1384b387f67c67fccccba28b', 'start_us': 1600000, 'end_us': 2400000}] expect=[1600000, 2400000]"
+    },
+    {
+      "id": "scan-silence-BL-01-s1",
+      "title": "BL-01 流 1：silence 配对实录静音平台 L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "silences=[{'id': 'hit-90133e06392cc23ff7c91fb9', 'channel': 1, 'start_us': 3200000, 'end_us': 4000000}, {'id': 'hit-cf52f6b641831f753901c17e', 'channel': 2, 'start_us': 3200000, 'end_us': 4000000}] expect=[3200000, 4000000]"
+    },
+    {
+      "id": "scan-coverage-BL-01-s2",
+      "title": "BL-01 流 2：真实扫描覆盖与独立重算一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "scan=[{'start_us': 0, 'end_us': 3200000}, {'start_us': 4000000, 'end_us': 6400000}] ind=[{'start_us': 0, 'end_us': 3200000}, {'start_us': 4000000, 'end_us': 6400000}]"
+    },
+    {
+      "id": "scan-gap-BL-01-s2",
+      "title": "BL-01 流 2：sound_gap 配对无覆盖平台 L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "gaps=[{'id': 'hit-3b1df287f720b319b8305bc9', 'start_us': 3200000, 'end_us': 4000000}] expect=[3200000, 4000000]"
+    },
+    {
+      "id": "scan-silence-BL-01-s2",
+      "title": "BL-01 流 2：silence 配对实录静音平台 L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "silences=[{'id': 'hit-5b267bdf3fc7933295bbb115', 'channel': 1, 'start_us': 1600000, 'end_us': 2400000}, {'id': 'hit-02c826b7ed2d7e2089cfacd7', 'channel': 2, 'start_us': 1600000, 'end_us': 2400000}] expect=[1600000, 2400000]"
+    },
+    {
+      "id": "scan-coverage-BL-02-s1",
+      "title": "BL-02 流 1：真实扫描覆盖与独立重算一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "scan=[{'start_us': 0, 'end_us': 1600000}, {'start_us': 2400000, 'end_us': 6400000}] ind=[{'start_us': 0, 'end_us': 1600000}, {'start_us': 2400000, 'end_us': 6400000}]"
+    },
+    {
+      "id": "scan-gap-BL-02-s1",
+      "title": "BL-02 流 1：sound_gap 配对无覆盖平台 L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "gaps=[{'id': 'hit-b92db6109f6a9097ec180525', 'start_us': 1600000, 'end_us': 2400000}] expect=[1600000, 2400000]"
+    },
+    {
+      "id": "scan-silence-BL-02-s1",
+      "title": "BL-02 流 1：silence 配对实录静音平台 L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "silences=[{'id': 'hit-e651e68c4fa31de5636522b0', 'channel': 1, 'start_us': 3200000, 'end_us': 4000000}, {'id': 'hit-fdb4eaeab926875fe17923ed', 'channel': 2, 'start_us': 3200000, 'end_us': 4000000}] expect=[3200000, 4000000]"
+    },
+    {
+      "id": "scan-coverage-BL-02-s2",
+      "title": "BL-02 流 2：真实扫描覆盖与独立重算一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "scan=[{'start_us': 0, 'end_us': 3200000}, {'start_us': 4000000, 'end_us': 6400000}] ind=[{'start_us': 0, 'end_us': 3200000}, {'start_us': 4000000, 'end_us': 6400000}]"
+    },
+    {
+      "id": "scan-gap-BL-02-s2",
+      "title": "BL-02 流 2：sound_gap 配对无覆盖平台 L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "gaps=[{'id': 'hit-cd050695a596ded16250f2bd', 'start_us': 3200000, 'end_us': 4000000}] expect=[3200000, 4000000]"
+    },
+    {
+      "id": "scan-silence-BL-02-s2",
+      "title": "BL-02 流 2：silence 配对实录静音平台 L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "silences=[{'id': 'hit-57b64f905133b643deb4a663', 'channel': 1, 'start_us': 1600000, 'end_us': 2400000}, {'id': 'hit-ca4a31dd7f3fec85a420434e', 'channel': 2, 'start_us': 1600000, 'end_us': 2400000}] expect=[1600000, 2400000]"
+    },
+    {
+      "id": "scan-coverage-BL-03-s1",
+      "title": "BL-03 流 1：真实扫描覆盖与独立重算一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "scan=[{'start_us': 0, 'end_us': 1600000}, {'start_us': 2400000, 'end_us': 6400000}] ind=[{'start_us': 0, 'end_us': 1600000}, {'start_us': 2400000, 'end_us': 6400000}]"
+    },
+    {
+      "id": "scan-gap-BL-03-s1",
+      "title": "BL-03 流 1：sound_gap 配对无覆盖平台 L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "gaps=[{'id': 'hit-57d2d1a6e7ab4205a64598dd', 'start_us': 1600000, 'end_us': 2400000}] expect=[1600000, 2400000]"
+    },
+    {
+      "id": "scan-silence-BL-03-s1",
+      "title": "BL-03 流 1：silence 配对实录静音平台 L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "silences=[{'id': 'hit-4a745dd83f4653569951e8b1', 'channel': 1, 'start_us': 3200000, 'end_us': 4000000}, {'id': 'hit-b1560be492def67bb9631895', 'channel': 2, 'start_us': 3200000, 'end_us': 4000000}] expect=[3200000, 4000000]"
+    },
+    {
+      "id": "scan-coverage-BL-03-s2",
+      "title": "BL-03 流 2：真实扫描覆盖与独立重算一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "scan=[{'start_us': 0, 'end_us': 3200000}, {'start_us': 4000000, 'end_us': 6400000}] ind=[{'start_us': 0, 'end_us': 3200000}, {'start_us': 4000000, 'end_us': 6400000}]"
+    },
+    {
+      "id": "scan-gap-BL-03-s2",
+      "title": "BL-03 流 2：sound_gap 配对无覆盖平台 L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "gaps=[{'id': 'hit-a0f8b6440e76aa9627d08da8', 'start_us': 3200000, 'end_us': 4000000}] expect=[3200000, 4000000]"
+    },
+    {
+      "id": "scan-silence-BL-03-s2",
+      "title": "BL-03 流 2：silence 配对实录静音平台 L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "silences=[{'id': 'hit-7ac83239b8f39e18dfd71ce8', 'channel': 1, 'start_us': 1600000, 'end_us': 2400000}, {'id': 'hit-d8b1d05a4d884dc0786423c1', 'channel': 2, 'start_us': 1600000, 'end_us': 2400000}] expect=[1600000, 2400000]"
+    },
+    {
+      "id": "scan-coverage-BL-04-s1",
+      "title": "BL-04 流 1：真实扫描覆盖与独立重算一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "scan=[{'start_us': 0, 'end_us': 1600000}, {'start_us': 2400000, 'end_us': 6400000}] ind=[{'start_us': 0, 'end_us': 1600000}, {'start_us': 2400000, 'end_us': 6400000}]"
+    },
+    {
+      "id": "scan-gap-BL-04-s1",
+      "title": "BL-04 流 1：sound_gap 配对无覆盖平台 L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "gaps=[{'id': 'hit-eaae0ed7f027a968598922b7', 'start_us': 1600000, 'end_us': 2400000}] expect=[1600000, 2400000]"
+    },
+    {
+      "id": "scan-silence-BL-04-s1",
+      "title": "BL-04 流 1：silence 配对实录静音平台 L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "silences=[{'id': 'hit-1386f96d2579b91e640c8539', 'channel': 1, 'start_us': 3200000, 'end_us': 4000000}, {'id': 'hit-ea12057b41a4738d20d002a3', 'channel': 2, 'start_us': 3200000, 'end_us': 4000000}] expect=[3200000, 4000000]"
+    },
+    {
+      "id": "scan-coverage-BL-04-s2",
+      "title": "BL-04 流 2：真实扫描覆盖与独立重算一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "scan=[{'start_us': 0, 'end_us': 3200000}, {'start_us': 4000000, 'end_us': 6400000}] ind=[{'start_us': 0, 'end_us': 3200000}, {'start_us': 4000000, 'end_us': 6400000}]"
+    },
+    {
+      "id": "scan-gap-BL-04-s2",
+      "title": "BL-04 流 2：sound_gap 配对无覆盖平台 L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "gaps=[{'id': 'hit-00c151c573b0b18ac8166e2d', 'start_us': 3200000, 'end_us': 4000000}] expect=[3200000, 4000000]"
+    },
+    {
+      "id": "scan-silence-BL-04-s2",
+      "title": "BL-04 流 2：silence 配对实录静音平台 L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "silences=[{'id': 'hit-3fbf8eb0850b2d9a0a212ddd', 'channel': 1, 'start_us': 1600000, 'end_us': 2400000}, {'id': 'hit-f18684d1875725e7a3e47155', 'channel': 2, 'start_us': 1600000, 'end_us': 2400000}] expect=[1600000, 2400000]"
+    },
+    {
+      "id": "scan-coverage-BL-05-s1",
+      "title": "BL-05 流 1：真实扫描覆盖与独立重算一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "scan=[{'start_us': 0, 'end_us': 3200000}, {'start_us': 4000000, 'end_us': 6400000}] ind=[{'start_us': 0, 'end_us': 3200000}, {'start_us': 4000000, 'end_us': 6400000}]"
+    },
+    {
+      "id": "scan-gap-BL-05-s1",
+      "title": "BL-05 流 1：sound_gap 配对无覆盖平台 L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "gaps=[{'id': 'hit-e80581787e3db4a47ff7264f', 'start_us': 3200000, 'end_us': 4000000}] expect=[3200000, 4000000]"
+    },
+    {
+      "id": "scan-silence-BL-05-s1",
+      "title": "BL-05 流 1：silence 配对实录静音平台 L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "silences=[{'id': 'hit-072b3780ee9fe3175fb1a674', 'channel': 1, 'start_us': 1600000, 'end_us': 2400000}, {'id': 'hit-67d7cb49615542dff024bfc5', 'channel': 2, 'start_us': 1600000, 'end_us': 2400000}] expect=[1600000, 2400000]"
+    },
+    {
+      "id": "scan-coverage-BL-05-s2",
+      "title": "BL-05 流 2：真实扫描覆盖与独立重算一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "scan=[{'start_us': 0, 'end_us': 1600000}, {'start_us': 2400000, 'end_us': 6400000}] ind=[{'start_us': 0, 'end_us': 1600000}, {'start_us': 2400000, 'end_us': 6400000}]"
+    },
+    {
+      "id": "scan-gap-BL-05-s2",
+      "title": "BL-05 流 2：sound_gap 配对无覆盖平台 L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "gaps=[{'id': 'hit-a5606231d2d0dd73e3a6a392', 'start_us': 1600000, 'end_us': 2400000}] expect=[1600000, 2400000]"
+    },
+    {
+      "id": "scan-silence-BL-05-s2",
+      "title": "BL-05 流 2：silence 配对实录静音平台 L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "silences=[{'id': 'hit-3e2fa2fa958113191360be57', 'channel': 1, 'start_us': 3200000, 'end_us': 4000000}, {'id': 'hit-831e22effc18d791566783aa', 'channel': 2, 'start_us': 3200000, 'end_us': 4000000}] expect=[3200000, 4000000]"
+    },
+    {
+      "id": "scan-coverage-BL-06-s1",
+      "title": "BL-06 流 1：真实扫描覆盖与独立重算一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "scan=[{'start_us': 0, 'end_us': 3200000}, {'start_us': 4000000, 'end_us': 6400000}] ind=[{'start_us': 0, 'end_us': 3200000}, {'start_us': 4000000, 'end_us': 6400000}]"
+    },
+    {
+      "id": "scan-gap-BL-06-s1",
+      "title": "BL-06 流 1：sound_gap 配对无覆盖平台 L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "gaps=[{'id': 'hit-fc5b2367d72f660b7e2f2c94', 'start_us': 3200000, 'end_us': 4000000}] expect=[3200000, 4000000]"
+    },
+    {
+      "id": "scan-silence-BL-06-s1",
+      "title": "BL-06 流 1：silence 配对实录静音平台 L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "silences=[{'id': 'hit-7a0ee2c6a3e037af69876147', 'channel': 1, 'start_us': 1600000, 'end_us': 2400000}, {'id': 'hit-e3b2d367514cbd8f3a1c800f', 'channel': 2, 'start_us': 1600000, 'end_us': 2400000}] expect=[1600000, 2400000]"
+    },
+    {
+      "id": "scan-coverage-BL-06-s2",
+      "title": "BL-06 流 2：真实扫描覆盖与独立重算一致",
+      "ok": true,
+      "severity": "critical",
+      "detail": "scan=[{'start_us': 0, 'end_us': 1600000}, {'start_us': 2400000, 'end_us': 6400000}] ind=[{'start_us': 0, 'end_us': 1600000}, {'start_us': 2400000, 'end_us': 6400000}]"
+    },
+    {
+      "id": "scan-gap-BL-06-s2",
+      "title": "BL-06 流 2：sound_gap 配对无覆盖平台 L1",
+      "ok": true,
+      "severity": "critical",
+      "detail": "gaps=[{'id': 'hit-fa5da1ddd8e613d156833027', 'start_us': 1600000, 'end_us': 2400000}] expect=[1600000, 2400000]"
+    },
+    {
+      "id": "scan-silence-BL-06-s2",
+      "title": "BL-06 流 2：silence 配对实录静音平台 L2",
+      "ok": true,
+      "severity": "critical",
+      "detail": "silences=[{'id': 'hit-2ebc89ba7aed8b1e739773db', 'channel': 1, 'start_us': 3200000, 'end_us': 4000000}, {'id': 'hit-57d4b12abba7b5c6671461bb', 'channel': 2, 'start_us': 3200000, 'end_us': 4000000}] expect=[3200000, 4000000]"
+    },
+    {
+      "id": "leak-filenames",
+      "title": "盲包目录无 truth/debrief/母带/脚本/报告等越界文件",
+      "ok": true,
+      "severity": "critical",
+      "detail": "bad=[]"
+    },
+    {
+      "id": "leak-zip",
+      "title": "盲包 zip 仅含参训者文件，无答案 / 母带 / 越界路径",
+      "ok": true,
+      "severity": "critical",
+      "detail": "members=989 bad=[]"
+    },
+    {
+      "id": "leak-content",
+      "title": "盲包文本无密封哈希 / 真实流名 / 答案赋值 / 真值键",
+      "ok": true,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "id": "leak-host-hints",
+      "title": "盲包文本不回指 debrief / truth / 生成核查脚本等主持路径",
+      "ok": true,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "id": "leak-no-remote",
+      "title": "盲包页面无 http(s) 外链（离线自包含）",
+      "ok": true,
+      "severity": "critical",
+      "detail": "remote=[]"
+    },
+    {
+      "id": "leak-viewmodel-keys",
+      "title": "内嵌盲数据仅含媒体 / 时序键，无 role/stream/answer",
+      "ok": true,
+      "severity": "critical",
+      "detail": "per-item keys=[\"cols\", \"duration\", \"film\", \"fps\", \"frames\", \"h\", \"jia\", \"rows\", \"w\", \"yi\"]"
+    },
+    {
+      "id": "blind-links",
+      "title": "index.html 的本地链接目标均在盲包内",
+      "ok": true,
+      "severity": "critical",
+      "detail": "missing=[]"
+    },
+    {
+      "id": "cue-size",
+      "title": "文件长度 / 字节大小不能选轨（全部相等）",
+      "ok": true,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "id": "cue-leading",
+      "title": "开头对齐 / 前导零不能选轨（全部相同）",
+      "ok": true,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "id": "cue-zero",
+      "title": "全零波形不能选轨（平台数量 / 位置全部相同）",
+      "ok": true,
+      "severity": "critical",
+      "detail": ""
+    },
+    {
+      "id": "cue-order",
+      "title": "固定选第一个候选不能全对（答案甲乙各半）",
+      "ok": true,
+      "severity": "critical",
+      "detail": ""
+    }
+  ]
+}

@@ -63,3 +63,14 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 ## 复核运行
 
 `python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+
+## 声画盲标培训包
+
+`training/` 是一套可直接发放的盲标练习，用来考核审片员是否会把**流名相同的参考轨**误当成主混。运行：
+
+```sh
+.venv/bin/python training/build_blind_lab.py   # 生成可复跑双音轨母带与 blind_pack 盲包
+.venv/bin/python training/verify_truth.py       # 独立重算真值 + 真实扫描配对 + 反泄漏核查
+```
+
+发放 `training/blind_pack/Slatewatch盲标练习_盲包.zip`；真实流号、交叉覆盖与答案只写在 `training/debrief/`（`truth.json`、`复盘手册-答案与真值.md`、`recomputed_truth.json`、`scan_pairing.json`、`verification_report.md`、`leak_audit.md`）。其中一组题目只能靠多点声画关系识轨，另一组盲材内两条候选字节相同、必须判“无法确认”；每题都有外观相同但分别来自实录静音与无覆盖补零的全零平台。设计与核查细节见 `training/README.md`。

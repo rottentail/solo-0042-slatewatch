@@ -1,0 +1,450 @@
+{
+  "policy_label": "盲标复盘-默认规则",
+  "items": {
+    "BL-01": {
+      "streams": {
+        "1": {
+          "master_id": "master-f4e98bbf978e4832161503d8",
+          "scan_id": "scan-cdeadb7ea750fc90e1361234",
+          "coverage_sound": [
+            {
+              "start_us": 0,
+              "end_us": 1600000
+            },
+            {
+              "start_us": 2400000,
+              "end_us": 6400000
+            }
+          ],
+          "sound_gaps": [
+            {
+              "id": "hit-1384b387f67c67fccccba28b",
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ],
+          "silences": [
+            {
+              "id": "hit-90133e06392cc23ff7c91fb9",
+              "channel": 1,
+              "start_us": 3200000,
+              "end_us": 4000000
+            },
+            {
+              "id": "hit-cf52f6b641831f753901c17e",
+              "channel": 2,
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ]
+        },
+        "2": {
+          "master_id": "master-ab21e2ea0512399d14411043",
+          "scan_id": "scan-96904effcb7306a82db1e08e",
+          "coverage_sound": [
+            {
+              "start_us": 0,
+              "end_us": 3200000
+            },
+            {
+              "start_us": 4000000,
+              "end_us": 6400000
+            }
+          ],
+          "sound_gaps": [
+            {
+              "id": "hit-3b1df287f720b319b8305bc9",
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ],
+          "silences": [
+            {
+              "id": "hit-5b267bdf3fc7933295bbb115",
+              "channel": 1,
+              "start_us": 1600000,
+              "end_us": 2400000
+            },
+            {
+              "id": "hit-02c826b7ed2d7e2089cfacd7",
+              "channel": 2,
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ]
+        }
+      }
+    },
+    "BL-02": {
+      "streams": {
+        "1": {
+          "master_id": "master-88b5d8e731de6d79b08d16b6",
+          "scan_id": "scan-e121c1a1eb1b2f1a3756fbae",
+          "coverage_sound": [
+            {
+              "start_us": 0,
+              "end_us": 1600000
+            },
+            {
+              "start_us": 2400000,
+              "end_us": 6400000
+            }
+          ],
+          "sound_gaps": [
+            {
+              "id": "hit-b92db6109f6a9097ec180525",
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ],
+          "silences": [
+            {
+              "id": "hit-e651e68c4fa31de5636522b0",
+              "channel": 1,
+              "start_us": 3200000,
+              "end_us": 4000000
+            },
+            {
+              "id": "hit-fdb4eaeab926875fe17923ed",
+              "channel": 2,
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ]
+        },
+        "2": {
+          "master_id": "master-2e5b6dcbf720afb94fa11826",
+          "scan_id": "scan-e75e3a93612e1874ff1bb17f",
+          "coverage_sound": [
+            {
+              "start_us": 0,
+              "end_us": 3200000
+            },
+            {
+              "start_us": 4000000,
+              "end_us": 6400000
+            }
+          ],
+          "sound_gaps": [
+            {
+              "id": "hit-cd050695a596ded16250f2bd",
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ],
+          "silences": [
+            {
+              "id": "hit-57b64f905133b643deb4a663",
+              "channel": 1,
+              "start_us": 1600000,
+              "end_us": 2400000
+            },
+            {
+              "id": "hit-ca4a31dd7f3fec85a420434e",
+              "channel": 2,
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ]
+        }
+      }
+    },
+    "BL-03": {
+      "streams": {
+        "1": {
+          "master_id": "master-edaa9e9265e6958a4d47e865",
+          "scan_id": "scan-7569a7e8b0d584540dd86e31",
+          "coverage_sound": [
+            {
+              "start_us": 0,
+              "end_us": 1600000
+            },
+            {
+              "start_us": 2400000,
+              "end_us": 6400000
+            }
+          ],
+          "sound_gaps": [
+            {
+              "id": "hit-57d2d1a6e7ab4205a64598dd",
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ],
+          "silences": [
+            {
+              "id": "hit-4a745dd83f4653569951e8b1",
+              "channel": 1,
+              "start_us": 3200000,
+              "end_us": 4000000
+            },
+            {
+              "id": "hit-b1560be492def67bb9631895",
+              "channel": 2,
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ]
+        },
+        "2": {
+          "master_id": "master-44aca02931574fcbef09e6fa",
+          "scan_id": "scan-86366ab1e212d4f497fef455",
+          "coverage_sound": [
+            {
+              "start_us": 0,
+              "end_us": 3200000
+            },
+            {
+              "start_us": 4000000,
+              "end_us": 6400000
+            }
+          ],
+          "sound_gaps": [
+            {
+              "id": "hit-a0f8b6440e76aa9627d08da8",
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ],
+          "silences": [
+            {
+              "id": "hit-7ac83239b8f39e18dfd71ce8",
+              "channel": 1,
+              "start_us": 1600000,
+              "end_us": 2400000
+            },
+            {
+              "id": "hit-d8b1d05a4d884dc0786423c1",
+              "channel": 2,
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ]
+        }
+      }
+    },
+    "BL-04": {
+      "streams": {
+        "1": {
+          "master_id": "master-03697c0b97e1ac39eb0a0e52",
+          "scan_id": "scan-b6cd4408c06c4e74d78d2ded",
+          "coverage_sound": [
+            {
+              "start_us": 0,
+              "end_us": 1600000
+            },
+            {
+              "start_us": 2400000,
+              "end_us": 6400000
+            }
+          ],
+          "sound_gaps": [
+            {
+              "id": "hit-eaae0ed7f027a968598922b7",
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ],
+          "silences": [
+            {
+              "id": "hit-1386f96d2579b91e640c8539",
+              "channel": 1,
+              "start_us": 3200000,
+              "end_us": 4000000
+            },
+            {
+              "id": "hit-ea12057b41a4738d20d002a3",
+              "channel": 2,
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ]
+        },
+        "2": {
+          "master_id": "master-5ec209a9093c975bc1d9be0b",
+          "scan_id": "scan-a3279a955510d7528bce8113",
+          "coverage_sound": [
+            {
+              "start_us": 0,
+              "end_us": 3200000
+            },
+            {
+              "start_us": 4000000,
+              "end_us": 6400000
+            }
+          ],
+          "sound_gaps": [
+            {
+              "id": "hit-00c151c573b0b18ac8166e2d",
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ],
+          "silences": [
+            {
+              "id": "hit-3fbf8eb0850b2d9a0a212ddd",
+              "channel": 1,
+              "start_us": 1600000,
+              "end_us": 2400000
+            },
+            {
+              "id": "hit-f18684d1875725e7a3e47155",
+              "channel": 2,
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ]
+        }
+      }
+    },
+    "BL-05": {
+      "streams": {
+        "1": {
+          "master_id": "master-2dd6fc35879b0f05df31409f",
+          "scan_id": "scan-0ed59526ade0700648b19836",
+          "coverage_sound": [
+            {
+              "start_us": 0,
+              "end_us": 3200000
+            },
+            {
+              "start_us": 4000000,
+              "end_us": 6400000
+            }
+          ],
+          "sound_gaps": [
+            {
+              "id": "hit-e80581787e3db4a47ff7264f",
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ],
+          "silences": [
+            {
+              "id": "hit-072b3780ee9fe3175fb1a674",
+              "channel": 1,
+              "start_us": 1600000,
+              "end_us": 2400000
+            },
+            {
+              "id": "hit-67d7cb49615542dff024bfc5",
+              "channel": 2,
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ]
+        },
+        "2": {
+          "master_id": "master-7bed51911eeb6ce5079c737e",
+          "scan_id": "scan-2bff70ff075e4e5ba591387e",
+          "coverage_sound": [
+            {
+              "start_us": 0,
+              "end_us": 1600000
+            },
+            {
+              "start_us": 2400000,
+              "end_us": 6400000
+            }
+          ],
+          "sound_gaps": [
+            {
+              "id": "hit-a5606231d2d0dd73e3a6a392",
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ],
+          "silences": [
+            {
+              "id": "hit-3e2fa2fa958113191360be57",
+              "channel": 1,
+              "start_us": 3200000,
+              "end_us": 4000000
+            },
+            {
+              "id": "hit-831e22effc18d791566783aa",
+              "channel": 2,
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ]
+        }
+      }
+    },
+    "BL-06": {
+      "streams": {
+        "1": {
+          "master_id": "master-6553fbd8ab26c26d8786bea3",
+          "scan_id": "scan-191d8c32b4588a105497d813",
+          "coverage_sound": [
+            {
+              "start_us": 0,
+              "end_us": 3200000
+            },
+            {
+              "start_us": 4000000,
+              "end_us": 6400000
+            }
+          ],
+          "sound_gaps": [
+            {
+              "id": "hit-fc5b2367d72f660b7e2f2c94",
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ],
+          "silences": [
+            {
+              "id": "hit-7a0ee2c6a3e037af69876147",
+              "channel": 1,
+              "start_us": 1600000,
+              "end_us": 2400000
+            },
+            {
+              "id": "hit-e3b2d367514cbd8f3a1c800f",
+              "channel": 2,
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ]
+        },
+        "2": {
+          "master_id": "master-9a359686ae8dd8d62f605d3c",
+          "scan_id": "scan-5d3e3c2fd4bfd9774cf69047",
+          "coverage_sound": [
+            {
+              "start_us": 0,
+              "end_us": 1600000
+            },
+            {
+              "start_us": 2400000,
+              "end_us": 6400000
+            }
+          ],
+          "sound_gaps": [
+            {
+              "id": "hit-fa5da1ddd8e613d156833027",
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ],
+          "silences": [
+            {
+              "id": "hit-2ebc89ba7aed8b1e739773db",
+              "channel": 1,
+              "start_us": 3200000,
+              "end_us": 4000000
+            },
+            {
+              "id": "hit-57d4b12abba7b5c6671461bb",
+              "channel": 2,
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ]
+        }
+      }
+    }
+  },
+  "policy_id": "policy-98150225768acc4df2290d75"
+}

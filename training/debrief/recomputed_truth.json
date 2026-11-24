@@ -1,0 +1,1403 @@
+{
+  "items": {
+    "BL-01": {
+      "master_rel": "debrief/masters/BL-01_A1_dual.mkv",
+      "audio": {
+        "1": {
+          "rate": 16000,
+          "channels": 2,
+          "first_sample": 0,
+          "sample_count": 102400,
+          "coverage_us": [
+            {
+              "start_us": 0,
+              "end_us": 1600000
+            },
+            {
+              "start_us": 2400000,
+              "end_us": 6400000
+            }
+          ],
+          "gaps_us": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ],
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "uncovered",
+              "coverage_fraction": 0.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ],
+          "onsets_s": [
+            0.8,
+            2.8,
+            4.4
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10334
+        },
+        "2": {
+          "rate": 16000,
+          "channels": 2,
+          "first_sample": 0,
+          "sample_count": 102400,
+          "coverage_us": [
+            {
+              "start_us": 0,
+              "end_us": 3200000
+            },
+            {
+              "start_us": 4000000,
+              "end_us": 6400000
+            }
+          ],
+          "gaps_us": [
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ],
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "uncovered",
+              "coverage_fraction": 0.0
+            }
+          ],
+          "onsets_s": [
+            0.8,
+            3.0,
+            4.8
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10426
+        }
+      },
+      "wav": {
+        "jia": {
+          "channels": 1,
+          "sampwidth": 2,
+          "rate": 16000,
+          "nframes": 102400,
+          "decoded_frames": 102400,
+          "duration_s": 6.4,
+          "onsets_s": [
+            0.8,
+            3.0,
+            4.8
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10426,
+          "sha256": "5e8c2cd1250c22fa9d2659a29b25d944d105e5935e4dd8828340d701ca0ee284",
+          "size": 204844,
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ]
+        },
+        "yi": {
+          "channels": 1,
+          "sampwidth": 2,
+          "rate": 16000,
+          "nframes": 102400,
+          "decoded_frames": 102400,
+          "duration_s": 6.4,
+          "onsets_s": [
+            0.8,
+            2.8,
+            4.4
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10334,
+          "sha256": "cc3ab54eb44e05484f2d4db1efdd484564330ff14f85dc2252e2049e8b614feb",
+          "size": 204844,
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ]
+        }
+      },
+      "container_duration_us": 6400000,
+      "streams": [
+        {
+          "index": 0,
+          "type": "video",
+          "codec": "ffv1",
+          "title": null,
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        },
+        {
+          "index": 1,
+          "type": "audio",
+          "codec": "pcm_s16le",
+          "title": "主混 MIX",
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        },
+        {
+          "index": 2,
+          "type": "audio",
+          "codec": "pcm_s16le",
+          "title": "主混 MIX",
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        }
+      ],
+      "flashes": [
+        {
+          "start_us": 800000,
+          "end_us": 840000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 800000
+        },
+        {
+          "start_us": 2800000,
+          "end_us": 2840000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 2800000
+        },
+        {
+          "start_us": 4400000,
+          "end_us": 4440000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 4400000
+        }
+      ],
+      "sync_score": {
+        "targets": 3,
+        "jia_matches": 1,
+        "yi_matches": 3,
+        "jia_max_err_us": 0,
+        "yi_max_err_us": 0
+      }
+    },
+    "BL-02": {
+      "master_rel": "debrief/masters/BL-02_B1_dual.mkv",
+      "audio": {
+        "1": {
+          "rate": 16000,
+          "channels": 2,
+          "first_sample": 0,
+          "sample_count": 102400,
+          "coverage_us": [
+            {
+              "start_us": 0,
+              "end_us": 1600000
+            },
+            {
+              "start_us": 2400000,
+              "end_us": 6400000
+            }
+          ],
+          "gaps_us": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ],
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "uncovered",
+              "coverage_fraction": 0.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ],
+          "onsets_s": [
+            1.0,
+            4.6
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10413
+        },
+        "2": {
+          "rate": 16000,
+          "channels": 2,
+          "first_sample": 0,
+          "sample_count": 102400,
+          "coverage_us": [
+            {
+              "start_us": 0,
+              "end_us": 3200000
+            },
+            {
+              "start_us": 4000000,
+              "end_us": 6400000
+            }
+          ],
+          "gaps_us": [
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ],
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "uncovered",
+              "coverage_fraction": 0.0
+            }
+          ],
+          "onsets_s": [
+            1.0,
+            4.6
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10413
+        }
+      },
+      "wav": {
+        "jia": {
+          "channels": 1,
+          "sampwidth": 2,
+          "rate": 16000,
+          "nframes": 102400,
+          "decoded_frames": 102400,
+          "duration_s": 6.4,
+          "onsets_s": [
+            1.0,
+            4.6
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10413,
+          "sha256": "53d5e295ac56f004e50551f6a2939d5389da4462983b6216edb9a6f41e7f66b0",
+          "size": 204844,
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ]
+        },
+        "yi": {
+          "channels": 1,
+          "sampwidth": 2,
+          "rate": 16000,
+          "nframes": 102400,
+          "decoded_frames": 102400,
+          "duration_s": 6.4,
+          "onsets_s": [
+            1.0,
+            4.6
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10413,
+          "sha256": "53d5e295ac56f004e50551f6a2939d5389da4462983b6216edb9a6f41e7f66b0",
+          "size": 204844,
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ]
+        }
+      },
+      "container_duration_us": 6400000,
+      "streams": [
+        {
+          "index": 0,
+          "type": "video",
+          "codec": "ffv1",
+          "title": null,
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        },
+        {
+          "index": 1,
+          "type": "audio",
+          "codec": "pcm_s16le",
+          "title": "主混 MIX",
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        },
+        {
+          "index": 2,
+          "type": "audio",
+          "codec": "pcm_s16le",
+          "title": "主混 MIX",
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        }
+      ],
+      "flashes": [
+        {
+          "start_us": 1000000,
+          "end_us": 1040000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 1000000
+        },
+        {
+          "start_us": 4600000,
+          "end_us": 4640000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 4600000
+        }
+      ],
+      "sync_score": {
+        "targets": 2,
+        "jia_matches": 2,
+        "yi_matches": 2,
+        "jia_max_err_us": 0,
+        "yi_max_err_us": 0
+      }
+    },
+    "BL-03": {
+      "master_rel": "debrief/masters/BL-03_A2_dual.mkv",
+      "audio": {
+        "1": {
+          "rate": 16000,
+          "channels": 2,
+          "first_sample": 0,
+          "sample_count": 102400,
+          "coverage_us": [
+            {
+              "start_us": 0,
+              "end_us": 1600000
+            },
+            {
+              "start_us": 2400000,
+              "end_us": 6400000
+            }
+          ],
+          "gaps_us": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ],
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "uncovered",
+              "coverage_fraction": 0.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ],
+          "onsets_s": [
+            1.0,
+            2.6,
+            4.2
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10295
+        },
+        "2": {
+          "rate": 16000,
+          "channels": 2,
+          "first_sample": 0,
+          "sample_count": 102400,
+          "coverage_us": [
+            {
+              "start_us": 0,
+              "end_us": 3200000
+            },
+            {
+              "start_us": 4000000,
+              "end_us": 6400000
+            }
+          ],
+          "gaps_us": [
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ],
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "uncovered",
+              "coverage_fraction": 0.0
+            }
+          ],
+          "onsets_s": [
+            1.0,
+            3.0,
+            4.8
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10426
+        }
+      },
+      "wav": {
+        "jia": {
+          "channels": 1,
+          "sampwidth": 2,
+          "rate": 16000,
+          "nframes": 102400,
+          "decoded_frames": 102400,
+          "duration_s": 6.4,
+          "onsets_s": [
+            1.0,
+            3.0,
+            4.8
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10426,
+          "sha256": "6f845a82df54149686b546f795abb23a889a6336e11c0109392f0ccd7eede451",
+          "size": 204844,
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ]
+        },
+        "yi": {
+          "channels": 1,
+          "sampwidth": 2,
+          "rate": 16000,
+          "nframes": 102400,
+          "decoded_frames": 102400,
+          "duration_s": 6.4,
+          "onsets_s": [
+            1.0,
+            2.6,
+            4.2
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10295,
+          "sha256": "e02981a70ea8bf721b87baf7542f7117b14fd83a86315be3fae4f570c9a5cbf5",
+          "size": 204844,
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ]
+        }
+      },
+      "container_duration_us": 6400000,
+      "streams": [
+        {
+          "index": 0,
+          "type": "video",
+          "codec": "ffv1",
+          "title": null,
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        },
+        {
+          "index": 1,
+          "type": "audio",
+          "codec": "pcm_s16le",
+          "title": "主混 MIX",
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        },
+        {
+          "index": 2,
+          "type": "audio",
+          "codec": "pcm_s16le",
+          "title": "主混 MIX",
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        }
+      ],
+      "flashes": [
+        {
+          "start_us": 1000000,
+          "end_us": 1040000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 1000000
+        },
+        {
+          "start_us": 3000000,
+          "end_us": 3040000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 3000000
+        },
+        {
+          "start_us": 4800000,
+          "end_us": 4840000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 4800000
+        }
+      ],
+      "sync_score": {
+        "targets": 3,
+        "jia_matches": 3,
+        "yi_matches": 1,
+        "jia_max_err_us": 0,
+        "yi_max_err_us": 0
+      }
+    },
+    "BL-04": {
+      "master_rel": "debrief/masters/BL-04_B2_dual.mkv",
+      "audio": {
+        "1": {
+          "rate": 16000,
+          "channels": 2,
+          "first_sample": 0,
+          "sample_count": 102400,
+          "coverage_us": [
+            {
+              "start_us": 0,
+              "end_us": 1600000
+            },
+            {
+              "start_us": 2400000,
+              "end_us": 6400000
+            }
+          ],
+          "gaps_us": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ],
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "uncovered",
+              "coverage_fraction": 0.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ],
+          "onsets_s": [
+            0.8,
+            2.8,
+            5.2
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10334
+        },
+        "2": {
+          "rate": 16000,
+          "channels": 2,
+          "first_sample": 0,
+          "sample_count": 102400,
+          "coverage_us": [
+            {
+              "start_us": 0,
+              "end_us": 3200000
+            },
+            {
+              "start_us": 4000000,
+              "end_us": 6400000
+            }
+          ],
+          "gaps_us": [
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ],
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "uncovered",
+              "coverage_fraction": 0.0
+            }
+          ],
+          "onsets_s": [
+            0.8,
+            2.8,
+            5.2
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10334
+        }
+      },
+      "wav": {
+        "jia": {
+          "channels": 1,
+          "sampwidth": 2,
+          "rate": 16000,
+          "nframes": 102400,
+          "decoded_frames": 102400,
+          "duration_s": 6.4,
+          "onsets_s": [
+            0.8,
+            2.8,
+            5.2
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10334,
+          "sha256": "df82f3d55be7461d5381d6bb53583bf961d034f467ab0aea82a32cbd7b5ab2eb",
+          "size": 204844,
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ]
+        },
+        "yi": {
+          "channels": 1,
+          "sampwidth": 2,
+          "rate": 16000,
+          "nframes": 102400,
+          "decoded_frames": 102400,
+          "duration_s": 6.4,
+          "onsets_s": [
+            0.8,
+            2.8,
+            5.2
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10334,
+          "sha256": "df82f3d55be7461d5381d6bb53583bf961d034f467ab0aea82a32cbd7b5ab2eb",
+          "size": 204844,
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ]
+        }
+      },
+      "container_duration_us": 6400000,
+      "streams": [
+        {
+          "index": 0,
+          "type": "video",
+          "codec": "ffv1",
+          "title": null,
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        },
+        {
+          "index": 1,
+          "type": "audio",
+          "codec": "pcm_s16le",
+          "title": "主混 MIX",
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        },
+        {
+          "index": 2,
+          "type": "audio",
+          "codec": "pcm_s16le",
+          "title": "主混 MIX",
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        }
+      ],
+      "flashes": [
+        {
+          "start_us": 800000,
+          "end_us": 840000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 800000
+        },
+        {
+          "start_us": 2800000,
+          "end_us": 2840000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 2800000
+        },
+        {
+          "start_us": 5200000,
+          "end_us": 5240000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 5200000
+        }
+      ],
+      "sync_score": {
+        "targets": 3,
+        "jia_matches": 3,
+        "yi_matches": 3,
+        "jia_max_err_us": 0,
+        "yi_max_err_us": 0
+      }
+    },
+    "BL-05": {
+      "master_rel": "debrief/masters/BL-05_A3_dual.mkv",
+      "audio": {
+        "1": {
+          "rate": 16000,
+          "channels": 2,
+          "first_sample": 0,
+          "sample_count": 102400,
+          "coverage_us": [
+            {
+              "start_us": 0,
+              "end_us": 3200000
+            },
+            {
+              "start_us": 4000000,
+              "end_us": 6400000
+            }
+          ],
+          "gaps_us": [
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ],
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "uncovered",
+              "coverage_fraction": 0.0
+            }
+          ],
+          "onsets_s": [
+            0.6,
+            3.0,
+            4.4
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10353
+        },
+        "2": {
+          "rate": 16000,
+          "channels": 2,
+          "first_sample": 0,
+          "sample_count": 102400,
+          "coverage_us": [
+            {
+              "start_us": 0,
+              "end_us": 1600000
+            },
+            {
+              "start_us": 2400000,
+              "end_us": 6400000
+            }
+          ],
+          "gaps_us": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ],
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "uncovered",
+              "coverage_fraction": 0.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ],
+          "onsets_s": [
+            0.6,
+            2.6,
+            5.0
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10353
+        }
+      },
+      "wav": {
+        "jia": {
+          "channels": 1,
+          "sampwidth": 2,
+          "rate": 16000,
+          "nframes": 102400,
+          "decoded_frames": 102400,
+          "duration_s": 6.4,
+          "onsets_s": [
+            0.6,
+            3.0,
+            4.4
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10353,
+          "sha256": "d1f454fa80b1254d2b124f4ad13b1f8d28e1a81ae3b68ae44dd74a634cdb0dc2",
+          "size": 204844,
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ]
+        },
+        "yi": {
+          "channels": 1,
+          "sampwidth": 2,
+          "rate": 16000,
+          "nframes": 102400,
+          "decoded_frames": 102400,
+          "duration_s": 6.4,
+          "onsets_s": [
+            0.6,
+            2.6,
+            5.0
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10353,
+          "sha256": "7f8dd6d5b51d772d8a74c08d35b2d93182f56477f94ed68f1383624576ca52b4",
+          "size": 204844,
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ]
+        }
+      },
+      "container_duration_us": 6400000,
+      "streams": [
+        {
+          "index": 0,
+          "type": "video",
+          "codec": "ffv1",
+          "title": null,
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        },
+        {
+          "index": 1,
+          "type": "audio",
+          "codec": "pcm_s16le",
+          "title": "主混 MIX",
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        },
+        {
+          "index": 2,
+          "type": "audio",
+          "codec": "pcm_s16le",
+          "title": "主混 MIX",
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        }
+      ],
+      "flashes": [
+        {
+          "start_us": 600000,
+          "end_us": 640000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 600000
+        },
+        {
+          "start_us": 2600000,
+          "end_us": 2640000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 2600000
+        },
+        {
+          "start_us": 5000000,
+          "end_us": 5040000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 5000000
+        }
+      ],
+      "sync_score": {
+        "targets": 3,
+        "jia_matches": 1,
+        "yi_matches": 3,
+        "jia_max_err_us": 0,
+        "yi_max_err_us": 0
+      }
+    },
+    "BL-06": {
+      "master_rel": "debrief/masters/BL-06_A4_dual.mkv",
+      "audio": {
+        "1": {
+          "rate": 16000,
+          "channels": 2,
+          "first_sample": 0,
+          "sample_count": 102400,
+          "coverage_us": [
+            {
+              "start_us": 0,
+              "end_us": 3200000
+            },
+            {
+              "start_us": 4000000,
+              "end_us": 6400000
+            }
+          ],
+          "gaps_us": [
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000
+            }
+          ],
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "uncovered",
+              "coverage_fraction": 0.0
+            }
+          ],
+          "onsets_s": [
+            1.2,
+            2.8,
+            4.2
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10295
+        },
+        "2": {
+          "rate": 16000,
+          "channels": 2,
+          "first_sample": 0,
+          "sample_count": 102400,
+          "coverage_us": [
+            {
+              "start_us": 0,
+              "end_us": 1600000
+            },
+            {
+              "start_us": 2400000,
+              "end_us": 6400000
+            }
+          ],
+          "gaps_us": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000
+            }
+          ],
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "uncovered",
+              "coverage_fraction": 0.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ],
+          "onsets_s": [
+            1.2,
+            2.6,
+            5.0
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10353
+        }
+      },
+      "wav": {
+        "jia": {
+          "channels": 1,
+          "sampwidth": 2,
+          "rate": 16000,
+          "nframes": 102400,
+          "decoded_frames": 102400,
+          "duration_s": 6.4,
+          "onsets_s": [
+            1.2,
+            2.8,
+            4.2
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10295,
+          "sha256": "606eb02e086fce619c344dccce4b0f891bf42eabf0e7e2945a2dc412e893ccbe",
+          "size": 204844,
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ]
+        },
+        "yi": {
+          "channels": 1,
+          "sampwidth": 2,
+          "rate": 16000,
+          "nframes": 102400,
+          "decoded_frames": 102400,
+          "duration_s": 6.4,
+          "onsets_s": [
+            1.2,
+            2.6,
+            5.0
+          ],
+          "leading_zero_samples": 0,
+          "peak": 10353,
+          "sha256": "236b6b15a4c8330367b52d486619cd95b542965d7ca59e7b268d52bafba9d50e",
+          "size": 204844,
+          "zero_runs": [
+            {
+              "start_sample": 25600,
+              "end_sample": 38400,
+              "start_us": 1600000,
+              "end_us": 2400000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            },
+            {
+              "start_sample": 51200,
+              "end_sample": 64000,
+              "start_us": 3200000,
+              "end_us": 4000000,
+              "kind": "recorded_silence",
+              "coverage_fraction": 1.0
+            }
+          ]
+        }
+      },
+      "container_duration_us": 6400000,
+      "streams": [
+        {
+          "index": 0,
+          "type": "video",
+          "codec": "ffv1",
+          "title": null,
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        },
+        {
+          "index": 1,
+          "type": "audio",
+          "codec": "pcm_s16le",
+          "title": "主混 MIX",
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        },
+        {
+          "index": 2,
+          "type": "audio",
+          "codec": "pcm_s16le",
+          "title": "主混 MIX",
+          "duration_meta": "00:00:06.400000000",
+          "disposition_int": 0,
+          "default_flag": false
+        }
+      ],
+      "flashes": [
+        {
+          "start_us": 1200000,
+          "end_us": 1240000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 1200000
+        },
+        {
+          "start_us": 2800000,
+          "end_us": 2840000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 2800000
+        },
+        {
+          "start_us": 4200000,
+          "end_us": 4240000,
+          "frames": 2,
+          "max_lit_bytes": 5168,
+          "time_us": 4200000
+        }
+      ],
+      "sync_score": {
+        "targets": 3,
+        "jia_matches": 3,
+        "yi_matches": 1,
+        "jia_max_err_us": 0,
+        "yi_max_err_us": 0
+      }
+    }
+  }
+}
