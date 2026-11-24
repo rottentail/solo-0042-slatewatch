@@ -1,0 +1,47 @@
+==============================================================================
+PAIR A — two histories, identical surface: ruling churn vs one hold
+==============================================================================
+A surface: {"pending": 5, "expected": 0, "accepted": 0, "held": 1} rollup = hold
+B surface: {"pending": 5, "expected": 0, "accepted": 0, "held": 1} rollup = hold
+surface equal:         True
+snapshot id equal:     True
+prefix fingerprint A:  3f5ad4f7dbc36073 ruling seqs = [1, 2, 3]
+  A prefix retains superseded outcomes: [(1, 'accept'), (2, 'reset'), (3, 'hold')]
+  A projected ruling keeps only the last one: hold
+prefix fingerprint B:  b393decc42ebfe27 ruling seqs = [1]
+prefixes equal:        False
+seal ids equal:        False
+  seal A: seal-ad9d7d579db2fd58e3f52a44 status hold
+  seal B: seal-16cbe8dc8352a57c5c0080f5 status hold
+
+==============================================================================
+PAIR B — same surface, one intent vs two-event partial-then-complete
+==============================================================================
+C silence status: expected | D after partial intent: pending | D after second intent: expected
+surface equal:      True
+snapshot id equal:  True
+C intent seqs: [1] D intent seqs: [1, 2]
+prefixes equal:     False
+offline-visible reasons — C: scheduled left-channel quiet bed | D: ['first partial annotation', 'completed cover annotation']
+
+==============================================================================
+LATE INTENT — intent that arrives after the human ruling
+==============================================================================
+before late intent: rollup = hold counts = {"pending": 4, "expected": 0, "accepted": 0, "held": 2}
+sealed id: seal-e2497ebe5c42b2dc735a77ba
+late intent seq: 3
+black hit now: held | intent_sequences: [3] | ruling still attached: hold
+clip hit now:  held (manual ruling outranks intent)
+rollup after late intent: hold counts = {"pending": 4, "expected": 0, "accepted": 0, "held": 2}
+after reset: black hit = expected intent_sequences: [3] | rollup = hold counts = {"pending": 4, "expected": 1, "accepted": 0, "held": 1}
+re-sealed id differs: True
+  old: seal-e2497ebe5c42b2dc735a77ba review_status = hold
+  new: seal-149a0415014de54c334d8608 review_status = hold
+old bundle still verifies: verified | members: 11
+old bundle review.json intents: 0 | black status frozen at: held | black intent_sequences: []
+old bundle members: ['evidence.json', 'evidence/hit-af4e60e6be4725f88b5489ba/frame-01.pgm', 'evidence/hit-af4e60e6be4725f88b5489ba/frame-02.pgm', 'evidence/hit-af4e60e6be4725f88b5489ba/frame-03.pgm', 'evidence/hit-af4e60e6be4725f88b5489ba/sound.wav', 'evidence/hit-cd72bb0191bab756eb3295f6/frame-01.pgm', 'evidence/hit-cd72bb0191bab756eb3295f6/frame-02.pgm', 'evidence/hit-cd72bb0191bab756eb3295f6/frame-03.pgm', 'evidence/hit-cd72bb0191bab756eb3295f6/sound.wav', 'index.json', 'review.json', 'scan.json']
+replay of embedded prefix reproduces frozen surface: True
+reset replay with full prefix:    black = expected
+reset replay without intent prefix: black = pending <- snapshot-only material cannot explain the expected verdict
+snapshot-only ids — before: snapshot-10a31e41d9dd3628 after: snapshot-10a31e41d9dd3628 equal: True
+snapshot id after reset differs from sealed one: True
