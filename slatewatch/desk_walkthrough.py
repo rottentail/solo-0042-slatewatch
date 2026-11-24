@@ -63,11 +63,46 @@ def run(server, root):
     assert sha256(bundle).hexdigest() == descriptor['sha256']
     with ZipFile(BytesIO(bundle)) as archive:
         assert json.loads(archive.read('review.json'))['status'] == 'pending'
+
+    # 补证：申请表单、历史/当前来源、列表、独立校验，且原冻结包哈希不变
+    seal_page = request(origin, seal)[2]
+    assert '申请补证'.encode() in seal_page and '按历史决定补充同一次观察'.encode() in seal_page
+    supplement_target, _, supplement_page = request(
+        origin, seal + '/supplement',
+        {'basis': 'historical', 'hit': hit['id'], 'reason': '接收方需要多两格上下文',
+         'padding_ms': 160, 'frames': 5})
+    assert '补证详情'.encode() in supplement_page and '按历史决定补充同一次观察'.encode() in supplement_page
+    supplement_key = supplement_target.rsplit('/', 1)[1]
+    supplement_descriptor = tour.call(f'/supplements/{supplement_key}')
+    assert supplement_descriptor['seal_sha256'] == descriptor['sha256']
+    assert tour.call(f'/supplements/{supplement_key}/verify')['status'] == 'verified'
+    assert request(origin, f'/desk/supplements/{supplement_key}/verify', {'verify': 1})[2] \
+        .find('已通过校验'.encode()) >= 0
+
+    # 后版扫描候选不能混入历史补证；按当前审片另做则显式记录来源
+    later_hit = tour.hit(second, 'sound_gap')
+    assert '找不到'.encode() in request(
+        origin, seal + '/supplement',
+        {'basis': 'historical', 'hit': later_hit['id'], 'reason': '混用来源'}, expected=404)[2]
+    current_target, _, current_page = request(
+        origin, seal + '/supplement',
+        {'basis': 'current', 'hit': later_hit['id'], 'reason': '按后版复审',
+         'scan_id': second['id']})
+    assert '按当前审片另做'.encode() in current_page
+    current_key = current_target.rsplit('/', 1)[1]
+    current_descriptor = tour.call(f'/supplements/{current_key}')
+    assert current_descriptor['basis'] == 'current' and current_descriptor['scan_id'] == second['id']
+
+    # 原冻结包字节与描述符均未被补证改动
+    assert tour.call(f'/seals/{key}')['sha256'] == descriptor['sha256']
+    refreshed = request(origin, seal)[2]
+    assert supplement_key.encode() in refreshed and current_key.encode() in refreshed
+
     query = urlencode({'before': first['id'], 'after': second['id']})
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、补证来源区分、版次比对均通过')
 
 
 def main():

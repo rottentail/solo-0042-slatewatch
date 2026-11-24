@@ -20,6 +20,8 @@ python -m slatewatch.http --root ./slatewatch-vault
 
 「版次比对」显示同节目时标上的匹配和各版独有候选。「冻结包」保留冻结当时的结论，并提供独立核验与下载。浏览器预览是当前进程内的临时结果。有长期交接需求时，使用即时证据下载或冻结包。
 
+冻结包发布后内容即固定，后续补证不会改写原 ZIP 或其 SHA-256。补证是单独出版、单独校验的新包，内部记录原包编号与原包哈希。`historical` 补证只能引用原扫描、原母带和原候选，用来补足同一次历史观察所需的另一声道或更多上下文，并沿用冻结当时的评审快照；`current` 补证面向当前审片，必须给出当前扫描编号，并记录补证实际取材的源母带哈希。候选身份由扫描派生，因此后版候选无法在 `historical` 补证中通过校验（返回 404），从来源上避免新旧版本混淆。工作台的冻结包详情页可直接申请补证并查看补证列表。
+
 ## 一次审片
 
 另开终端并激活虚拟环境。下面的 `MASTER_ID`、`POLICY_ID`、`SCAN_ID` 和 `HIT_ID` 用上一步响应里的实际 ID 替换。
@@ -54,7 +56,9 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 | `POST /compare` | 以 `before`、`after` 扫描 ID 及可选的 `minimum_permille` 对照共享时线上的候选 |
 | `POST /scans/{id}/evidence` | 按 1 至 6 个 `hit_ids`、可选 `padding_ms` 和 `frames` 生成即时 ZIP。每条证据含时标映射和可用媒体 |
 | `POST /scans/{id}/seals` | 接收同一摘片选项，冻结扫描、裁决及媒体，返回封包描述符 |
+| `POST /seals/{id}/supplements` | 对已冻结包申请补证。`basis` 为 `historical`（按历史决定补充同一次观察，复用原扫描与冻结评审）或 `current`（按当前审片另做，需 `scan_id`）。另带 `hit_ids`、`reason` 及摘片选项，返回独立补证描述符 |
 | `GET /seals/{id}`、`/seals/{id}/verify`、`/seals/{id}/bundle` | 读取描述、校验包哈希与文件索引，或下载已校验的 ZIP |
+| `GET /supplements/{id}`、`/supplements/{id}/verify`、`/supplements/{id}/bundle` | 读取补证描述、校验补证哈希、成员与来源绑定，或下载已校验的补证 ZIP |
 
 上传限制为 48 MiB，源时长限 120 秒。允许的容器、编码、轨道与采样范围定义在 `slatewatch/media.py`。`coverage.sound: null` 表示未选伴音，带缺口的已选伴音有实际覆盖区间。波形证据对未覆盖采样补零，`clock.json` 单列补零区间，供复核时区别源内数字静音。画格是为判读技术信号生成的灰阶缩略图。
 
@@ -62,4 +66,4 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog`、`verify` 或 `supplement`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV、冻结包与补证来源区分。自动测试套件暂缓。

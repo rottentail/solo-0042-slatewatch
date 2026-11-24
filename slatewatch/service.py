@@ -1,4 +1,5 @@
 """Application boundary for media intake, measurement, review and sealed evidence."""
+import json
 from io import BytesIO
 from zipfile import ZIP_DEFLATED, ZipFile
 
@@ -11,6 +12,7 @@ from .rules import canonical, identifier, new_policy
 from .scan import measure, scan_identity
 from .seal import pack, verify
 from .store import Vault
+from .supplement import BASES, pack as pack_supplement, verify as verify_supplement_bundle
 
 
 class Slatewatch:
@@ -103,4 +105,70 @@ class Slatewatch:
 
     def download(self, seal_id):
         verification = self.verify(seal_id)
+        return self.vault.object_path(verification['sha256']).read_bytes()
+
+    def _sealed_review(self, seal_record):
+        """Read the review snapshot captured inside the original, verified bundle."""
+        verify(self.vault.object_path(seal_record['sha256']), seal_record)
+        with ZipFile(self.vault.object_path(seal_record['sha256'])) as archive:
+            return json.loads(archive.read('review.json'))
+
+    def _supplement_options(self, data):
+        shape(data, ('basis', 'hit_ids', 'reason'),
+              ('scan_id', 'padding_ms', 'frames'))
+        basis = data['basis']
+        if not isinstance(basis, str) or basis not in BASES:
+            raise InputError('basis must be historical or current')
+        ids = data['hit_ids']
+        if not isinstance(ids, list) or not 1 <= len(ids) <= 6:
+            raise InputError('provide one to six finding identifiers')
+        ids = [text(key, 'finding identifier') for key in ids]
+        if len(set(ids)) != len(ids):
+            raise InputError('finding identifiers must be unique')
+        reason = text(data['reason'], 'reason', 350)
+        padding = integer(data.get('padding_ms', 120), 'padding_ms', 0, 2000)
+        frames = integer(data.get('frames', 3), 'frames', 1, 8)
+        return basis, ids, reason, padding, frames
+
+    def supplement(self, seal_id, data):
+        seal_record = self.vault.get('seal', seal_id)
+        basis, ids, reason, padding, frames = self._supplement_options(data)
+        historical_scan = self.vault.get('scan', seal_record['scan_id'])
+        historical_master = self.vault.get('master', historical_scan['master_id'])
+        if seal_record['master_sha256'] != historical_master['sha256']:
+            raise Conflict('sealed package lineage does not resolve to its source master')
+
+        if basis == 'historical':
+            if 'scan_id' in data:
+                raise InputError('historical supplements reuse the sealed scan and take no scan_id')
+            scan = historical_scan
+            review = self._sealed_review(seal_record)
+        else:
+            scan = self.vault.get('scan', text(data['scan_id'], 'scan_id'))
+            review = adjudicate(scan, *self.vault.timeline(scan['id']))
+
+        source_master = self.vault.get('master', scan['master_id'])
+        # Finding identities derive from the scan, so a later-version candidate id
+        # cannot resolve against the historical scan and is rejected here.
+        hits = [find_hit(scan, key) for key in sorted(ids)]
+        excerpts = extract(self.vault.object_path(source_master['sha256']),
+                           scan, hits, padding, frames)
+        record, payload = pack_supplement(
+            seal_record, basis, scan, historical_master['sha256'],
+            source_master['sha256'], review, reason, excerpts)
+        with self.vault.staged(payload) as (source, digest):
+            self.vault.publish(source, digest)
+        return self.vault.put('supplement', {**record, 'sha256': digest})
+
+    def verify_supplement(self, supplement_id):
+        record = self.vault.get('supplement', supplement_id)
+        seal_record = self.vault.get('seal', record['seal_id'])
+        if seal_record['sha256'] != record['seal_sha256']:
+            raise Conflict('supplement is bound to a different frozen package')
+        # The lineage claim is only as trustworthy as the original frozen bytes.
+        verify(self.vault.object_path(seal_record['sha256']), seal_record)
+        return verify_supplement_bundle(self.vault.object_path(record['sha256']), record)
+
+    def download_supplement(self, supplement_id):
+        verification = self.verify_supplement(supplement_id)
         return self.vault.object_path(verification['sha256']).read_bytes()

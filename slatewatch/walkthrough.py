@@ -168,8 +168,53 @@ def verify(tour):
     return {'verified': verified, 'tampered': tour.call(uri + '/verify', expected=409)}
 
 
+def supplement(tour):
+    record = tour.scan()
+    revised = tour.scan('revision')
+    selection = tour.selection(record)
+    sealed = tour.call(f"/scans/{record['id']}/seals", selection, 201)
+    original_hash = sealed['sha256']
+    target = tour.hit(record, 'sound_gap')
+
+    # historical basis: more context for the same sealed observation, old hash stays put
+    historical = tour.call(f"/seals/{sealed['id']}/supplements", {
+        'basis': 'historical', 'hit_ids': [target['id']], 'reason': 'receiver needs more context',
+        'padding_ms': 160, 'frames': 5}, 201)
+    assert historical['basis'] == 'historical' and historical['scan_id'] == record['id']
+    assert historical['seal_sha256'] == original_hash
+    assert tour.call(f"/supplements/{historical['id']}/verify")['status'] == 'verified'
+    with ZipFile(BytesIO(tour.call(f"/supplements/{historical['id']}/bundle"))) as archive:
+        manifest = json.loads(archive.read('supplement.json'))
+        assert manifest['same_master'] is True and manifest['seal_sha256'] == original_hash
+        assert any(name.startswith(f"supplement/{target['id']}/") for name in archive.namelist())
+
+    # a finding from the later scan must not pass as a historical supplement
+    later_hit = tour.hit(revised, 'sound_gap')
+    confused = tour.call(f"/seals/{sealed['id']}/supplements", {
+        'basis': 'historical', 'hit_ids': [later_hit['id']], 'reason': 'mix sources'}, 404)
+    override = tour.call(f"/seals/{sealed['id']}/supplements", {
+        'basis': 'historical', 'hit_ids': [target['id']], 'scan_id': revised['id'],
+        'reason': 'override scan'}, 400)
+
+    # current basis: a separate supplement cut from the revised review
+    current = tour.call(f"/seals/{sealed['id']}/supplements", {
+        'basis': 'current', 'hit_ids': [later_hit['id']], 'scan_id': revised['id'],
+        'reason': 'fresh review of the revised master'}, 201)
+    assert current['basis'] == 'current' and current['scan_id'] == revised['id']
+    assert current['source_master_sha256'] != sealed['master_sha256']
+    assert tour.call(f"/supplements/{current['id']}/verify")['status'] == 'verified'
+
+    # the original frozen package remains byte-identical and still verifies
+    assert tour.call(f"/seals/{sealed['id']}")['sha256'] == original_hash
+    assert tour.call(f"/seals/{sealed['id']}/verify")['status'] == 'verified'
+    return {'historical': historical['id'], 'current': current['id'],
+            'rejected_later_finding': confused, 'rejected_scan_override': override,
+            'original_seal_hash': original_hash}
+
+
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog,
+             'verify': verify, 'supplement': supplement}
 
 
 def main():

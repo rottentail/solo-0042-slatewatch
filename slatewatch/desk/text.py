@@ -11,6 +11,11 @@ STATUS = {
     'held': '人工扣留', 'hold': '扣留', 'pass': '已通过',
 }
 
+SUPPLEMENT_BASES = {
+    'historical': '按历史决定补充同一次观察',
+    'current': '按当前审片另做',
+}
+
 
 def safe(value):
     return escape(str(value), quote=True)

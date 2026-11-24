@@ -1,0 +1,13 @@
+<div class="wrap"><p><a href="/desk/seals/$seal_key">← 冻结包</a></p>
+<header class="striphead"><h1>补证详情</h1></header>
+<dl><dt>补证编号</dt><dd><code>$key</code></dd><dt>来源</dt><dd>$basis</dd>
+<dt>原冻结包</dt><dd><a href="/desk/seals/$seal_key"><code>$seal_key</code></a></dd>
+<dt>原包 SHA-256</dt><dd><code>$seal_digest</code></dd>
+<dt>所用扫描</dt><dd><a href="/desk/scans/$scan">$scan</a></dd>
+<dt>补证评审结论</dt><dd>$status</dd><dt>补证包 SHA-256</dt><dd><code>$digest</code></dd></dl>
+$verified
+<form class="actions" method="post" action="/desk/supplements/$key/verify">
+  <button class="primary" name="verify" value="1">校验补证包</button>
+  <a class="button" href="/slatewatch/v1/supplements/$key/bundle" download="slatewatch-supplement-$key.zip">下载补证包</a>
+</form>
+</div>

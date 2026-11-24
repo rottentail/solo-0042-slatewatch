@@ -121,7 +121,8 @@ class Handler(BaseHTTPRequestHandler):
             return 200, {'status': 'ready'}, 'application/json'
         if len(parts) == 2:
             group, key = parts
-            types = {'masters': 'master', 'policies': 'policy', 'scans': 'scan', 'seals': 'seal'}
+            types = {'masters': 'master', 'policies': 'policy', 'scans': 'scan',
+                     'seals': 'seal', 'supplements': 'supplement'}
             if group in types:
                 return 200, app.vault.get(types[group], key), 'application/json'
         if len(parts) == 3:
@@ -132,6 +133,10 @@ class Handler(BaseHTTPRequestHandler):
                 return 200, app.verify(key), 'application/json'
             if group == 'seals' and action == 'bundle':
                 return 200, app.download(key), 'application/zip'
+            if group == 'supplements' and action == 'verify':
+                return 200, app.verify_supplement(key), 'application/json'
+            if group == 'supplements' and action == 'bundle':
+                return 200, app.download_supplement(key), 'application/zip'
         raise Missing('route does not exist')
 
     def post(self, app, parts):
@@ -147,6 +152,8 @@ class Handler(BaseHTTPRequestHandler):
                 return 201, operations[action](key, self.json_body()), 'application/json'
             if action == 'evidence':
                 return 200, app.evidence(key, self.json_body()), 'application/zip'
+        if len(parts) == 3 and parts[0] == 'seals' and parts[2] == 'supplements':
+            return 201, app.supplement(parts[1], self.json_body()), 'application/json'
         raise Missing('route does not exist')
 
     def run_request(self):

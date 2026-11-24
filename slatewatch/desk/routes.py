@@ -96,8 +96,34 @@ def route(handler, parsed):
             return html(seals.detail(app, key))
         case 'POST', ['desk', 'seals', key, 'verify']:
             return html(seals.detail(app, key, verified=True))
+        case 'POST', ['desk', 'seals', key, 'supplement']:
+            return supplement_action(app, key, data)
+        case 'GET', ['desk', 'supplements', key]:
+            return html(seals.supplement_detail(app, key))
+        case 'POST', ['desk', 'supplements', key, 'verify']:
+            return html(seals.supplement_detail(app, key, verified=True))
         case _:
             raise Missing('工作台没有此页面。')
+
+
+def supplement_action(app, seal_key, data):
+    basis = data.get('basis')
+    if basis not in ('historical', 'current'):
+        raise InputError('请选择补证来源：按历史决定或按当前审片。')
+    request = {
+        'basis': basis,
+        'hit_ids': [data.get('hit', '')],
+        'reason': data.get('reason'),
+        'padding_ms': forms.number(data, 'padding_ms', 120),
+        'frames': forms.number(data, 'frames', 3),
+    }
+    if basis == 'current':
+        scan_id = data.get('scan_id', '').strip()
+        if not scan_id:
+            raise InputError('按当前审片另做时必须填写当前扫描编号。')
+        request['scan_id'] = scan_id
+    record = app.supplement(seal_key, request)
+    return redirect(f'/desk/supplements/{record["id"]}')
 
 
 def scan_action(app, cache, key, operation, data):
