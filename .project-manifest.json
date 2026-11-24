@@ -162,8 +162,8 @@
       "id": "review",
       "name": "提交或撤回裁决",
       "entry": "POST /scans/{id}/rulings + GET /scans/{id}/review",
-      "success": "扣留后可重回自动判定",
-      "failure": "异卷候选 404",
+      "success": "按候选依据序号防止并窗覆写，扣留后可重回自动判定",
+      "failure": "异卷候选 404，依据过期 409",
       "verification": "python3 -m slatewatch.walkthrough review",
       "steps": [
         "在所属扫描追加裁决",

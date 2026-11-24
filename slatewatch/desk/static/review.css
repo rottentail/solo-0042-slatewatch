@@ -19,6 +19,9 @@
 .finding details { margin: 9px 0; }
 .finding summary { cursor: pointer; width: fit-content; }
 .finding input[type="number"] { width: 112px; }
+.notice { background: #fff0cb; border: 1px solid #e3c878; border-radius: 4px; margin: 8px 0; padding: 8px 12px; }
+.notice p { margin: 4px 0; }
+.confirm { font-weight: 600; }
 @media (max-width: 720px) {
   .workspace { display: block; }
   .sidebar { border-right: 0; border-bottom: 1px solid var(--line); }

@@ -10,6 +10,7 @@ STATUS = {
     'pending': '待审', 'expected': '制作意图覆盖', 'accepted': '人工通过',
     'held': '人工扣留', 'hold': '扣留', 'pass': '已通过',
 }
+OUTCOMES = {'accept': '通过', 'hold': '扣留', 'reset': '撤回裁决'}
 
 
 def safe(value):

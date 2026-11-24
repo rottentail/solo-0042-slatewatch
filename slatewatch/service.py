@@ -1,12 +1,13 @@
 """Application boundary for media intake, measurement, review and sealed evidence."""
 from io import BytesIO
+from threading import Lock
 from zipfile import ZIP_DEFLATED, ZipFile
 
 from .clock import InputError, integer, shape, text
 from .compare import compare
 from .evidence import extract
 from .media import inspect
-from .review import adjudicate, find_hit, intent, ruling
+from .review import BasisConflict, adjudicate, find_hit, intent, ruling
 from .rules import canonical, identifier, new_policy
 from .scan import measure, scan_identity
 from .seal import pack, verify
@@ -16,6 +17,7 @@ from .store import Vault
 class Slatewatch:
     def __init__(self, root):
         self.vault = Vault(root)
+        self.review_lock = Lock()
 
     def master(self, data, label, picture, sound):
         name = text(label, 'label')
@@ -41,11 +43,21 @@ class Slatewatch:
 
     def add_intent(self, scan_id, data):
         scan = self.vault.get('scan', scan_id)
-        return self.vault.append(scan_id, 'intent', intent(scan, data))
+        record = intent(scan, data)
+        with self.review_lock:
+            return self.vault.append(scan_id, 'intent', record)
 
     def add_ruling(self, scan_id, data):
         scan = self.vault.get('scan', scan_id)
-        return self.vault.append(scan_id, 'ruling', ruling(scan, data))
+        record = ruling(scan, data)
+        with self.review_lock:
+            seen = record.get('basis')
+            if seen is not None:
+                view = adjudicate(scan, *self.vault.timeline(scan_id))
+                current = next(hit for hit in view['hits'] if hit['id'] == record['hit_id'])
+                if current['basis'] != seen:
+                    raise BasisConflict(record['hit_id'], seen, current['basis'])
+            return self.vault.append(scan_id, 'ruling', record)
 
     def review(self, scan_id):
         scan = self.vault.get('scan', scan_id)

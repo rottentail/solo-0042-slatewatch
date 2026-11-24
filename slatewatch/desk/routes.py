@@ -5,6 +5,7 @@ from urllib.parse import urlencode, urlsplit
 
 from ..clock import Conflict, InputError, Missing
 from ..media import MAX_ASSET
+from ..review import BasisConflict, find_hit
 from . import compare, forms, library, preview, scans, seals
 from .render import ASSETS, HERE, page
 from .text import safe
@@ -103,12 +104,16 @@ def route(handler, parsed):
 def scan_action(app, cache, key, operation, data):
     hit_id = data.get('hit', '')
     if operation == 'ruling':
-        app.add_ruling(key, {'hit_id': hit_id, 'outcome': data.get('outcome'), 'reason': data.get('reason'),
-                             'reviewer': data.get('reviewer')})
+        request = {'hit_id': hit_id, 'outcome': data.get('outcome'), 'reason': data.get('reason'),
+                   'reviewer': data.get('reviewer')}
+        if data.get('basis'):
+            request['basis'] = forms.number(data, 'basis')
+        try:
+            app.add_ruling(key, request)
+        except BasisConflict:
+            return 409, scans.show(app, key, hit_id, attempt=request), 'text/html; charset=utf-8', {}
         return redirect(selected_url(key, hit_id))
     if operation == 'intent':
-        from ..review import find_hit
-
         hit = find_hit(app.vault.get('scan', key), hit_id)
         request = {'kind': hit['kind'], 'start_us': forms.number(data, 'start_us'),
                    'end_us': forms.number(data, 'end_us'), 'reason': data.get('reason')}

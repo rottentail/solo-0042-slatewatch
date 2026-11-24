@@ -1,8 +1,19 @@
 """Reconcile immutable findings with programme intent and reviewer decisions."""
-from .clock import InputError, Missing, Span, coalesce, integer, shape, text
+from .clock import Conflict, InputError, Missing, Span, coalesce, integer, shape, text
 from .rules import CHANNEL_KINDS, INTENT_KINDS
 
 OUTCOMES = {'accept', 'hold', 'reset'}
+
+
+class BasisConflict(Conflict):
+    """The finding's decision basis moved after the reviewer's copy was taken."""
+
+    def __init__(self, hit_id, seen, current):
+        self.hit_id = hit_id
+        self.seen = seen
+        self.current = current
+        super().__init__(f'finding {hit_id} basis moved from seq {seen} to {current}; '
+                         'reload the review and confirm before overwriting')
 
 
 def find_hit(scan, hit_id):
@@ -30,12 +41,15 @@ def intent(scan, data):
 
 
 def ruling(scan, data):
-    shape(data, ('hit_id', 'outcome', 'reason', 'reviewer'))
+    shape(data, ('hit_id', 'outcome', 'reason', 'reviewer'), ('basis',))
     find_hit(scan, text(data['hit_id'], 'hit_id'))
     if not isinstance(data['outcome'], str) or data['outcome'] not in OUTCOMES:
         raise InputError('outcome must be accept, hold or reset')
-    return {'hit_id': data['hit_id'].strip(), 'outcome': data['outcome'],
-            'reason': text(data['reason'], 'reason', 350), 'reviewer': text(data['reviewer'], 'reviewer')}
+    record = {'hit_id': data['hit_id'].strip(), 'outcome': data['outcome'],
+              'reason': text(data['reason'], 'reason', 350), 'reviewer': text(data['reviewer'], 'reviewer')}
+    if data.get('basis') is not None:
+        record['basis'] = integer(data['basis'], 'basis', 0, 1 << 40)
+    return record
 
 
 def applicable(hit, intents):
@@ -59,7 +73,9 @@ def adjudicate(scan, intents, rulings):
         else:
             status = 'expected' if expected else 'pending'
         counts[status] += 1
-        results.append({**hit, 'status': status, 'intent_sequences': marks, 'ruling': decision})
+        basis = max([*marks, decision['seq']]) if decision else max(marks, default=0)
+        results.append({**hit, 'status': status, 'intent_sequences': marks, 'ruling': decision,
+                        'basis': basis})
     status = 'hold' if counts['held'] else 'pending' if counts['pending'] else 'pass'
     return {'scan_id': scan['id'], 'status': status, 'counts': counts, 'hits': results,
             'intents': intents, 'rulings': rulings}

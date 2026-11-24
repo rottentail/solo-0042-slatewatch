@@ -9,12 +9,15 @@
     <button formaction="/desk/scans/$scan/evidence">下载即时证据</button>
     <button formaction="/desk/scans/$scan/seal">冻结证据包</button>
   </form>
-  <details><summary>人工裁决</summary>
+  <details$open><summary>人工裁决</summary>
+    $notice
     <form method="post" action="/desk/scans/$scan/ruling" class="actions">
       <input name="hit" value="$hit" type="hidden">
-      <label>裁决<select name="outcome"><option value="accept">通过</option><option value="hold">扣留</option><option value="reset">撤回裁决</option></select></label>
-      <label>审片员<input name="reviewer" required maxlength="120"></label>
-      <label>理由<input name="reason" required maxlength="350"></label>
+      <input name="basis" value="$basis" type="hidden">
+      <label>裁决<select name="outcome"><option value="accept"$sel_accept>通过</option><option value="hold"$sel_hold>扣留</option><option value="reset"$sel_reset>撤回裁决</option></select></label>
+      <label>审片员<input name="reviewer" required maxlength="120" value="$reviewer"></label>
+      <label>理由<input name="reason" required maxlength="350" value="$reason"></label>
+      $confirm
       <button type="submit">记录裁决</button>
     </form>
   </details>

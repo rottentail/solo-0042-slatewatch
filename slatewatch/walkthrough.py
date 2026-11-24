@@ -92,21 +92,40 @@ def intent(tour):
     after = next(value for value in tour.call(uri + '/review')['hits'] if value['id'] == hit['id'])
     error = tour.call(uri + '/intents', {**base, 'channel': 1}, 400)
     assert (before['status'], after['status']) == ('pending', 'expected')
-    return {'partial': before['status'], 'covered': after['status'], 'invalid_channel': error}
+    stale = {'hit_id': hit['id'], 'outcome': 'accept', 'reason': 'stale copy', 'reviewer': 'late window', 'basis': 0}
+    moved = tour.call(uri + '/rulings', stale, 409)
+    tour.call(uri + '/rulings', {**stale, 'basis': after['basis']}, 201)
+    return {'partial': before['status'], 'covered': after['status'], 'invalid_channel': error,
+            'intent_moved_basis': moved}
 
 
 def review(tour):
     record = tour.scan()
     hit = tour.hit(record, 'clip')
+    other = tour.hit(record, 'silence')
     uri = f"/scans/{record['id']}"
     payload = {'outcome': 'hold', 'reason': 'right channel at full scale', 'reviewer': 'technical QC', 'hit_id': hit['id']}
     tour.call(uri + '/rulings', payload, 201)
     held = tour.call(uri + '/review')
+    basis = next(value for value in held['hits'] if value['id'] == hit['id'])['basis']
+    stale = {'hit_id': hit['id'], 'outcome': 'accept', 'reason': 'looks acceptable', 'reviewer': 'second window', 'basis': 0}
+    conflict = tour.call(uri + '/rulings', stale, 409)
+    assert 'basis' in conflict['error']
+    tour.call(uri + '/rulings', {'hit_id': other['id'], 'outcome': 'accept', 'reason': 'silent lead-in',
+                                 'reviewer': 'second window', 'basis': 0}, 201)
+    untouched = next(value for value in tour.call(uri + '/review')['hits'] if value['id'] == hit['id'])
+    assert untouched['basis'] == basis
+    tour.call(uri + '/rulings', {**stale, 'basis': basis}, 201)
+    accepted = next(value for value in tour.call(uri + '/review')['hits'] if value['id'] == hit['id'])
     tour.call(uri + '/rulings', {**payload, 'outcome': 'reset'}, 201)
     reset = tour.call(uri + '/review')
+    withdrawn = next(value for value in reset['hits'] if value['id'] == hit['id'])
+    assert accepted['status'] == 'accepted' and withdrawn['basis'] != basis
+    after_reset = tour.call(uri + '/rulings', {**stale, 'basis': basis}, 409)
     error = tour.call(uri + '/rulings', {**payload, 'hit_id': 'other'}, 404)
     assert held['status'] == 'hold' and reset['status'] == 'pending'
-    return {'hold': held['counts'], 'reset': reset['counts'], 'foreign_hit': error}
+    return {'hold': held['counts'], 'reset': reset['counts'], 'foreign_hit': error,
+            'stale_basis': conflict, 'reset_moved_basis': after_reset}
 
 
 def compare(tour):

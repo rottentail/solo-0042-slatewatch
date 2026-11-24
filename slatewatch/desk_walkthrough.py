@@ -51,10 +51,23 @@ def run(server, root):
 
     seal, _, frozen = request(origin, route + '/seal', {'hit': hit['id']})
     assert '待审'.encode() in frozen
+    opened = request(origin, route + '?' + urlencode({'hit': hit['id']}))[2]
+    stale = re.search(rb'name="basis" value="(\d+)"', opened)[1].decode()
     _, _, updated = request(origin, route + '/ruling', {
         'hit': hit['id'], 'outcome': 'hold', 'reason': '伴音缺口待确认', 'reviewer': '审片员',
     })
     assert '人工扣留'.encode() in updated
+    conflict = request(origin, route + '/ruling', {
+        'hit': hit['id'], 'outcome': 'accept', 'reason': '复查波形可接受', 'reviewer': '复核员', 'basis': stale,
+    }, expected=409)[2]
+    assert '覆写'.encode() in conflict and '伴音缺口待确认'.encode() in conflict
+    fresh = re.search(rb'name="basis" value="(\d+)"', conflict)[1].decode()
+    assert fresh != stale
+    _, _, accepted = request(origin, route + '/ruling', {
+        'hit': hit['id'], 'outcome': 'accept', 'reason': '复查波形可接受', 'reviewer': '复核员',
+        'basis': fresh, 'confirm': 'yes',
+    })
+    assert '人工通过'.encode() in accepted
     verified = request(origin, seal + '/verify', {'verify': 1})[2]
     assert '已通过校验'.encode() in verified
     key = seal.rsplit('/', 1)[1]
@@ -67,7 +80,7 @@ def run(server, root):
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：实测时间轴、证据画格与 WAV、裁决覆写确认、冻结校验、版次比对均通过')
 
 
 def main():
