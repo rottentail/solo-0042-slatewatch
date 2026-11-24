@@ -66,8 +66,29 @@ def run(server, root):
     query = urlencode({'before': first['id'], 'after': second['id']})
     compared = request(origin, '/desk/compare?' + query)[2]
     assert '前版独有'.encode() in compared and first['id'].encode() in compared
+
+    splice_old = tour.scan('slate-a')
+    splice_new = tour.scan('slate-b')
+    points_text = '\n'.join([
+        '120000, 120000, 片头后确认, CC-1',
+        '600000, 600000, 节目段确认, CC-2',
+        '1560000, 1560000, 切口前确认, CC-3',
+        '2240000, 1600000, 切口后确认, CC-4',
+        '2800000, 2160000, 片尾前段确认, CC-5',
+        '3800000, 3160000, 片尾确认, CC-6',
+    ])
+    splice_page = request(origin, '/desk/compare/splice', {
+        'before': splice_old['id'], 'after': splice_new['id'], 'points': points_text,
+    })[2]
+    for marker in ('剪接对照', '已证实可成对', '已知删去', '确认点间无法定位', '跨切口', '逐段证据'):
+        assert marker.encode() in splice_page, marker
+    assert 'CC-4'.encode() in splice_page and splice_old['id'].encode() in splice_page
+    # Missing points falls back to a 400 instead of silently using the old compare.
+    assert request(origin, '/desk/compare/splice',
+                   {'before': splice_old['id'], 'after': splice_new['id'], 'points': ''},
+                   expected=400)[2]
     assert '找不到'.encode() in request(origin, route + '?hit=missing', expected=404)[2]
-    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、版次比对均通过')
+    print('审片台：实测时间轴、证据画格与 WAV、裁决、冻结校验、共享时线与剪接对照均通过')
 
 
 def main():

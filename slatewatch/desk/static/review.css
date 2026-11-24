@@ -15,6 +15,10 @@
 .state.held, .state.hold { color: #8e3126; background: #fce5df; }
 .state.pending { color: #794a00; background: #fff0cb; }
 .selected { background: #e9f5f2; }
+.splice-form .wide { flex: 1 1 100%; }
+.splice-form textarea { width: 100%; min-height: 132px; font: 13px/1.55 var(--mono); resize: vertical; }
+table.nested { margin: 6px 0; font-size: 12px; }
+table.nested th, table.nested td { padding: 4px 8px; }
 .finding { border-top: 1px solid var(--line); margin-top: 21px; padding-top: 13px; }
 .finding details { margin: 9px 0; }
 .finding summary { cursor: pointer; width: fit-content; }

@@ -35,7 +35,7 @@ curl -fsS "$BASE/scans/SCAN_ID/review"
 curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d '{"hit_ids":["HIT_ID"],"padding_ms":80,"frames":3}' -o evidence.zip
 ```
 
-`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
+`basalt` 包含片头黑场、静止画面、左声道静音、右声道满幅削顶和内部音频覆盖空洞。`revision` 缩短片头黑场并消除削顶。`picture-hole` 在画面中跳过一段时间，`no-sound` 省略伴音流，`fractional` 用 30000/1001 帧率生成画格。`slate-a` 与 `slate-b` 是同一节目的两版剪接：每版都含两段像素完全相同但邻近内容不同的片名卡（单凭相同画格或同名黑场候选无法判断对应关系），`slate-b` 在正片中间删去一整句（切口两侧各有可登记的真实画格），并在保留片尾新增一个右声道削顶；旧版还有同时跨过被删内容与保留内容的伴音缺口。各样片的信号布局可复现，容器字节及派生 ID 可能随生成变化。
 
 ## 接口
 
@@ -51,7 +51,7 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 | `POST /scans/{id}/intents` | 用 `kind`、`start_us`、`end_us`、`reason` 和可选 `channel` 登记有意的黑场、冻帧或静音 |
 | `POST /scans/{id}/rulings` | 用 `hit_id`、`outcome`、`reason` 和 `reviewer` 操作单个候选。`outcome` 为 `accept`、`hold` 或 `reset` |
 | `GET /scans/{id}/review` | 读取按当前意图及裁决投影的复核状态 |
-| `POST /compare` | 以 `before`、`after` 扫描 ID 及可选的 `minimum_permille` 对照共享时线上的候选 |
+| `POST /compare` | 以 `before`、`after` 扫描 ID 及可选的 `minimum_permille` 对照共享时线上的候选；提供 `conformation_points` 时切换为剪接对照，按确认点分段映射，不假设共享时标 |
 | `POST /scans/{id}/evidence` | 按 1 至 6 个 `hit_ids`、可选 `padding_ms` 和 `frames` 生成即时 ZIP。每条证据含时标映射和可用媒体 |
 | `POST /scans/{id}/seals` | 接收同一摘片选项，冻结扫描、裁决及媒体，返回封包描述符 |
 | `GET /seals/{id}`、`/seals/{id}/verify`、`/seals/{id}/bundle` | 读取描述、校验包哈希与文件索引，或下载已校验的 ZIP |
@@ -62,4 +62,10 @@ curl -fsS "$BASE/scans/SCAN_ID/evidence" -H 'Content-Type: application/json' -d 
 
 ## 复核运行
 
-`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+`python -m slatewatch.walkthrough all` 在临时保管库里生成素材并启动真实回环 HTTP 服务，逐步打印 API 观测。也可以把 `all` 换成 `intake`、`policy`、`scan`、`intent`、`review`、`compare`、`splice`、`evidence`、`publish`、`catalog` 或 `verify`。`python -m slatewatch.desk_walkthrough` 走工作台的 HTML 入口并复核实际 PNG、WAV 和冻结包。自动测试套件暂缓。
+
+## 剪接对照
+
+两版不再共享节目时标时（删过片头、正片中间又删过句子），不要用共享时线的几何重叠。操作员先在「版次比对」页登记确认点：每行是同一个真实画格在两版各自时标上的时刻（整数微秒），可附名称和证据。确认点必须落在该扫描真实解码出的画格时刻上，且两版时刻各自严格单调；确认点不要求正好落在切口上，但被删内容的两侧需要各有至少一个确认点把切口夹住。
+
+相邻确认点张成一个映射段。段状态只按两版在该段内的真实画格数判定：两侧画格数相等为已证实可成对（`confirmed`），后版画格数不足前版三分之一为已知删去（`removed`）。确认点覆盖范围之外的区域标为确认点间无法定位（`unlocated`），系统不会因为确认点稀疏就把同偏移、有相邻实物支持的整片保留区域都标成未知，也不会用同名候选或像素相同的片名卡补齐对应。跨切口的候选拆成 `mixed`，逐段给出两侧时标和证据，每个条目都能回到两版各自的扫描与候选。不传 `conformation_points` 时，`POST /compare` 完全保留原有共享时线比较。

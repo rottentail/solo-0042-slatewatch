@@ -90,6 +90,9 @@ def route(handler, parsed):
             return 200, content, mime, {}
         case 'GET', ['desk', 'compare']:
             return html(compare.show(app, params.get('before', ''), params.get('after', '')))
+        case 'POST', ['desk', 'compare', 'splice']:
+            return html(compare.splice_page(app, data.get('before', ''), data.get('after', ''),
+                                            data.get('points', '')))
         case 'GET', ['desk', 'seals']:
             return html(seals.index(app))
         case 'GET', ['desk', 'seals', key]:

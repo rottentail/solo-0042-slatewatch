@@ -8,7 +8,7 @@ from .picture import PictureMeter
 from .rules import Thresholds, identifier
 from .sound import SoundMeter
 
-MEASUREMENT_VERSION = 1
+MEASUREMENT_VERSION = 2
 
 
 def scan_identity(asset, policy):
@@ -20,9 +20,11 @@ def measure(asset, path, policy):
     tracks = asset['media']
     picture = PictureMeter(tracks['picture'], rules)
     sound = SoundMeter(tracks['sound'], rules) if tracks['sound'] else None
+    frame_times = []
     for entry in decode(path, tracks):
         if isinstance(entry, Picture):
             picture.push(entry)
+            frame_times.append(entry.timestamp_us)
         else:
             sound.push(entry)
     picture_coverage, findings, picture_stats = picture.finish()
@@ -44,5 +46,6 @@ def measure(asset, path, policy):
             'extent': extent.as_dict(), 'tracks': tracks,
             'coverage': {'picture': [s.as_dict() for s in picture_coverage],
                          'sound': [s.as_dict() for s in sound_coverage] if sound else None},
+            'frame_times': frame_times,
             'metrics': {'picture': picture_stats, 'sound': sound_stats},
             'hits': bind_hits(scan_id, findings)}

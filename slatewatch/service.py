@@ -10,6 +10,7 @@ from .review import adjudicate, find_hit, intent, ruling
 from .rules import canonical, identifier, new_policy
 from .scan import measure, scan_identity
 from .seal import pack, verify
+from .splice import compare_splice
 from .store import Vault
 
 
@@ -52,9 +53,13 @@ class Slatewatch:
         return adjudicate(scan, *self.vault.timeline(scan_id))
 
     def compare(self, data):
-        shape(data, ('before', 'after'), ('minimum_permille',))
+        if not isinstance(data, dict) or 'before' not in data or 'after' not in data:
+            shape(data, ('before', 'after'), ('minimum_permille',))
         earlier = self.vault.get('scan', text(data['before'], 'before'))
         later = self.vault.get('scan', text(data['after'], 'after'))
+        if data.get('conformation_points'):
+            return compare_splice(earlier, later, data)
+        shape(data, ('before', 'after'), ('minimum_permille',))
         minimum = integer(data.get('minimum_permille', 300), 'minimum_permille', 1, 1000)
         return compare(earlier, later, minimum)
 

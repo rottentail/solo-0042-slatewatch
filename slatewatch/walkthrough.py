@@ -118,6 +118,60 @@ def compare(tour):
             'invalid_threshold': tour.call('/compare', {**data, 'minimum_permille': 0}, 400)}
 
 
+def splice(tour):
+    old, new = tour.scan('slate-a'), tour.scan('slate-b')
+    data = {'before': old['id'], 'after': new['id']}
+    # The cut (old 1560ms -> 2240ms) is bracketed by points; retained frames
+    # after the cut sit 640ms earlier in the later cut.
+    points = [
+        {'before_us': 120000, 'after_us': 120000, 'label': '片头后确认', 'evidence': 'CC-1'},
+        {'before_us': 600000, 'after_us': 600000, 'label': '节目段确认', 'evidence': 'CC-2'},
+        {'before_us': 1560000, 'after_us': 1560000, 'label': '切口前确认', 'evidence': 'CC-3'},
+        {'before_us': 2240000, 'after_us': 1600000, 'label': '切口后确认', 'evidence': 'CC-4'},
+        {'before_us': 2800000, 'after_us': 2160000, 'label': '片尾前段确认', 'evidence': 'CC-5'},
+        {'before_us': 3800000, 'after_us': 3160000, 'label': '片尾确认', 'evidence': 'CC-6'},
+    ]
+    result = tour.call('/compare', {**data, 'conformation_points': points})
+    assert result['mode'] == 'splice' and len(result['conformation_points']) == len(points)
+
+    def key(finding):
+        anchor = finding['before'] or finding['after']
+        start = anchor[0]['start_us'] if isinstance(anchor, list) else anchor['start_us']
+        return f"{finding['side']}:{finding['kind']}:{start}"
+
+    statuses = {key(f): f['status'] for f in result['findings']}
+    # Old candidate straddling removed and retained material is split, not guessed.
+    assert statuses['before:freeze:680000'] == 'confirmed'
+    assert statuses['before:sound_gap:1320000'] == 'mixed'
+    # Real later-version problem maps back onto the earlier clock with evidence.
+    later_clip = next(f for f in result['findings'] if f['side'] == 'after' and f['kind'] == 'clip')
+    assert later_clip['status'] == 'confirmed'
+    # Retained tail is shifted exactly 640 ms (16 dropped frames) earlier in slate-b.
+    assert later_clip['before'] == [{'start_us': later_clip['after']['start_us'] + 640000,
+                                     'end_us': later_clip['after']['end_us'] + 640000}]
+    assert all(p.get('evidence') for p in result['conformation_points'])
+    # Two pixel-identical title cards: the opening one is outside the confirmed
+    # span (unlocated); the second one is bracketed and split across the cut.
+    # Neither is paired by matching frame content or candidate names.
+    assert statuses['before:black:0'] == 'unlocated'
+    assert statuses['after:black:0'] == 'unlocated'
+    assert statuses['before:black:1280000'] == 'mixed'
+    assert statuses['after:black:1280000'] == 'mixed'
+    # The bracketed cut is detected from real frame counts (17 frames -> 1).
+    cut = next(s for s in result['segments'] if s['status'] == 'removed')
+    assert cut['before_frames'] >= cut['after_frames'] * 3
+    # Every finding piece keeps both clocks (unlocated pieces only omit the
+    # clock the sparse points cannot reach).
+    assert all(('before' in piece and 'after' in piece) for f in result['findings'] for piece in f['pieces'])
+    bad_frame = tour.call('/compare', {**data, 'conformation_points': [
+        {'before_us': 120001, 'after_us': 120000}, {'before_us': 600000, 'after_us': 600000}]}, 400)
+    return {'mode': result['mode'], 'statuses': statuses,
+            'cut_frames': [cut['before_frames'], cut['after_frames']],
+            'legacy_keys': sorted(tour.call('/compare', data)),
+            'non_frame_rejected': bad_frame}
+
+
+
 def evidence(tour):
     record = tour.scan()
     uri = f"/scans/{record['id']}/evidence"
@@ -169,7 +223,8 @@ def verify(tour):
 
 
 WORKFLOWS = {'intake': intake, 'policy': policy, 'scan': scan, 'intent': intent, 'review': review,
-             'compare': compare, 'evidence': evidence, 'publish': seal, 'catalog': catalog, 'verify': verify}
+             'compare': compare, 'splice': splice, 'evidence': evidence, 'publish': seal,
+             'catalog': catalog, 'verify': verify}
 
 
 def main():
